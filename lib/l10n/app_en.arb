@@ -21,6 +21,11 @@
     "description": "Badge over a creature the user has never found before. Kept in English in every language, like the rarity tiers and the wordmark."
   },
 
+  "revealShare": "Share",
+  "@revealShare": {
+    "description": "Button that turns the newly hatched creature into a picture the user can post. The picture never says how the creature was obtained."
+  },
+
   "revealDismiss": "Tap to continue",
   "@revealDismiss": {
     "description": "Prompt under a newly hatched creature, telling the user how to leave the reveal."

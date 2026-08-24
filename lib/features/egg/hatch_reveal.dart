@@ -1,21 +1,22 @@
 import 'package:flutter/material.dart';
 
 import '../../l10n/app_localizations.dart';
+import '../share/share_card.dart';
+import '../share/share_result.dart';
 import '../creatures/creature_labels.dart';
 import '../creatures/creature_view.dart';
 import '../rules/creature.dart';
 
 /// What was inside, rising out of the dark the hatch sequence ended on.
-class HatchReveal extends StatelessWidget {
+class HatchReveal extends StatefulWidget {
   const HatchReveal({
     super.key,
     required this.creature,
     required this.isNew,
+    required this.foundAt,
     required this.onDismiss,
   });
 
-  static const _creatureHeightRatio = 0.34;
-  static const _maxCreatureHeight = 280.0;
   static const _riseDuration = Duration(milliseconds: 900);
 
   final Creature creature;
@@ -23,10 +24,29 @@ class HatchReveal extends StatelessWidget {
   /// Whether this find filled an empty slot.
   final bool isNew;
 
+  final DateTime foundAt;
+
   final VoidCallback onDismiss;
 
   @override
+  State<HatchReveal> createState() => _HatchRevealState();
+}
+
+class _HatchRevealState extends State<HatchReveal> {
+  static const _creatureHeightRatio = 0.34;
+  static const _maxCreatureHeight = 280.0;
+
+  final _cardKey = GlobalKey();
+
+  void _share() => shareCapturedCard(
+    cardKey: _cardKey,
+    creatureId: widget.creature.id,
+  );
+
+  @override
   Widget build(BuildContext context) {
+    final creature = widget.creature;
+    final isNew = widget.isNew;
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
@@ -34,15 +54,54 @@ class HatchReveal extends StatelessWidget {
     final name = creatureName(l10n, creature.id);
     final tier = rarityLabel(l10n, creature.rarity);
 
+    return Stack(
+      children: [
+        // Drawn underneath and completely covered, so it stays painted and
+        // ready to capture without ever being seen.
+        Positioned.fill(
+          child: ClipRect(
+            child: OverflowBox(
+              alignment: Alignment.topLeft,
+              minWidth: ShareCard.size.width,
+              maxWidth: ShareCard.size.width,
+              minHeight: ShareCard.size.height,
+              maxHeight: ShareCard.size.height,
+              child: RepaintBoundary(
+                key: _cardKey,
+                child: ShareCard(
+                  creature: creature,
+                  isNew: isNew,
+                  foundAt: widget.foundAt,
+                ),
+              ),
+            ),
+          ),
+        ),
+        // Must cover the card completely; anything it leaves uncovered would
+        // show a corner of a 1080x1920 card.
+        Positioned.fill(
+          child: _revealBody(context, l10n, scheme, theme, name, tier),
+        ),
+      ],
+    );
+  }
+
+  Widget _revealBody(
+    BuildContext context,
+    AppLocalizations l10n,
+    ColorScheme scheme,
+    ThemeData theme,
+    String name,
+    String tier,
+  ) {
+    final creature = widget.creature;
+    final isNew = widget.isNew;
+
     return Semantics(
       label: isNew ? '${l10n.revealNew}, $name, $tier' : '$name, $tier',
-      button: true,
-      child: GestureDetector(
-        onTap: onDismiss,
-        behavior: HitTestBehavior.opaque,
-        child: ColoredBox(
-          color: scheme.surface,
-          child: SafeArea(
+      child: ColoredBox(
+        color: scheme.surface,
+        child: SafeArea(
             child: LayoutBuilder(
               builder: (context, constraints) {
                 final creatureHeight =
@@ -88,11 +147,23 @@ class HatchReveal extends StatelessWidget {
                           letterSpacing: 3,
                         ),
                       ),
-                      const SizedBox(height: 56),
-                      Text(
-                        l10n.revealDismiss,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: scheme.onSurfaceVariant,
+                      const SizedBox(height: 40),
+                      TextButton.icon(
+                        onPressed: _share,
+                        icon: const Icon(Icons.ios_share_rounded),
+                        label: Text(l10n.revealShare),
+                      ),
+                      const SizedBox(height: 24),
+                      // Deliberate rather than "tap anywhere": a near miss on
+                      // Share used to dismiss the reveal and take the only
+                      // chance to post it with it.
+                      TextButton(
+                        onPressed: widget.onDismiss,
+                        child: Text(
+                          l10n.revealDismiss,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: scheme.onSurfaceVariant,
+                          ),
                         ),
                       ),
                     ],
@@ -102,8 +173,7 @@ class HatchReveal extends StatelessWidget {
             ),
           ),
         ),
-      ),
-    );
+      );
   }
 }
 
@@ -128,6 +198,7 @@ class _RisesIntoViewState extends State<_RisesIntoView>
     parent: _controller,
     curve: Curves.easeOutCubic,
   );
+
 
   @override
   void dispose() {

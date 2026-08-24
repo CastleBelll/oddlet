@@ -48,6 +48,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
   /// Whether that find filled an empty slot.
   bool _hatchedIsNew = false;
+  DateTime _hatchedAt = DateTime(2026);
 
   @override
   void initState() {
@@ -128,6 +129,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     setState(() {
       _hatched = result;
       _hatchedIsNew = isNew;
+      _hatchedAt = ref.read(clockProvider)();
     });
   }
 
@@ -228,6 +230,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             HatchReveal(
               creature: creature,
               isNew: _hatchedIsNew,
+              foundAt: _hatchedAt,
               onDismiss: _dismissReveal,
             ),
         ],
