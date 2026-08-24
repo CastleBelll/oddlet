@@ -34,7 +34,11 @@ class EggView extends StatefulWidget {
     required this.height,
     required this.appearance,
     this.shakes,
+    this.onTouch,
   });
+
+  /// Called once per tap on the shell, for whoever is counting.
+  final VoidCallback? onTouch;
 
   final double height;
 
@@ -196,6 +200,7 @@ class _EggViewState extends State<EggView> with SingleTickerProviderStateMixin {
       strength: 1,
     );
     HapticFeedback.lightImpact();
+    widget.onTouch?.call();
   }
 
   void _onShake(Shake shake) {

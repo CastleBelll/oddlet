@@ -3,8 +3,12 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:oddlet/l10n/app_localizations.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sensors_plus/sensors_plus.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:oddlet/features/egg/daily_egg.dart';
+import 'package:oddlet/features/egg/daily_egg_controller.dart';
 import 'package:oddlet/features/egg/egg_appearance.dart';
 import 'package:oddlet/features/egg/egg_view.dart';
 import 'package:oddlet/features/egg/home_screen.dart';
@@ -15,30 +19,44 @@ UserAccelerometerEvent sample(double magnitude, DateTime at) =>
     UserAccelerometerEvent(magnitude, 0, 0, at);
 
 void main() {
-  Widget appUnder(Locale locale) => MaterialApp(
-    locale: locale,
-    localizationsDelegates: AppLocalizations.localizationsDelegates,
-    supportedLocales: AppLocalizations.supportedLocales,
-    home: HomeScreen(shakeDetector: ShakeDetector(samples: const Stream.empty())),
+  // Today's egg is read from disk before the shell can be drawn.
+  setUp(() => SharedPreferences.setMockInitialValues({}));
+
+  Widget appUnder(Locale locale) => ProviderScope(
+    child: MaterialApp(
+      locale: locale,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      home: HomeScreen(
+        shakeDetector: ShakeDetector(samples: const Stream.empty()),
+      ),
+    ),
   );
+
+  /// Pumps the app and lets the daily egg finish loading.
+  Future<void> pumpApp(WidgetTester tester, Locale locale) async {
+    await tester.pumpWidget(appUnder(locale));
+    await tester.pump(); // resolve the stored egg
+    await tester.pump(); // rebuild with it
+  }
 
   group('home screen', () {
     testWidgets('shows the wordmark and the egg', (tester) async {
-      await tester.pumpWidget(appUnder(const Locale('en')));
+      await pumpApp(tester, const Locale('en'));
 
       expect(find.text('ODDLET'), findsOneWidget);
       expect(find.byType(EggView), findsOneWidget);
     });
 
     testWidgets('keeps the wordmark untranslated', (tester) async {
-      await tester.pumpWidget(appUnder(const Locale('ko')));
+      await pumpApp(tester, const Locale('ko'));
 
       // The wordmark is the brand mark, not copy.
       expect(find.text('ODDLET'), findsOneWidget);
     });
 
     testWidgets('egg keeps animating without settling', (tester) async {
-      await tester.pumpWidget(appUnder(const Locale('en')));
+      await pumpApp(tester, const Locale('en'));
 
       // A repeating idle animation never settles; pumpAndSettle would time out.
       await tester.pump(const Duration(milliseconds: 500));
@@ -49,7 +67,7 @@ void main() {
 
   group('localization', () {
     testWidgets('announces the egg in the device language', (tester) async {
-      await tester.pumpWidget(appUnder(const Locale('ko')));
+      await pumpApp(tester, const Locale('ko'));
 
       expect(
         tester.getSemantics(find.byType(EggView)).label,
@@ -60,7 +78,7 @@ void main() {
     testWidgets('falls back to English for an unsupported language', (
       tester,
     ) async {
-      await tester.pumpWidget(appUnder(const Locale('fr')));
+      await pumpApp(tester, const Locale('fr'));
 
       expect(
         tester.getSemantics(find.byType(EggView)).label,
@@ -165,6 +183,138 @@ void main() {
           lessThan(HSVColor.fromColor(appearance.shell).value),
         );
       }
+    });
+  });
+
+  group('DailyEgg', () {
+    final noon = DateTime(2026, 8, 24, 12);
+
+    test('belongs to the calendar day it was started on', () {
+      final egg = DailyEgg.startOf(noon);
+
+      expect(egg.day, DateTime(2026, 8, 24));
+      expect(egg.createdAt, noon);
+      expect(egg.touchCount, 0);
+      expect(egg.shakeCount, 0);
+    });
+
+    test('counts touches and shakes separately', () {
+      final egg = DailyEgg.startOf(noon).touched().touched().shaken();
+
+      expect(egg.touchCount, 2);
+      expect(egg.shakeCount, 1);
+    });
+
+    test('survives a round trip through storage', () {
+      final egg = DailyEgg.startOf(noon).touched().shaken();
+
+      expect(DailyEgg.fromJson(egg.toJson()), egg);
+    });
+
+    test('refuses a record it cannot read', () {
+      expect(
+        () => DailyEgg.fromJson({'day': '2026-08-24'}),
+        throwsFormatException,
+      );
+      expect(
+        () => DailyEgg.fromJson({
+          'day': '2026-08-24',
+          'createdAt': noon.toIso8601String(),
+          'touchCount': -5,
+          'shakeCount': 0,
+        }),
+        throwsFormatException,
+      );
+    });
+
+    test('caps counts that no real day could produce', () {
+      final tampered = DailyEgg.fromJson({
+        'day': '2026-08-24',
+        'createdAt': noon.toIso8601String(),
+        'touchCount': 999999999,
+        'shakeCount': 0,
+      });
+
+      expect(tampered.touchCount, DailyEgg.maxCount);
+      // And it does not climb any further.
+      expect(tampered.touched().touchCount, DailyEgg.maxCount);
+    });
+  });
+
+  group('DailyEggController', () {
+    late DateTime now;
+
+    ProviderContainer containerAt(DateTime moment) {
+      now = moment;
+      final container = ProviderContainer(
+        overrides: [clockProvider.overrideWithValue(() => now)],
+      );
+      addTearDown(container.dispose);
+      return container;
+    }
+
+    setUp(() => SharedPreferences.setMockInitialValues({}));
+
+    test('hands out a fresh egg on a first run', () async {
+      final container = containerAt(DateTime(2026, 8, 24, 9));
+
+      final egg = await container.read(dailyEggControllerProvider.future);
+
+      expect(egg.day, DateTime(2026, 8, 24));
+      expect(egg.touchCount, 0);
+    });
+
+    test('keeps counts across a restart on the same day', () async {
+      final first = containerAt(DateTime(2026, 8, 24, 9));
+      await first.read(dailyEggControllerProvider.future);
+      first.read(dailyEggControllerProvider.notifier)
+        ..recordTouch()
+        ..recordTouch()
+        ..recordShake();
+      await first.read(dailyEggControllerProvider.notifier).flush();
+
+      final second = containerAt(DateTime(2026, 8, 24, 21));
+      final egg = await second.read(dailyEggControllerProvider.future);
+
+      expect(egg.touchCount, 2);
+      expect(egg.shakeCount, 1);
+    });
+
+    test('starts over the next day', () async {
+      final yesterday = containerAt(DateTime(2026, 8, 24, 9));
+      await yesterday.read(dailyEggControllerProvider.future);
+      yesterday.read(dailyEggControllerProvider.notifier).recordTouch();
+      await yesterday.read(dailyEggControllerProvider.notifier).flush();
+
+      final today = containerAt(DateTime(2026, 8, 25, 9));
+      final egg = await today.read(dailyEggControllerProvider.future);
+
+      expect(egg.day, DateTime(2026, 8, 25));
+      expect(egg.touchCount, 0);
+    });
+
+    test('rolls over when midnight passes with the app open', () async {
+      final container = containerAt(DateTime(2026, 8, 24, 23, 59));
+      await container.read(dailyEggControllerProvider.future);
+      container.read(dailyEggControllerProvider.notifier).recordTouch();
+
+      now = DateTime(2026, 8, 25, 0, 1);
+      container.read(dailyEggControllerProvider.notifier).recordTouch();
+
+      final egg = container.read(dailyEggControllerProvider).requireValue;
+      expect(egg.day, DateTime(2026, 8, 25));
+      expect(egg.touchCount, 1, reason: 'the tap belongs to the new egg');
+    });
+
+    test('starts fresh rather than crashing on a corrupt record', () async {
+      SharedPreferences.setMockInitialValues({
+        'oddlet.daily_egg': 'not json at all',
+      });
+      final container = containerAt(DateTime(2026, 8, 24, 9));
+
+      final egg = await container.read(dailyEggControllerProvider.future);
+
+      expect(egg.touchCount, 0);
     });
   });
 

@@ -76,6 +76,28 @@ class EggAppearance {
       noiseOffset: _unit(ordinal, 7) * 100,
     );
   }
+
+  // Value equality, so rebuilding the same day's appearance is not mistaken
+  // for a change worth repainting.
+  @override
+  bool operator ==(Object other) =>
+      other is EggAppearance &&
+      other.shell == shell &&
+      other.speckle == speckle &&
+      other.textureScale == textureScale &&
+      other.textureContrast == textureContrast &&
+      other.blotchiness == blotchiness &&
+      other.noiseOffset == noiseOffset;
+
+  @override
+  int get hashCode => Object.hash(
+    shell,
+    speckle,
+    textureScale,
+    textureContrast,
+    blotchiness,
+    noiseOffset,
+  );
 }
 
 /// Whole days since the epoch, so one calendar day is one egg.
