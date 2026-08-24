@@ -1,0 +1,189 @@
+import 'dart:math';
+
+import 'package:flutter_test/flutter_test.dart';
+
+import 'package:oddlet/features/rules/creature.dart';
+import 'package:oddlet/features/rules/rule_engine.dart';
+import 'package:oddlet/features/rules/season_01.dart';
+
+HatchContext context({int touches = 0, int shakes = 0, DateTime? hatchedAt}) =>
+    HatchContext(
+      touchCount: touches,
+      shakeCount: shakes,
+      hatchedAt: hatchedAt ?? DateTime(2026, 8, 24, 12),
+    );
+
+const fallback = Creature(id: 'fallback', rarity: Rarity.common);
+
+void main() {
+  group('HatchWindow', () {
+    test('covers its own span and excludes the end', () {
+      final window = HatchWindow.between(3, 4);
+
+      expect(window.contains(DateTime(2026, 1, 1, 3)), isTrue);
+      expect(window.contains(DateTime(2026, 1, 1, 3, 59)), isTrue);
+      expect(window.contains(DateTime(2026, 1, 1, 4)), isFalse);
+      expect(window.contains(DateTime(2026, 1, 1, 2, 59)), isFalse);
+    });
+
+    test('handles a window that runs past midnight', () {
+      final window = HatchWindow.between(23, 2);
+
+      expect(window.contains(DateTime(2026, 1, 1, 23, 30)), isTrue);
+      expect(window.contains(DateTime(2026, 1, 1, 0, 30)), isTrue);
+      expect(window.contains(DateTime(2026, 1, 1, 12)), isFalse);
+    });
+  });
+
+  group('HatchConditions', () {
+    test('with nothing set matches anything', () {
+      expect(HatchConditions.always.isUnconditional, isTrue);
+      expect(HatchConditions.always.matches(context()), isTrue);
+    });
+
+    test('needs every condition present to hold', () {
+      const conditions = HatchConditions(minTouches: 10, minShakes: 5);
+
+      expect(conditions.matches(context(touches: 10, shakes: 5)), isTrue);
+      expect(conditions.matches(context(touches: 10, shakes: 4)), isFalse);
+      expect(conditions.matches(context(touches: 9, shakes: 5)), isFalse);
+    });
+
+    test('treats a minimum as met exactly at the threshold', () {
+      const conditions = HatchConditions(minTouches: 100);
+
+      expect(conditions.matches(context(touches: 99)), isFalse);
+      expect(conditions.matches(context(touches: 100)), isTrue);
+    });
+  });
+
+  group('RuleEngine', () {
+    test('refuses a set that cannot answer every egg', () {
+      expect(() => RuleEngine([]), throwsArgumentError);
+      expect(
+        () => RuleEngine([
+          const Creature(
+            id: 'conditional_only',
+            rarity: Rarity.rare,
+            conditions: HatchConditions(minTouches: 1),
+          ),
+        ]),
+        throwsArgumentError,
+      );
+    });
+
+    test('falls back when nothing else matches', () {
+      final engine = RuleEngine([
+        fallback,
+        const Creature(
+          id: 'needs_touches',
+          rarity: Rarity.rare,
+          conditions: HatchConditions(minTouches: 500),
+          priority: 30,
+        ),
+      ]);
+
+      expect(engine.select(context()).id, 'fallback');
+    });
+
+    test('prefers the higher priority over an easier match', () {
+      final engine = RuleEngine([
+        fallback,
+        const Creature(
+          id: 'easy',
+          rarity: Rarity.uncommon,
+          conditions: HatchConditions(minTouches: 10),
+          priority: 20,
+        ),
+        const Creature(
+          id: 'hard',
+          rarity: Rarity.epic,
+          conditions: HatchConditions(minTouches: 100),
+          priority: 60,
+        ),
+      ]);
+
+      // Someone at 200 touches satisfies both; the rarer one should win.
+      expect(engine.select(context(touches: 200)).id, 'hard');
+    });
+
+    test('draws among equal priorities in proportion to weight', () {
+      final engine = RuleEngine([
+        const Creature(id: 'often', rarity: Rarity.common, weight: 90),
+        const Creature(id: 'rarely', rarity: Rarity.common, weight: 10),
+      ], random: Random(7));
+
+      final drawn = <String, int>{};
+      for (var i = 0; i < 2000; i++) {
+        final id = engine.select(context()).id;
+        drawn[id] = (drawn[id] ?? 0) + 1;
+      }
+
+      expect(drawn['often'], greaterThan(drawn['rarely']!));
+      // Roughly 9:1; allow plenty of slack for a finite sample.
+      expect(drawn['rarely']! / 2000, closeTo(0.10, 0.04));
+    });
+
+    test('always returns something, whatever the egg went through', () {
+      final engine = RuleEngine(season01Creatures, random: Random(1));
+
+      for (var hour = 0; hour < 24; hour++) {
+        for (final touches in [0, 1, 199, 200, 500, 1000, 5000]) {
+          for (final shakes in [0, 29, 30, 100, 200, 900]) {
+            final result = engine.select(
+              context(
+                touches: touches,
+                shakes: shakes,
+                hatchedAt: DateTime(2026, 8, 24, hour, 30),
+              ),
+            );
+
+            expect(result.id, isNotEmpty);
+          }
+        }
+      }
+    });
+  });
+
+  group('season 01 set', () {
+    final engine = RuleEngine(season01Creatures, random: Random(3));
+
+    test('gives a common to someone who did nothing', () {
+      expect(engine.select(context()).rarity, Rarity.common);
+    });
+
+    test('gives the shaker something other than a common', () {
+      expect(engine.select(context(shakes: 40)).id, 'dizzy_chick');
+    });
+
+    test('gives the small hours their own creature', () {
+      final atDawn = context(hatchedAt: DateTime(2026, 8, 24, 3, 30));
+
+      expect(engine.select(atDawn).id, 'ghost_chick');
+    });
+
+    test('reserves the secret for someone who did all three', () {
+      final everything = context(
+        touches: 1200,
+        shakes: 250,
+        hatchedAt: DateTime(2026, 8, 24, 3, 30),
+      );
+
+      expect(engine.select(everything).rarity, Rarity.secret);
+    });
+
+    test('has unique ids', () {
+      final ids = season01Creatures.map((creature) => creature.id).toSet();
+
+      expect(ids, hasLength(season01Creatures.length));
+    });
+
+    test('covers every rarity the prototype claims', () {
+      final rarities = season01Creatures
+          .map((creature) => creature.rarity)
+          .toSet();
+
+      expect(rarities, equals(Rarity.values.toSet()));
+    });
+  });
+}
