@@ -9,6 +9,12 @@
 
   "revealNew": "NEW",
 
+  "introLine1": "알을 하나 받았다.",
+  "introLine2": "이게 무엇이 될지는 아무도 모른다.",
+  "introLine3": "당신이 무엇을 하느냐에 달렸다.",
+
+  "introContinue": "탭하여 시작",
+
   "shareTagline": "당신의 알은 무엇이 될까?",
 
   "revealShare": "공유",

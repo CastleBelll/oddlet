@@ -21,6 +21,24 @@
     "description": "Badge over a creature the user has never found before. Kept in English in every language, like the rarity tiers and the wordmark."
   },
 
+  "introLine1": "You were given an egg.",
+  "@introLine1": {
+    "description": "First line of the opening. The whole opening sets a mood and must never hint at how to obtain anything; the app is built on the user working that out."
+  },
+  "introLine2": "No one knows what it will become.",
+  "@introLine2": {
+    "description": "Second line of the opening. See introLine1."
+  },
+  "introLine3": "That depends on what you do.",
+  "@introLine3": {
+    "description": "Third line of the opening. Says that actions matter without saying which ones. See introLine1."
+  },
+
+  "introContinue": "Tap to begin",
+  "@introContinue": {
+    "description": "Prompt after the opening has finished, telling the user how to leave it."
+  },
+
   "shareTagline": "What will yours become?",
   "@shareTagline": {
     "description": "Brand line on the share card. It asks the question the card exists to provoke and must never come close to answering it."

@@ -50,13 +50,15 @@ ThemeData oddletDarkTheme() {
       scrolledUnderElevation: 0,
       centerTitle: true,
     ),
-    // Wide tracking throughout: the app has very few words, so the ones it has
-    // are set like labels on a specimen rather than like body copy.
+    // Wide tracking is for labels only. Latin words set as specimen labels
+    // (ODDLET, RARE) want the air; Korean sentences do not, and tracking them
+    // pushes single syllables onto their own line.
     textTheme: const TextTheme(
-      headlineSmall: TextStyle(letterSpacing: 1.2, fontWeight: FontWeight.w400),
+      headlineSmall: TextStyle(fontWeight: FontWeight.w400, height: 1.4),
+      titleLarge: TextStyle(fontWeight: FontWeight.w400, height: 1.6),
       labelLarge: TextStyle(letterSpacing: 3),
       labelMedium: TextStyle(letterSpacing: 2),
-      bodySmall: TextStyle(letterSpacing: 0.8),
+      bodySmall: TextStyle(letterSpacing: 0.6),
     ).apply(bodyColor: scheme.onSurface, displayColor: scheme.onSurface),
   );
 }
