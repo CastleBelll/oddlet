@@ -67,6 +67,45 @@ void main() {
       }
     });
 
+    test('leaves a common with a plain coat', () {
+      for (final creature in season01Creatures) {
+        if (creature.rarity != Rarity.common) {
+          continue;
+        }
+        final appearance = CreatureAppearance.of(creature);
+
+        expect(appearance.marking, CreatureMarking.none);
+        expect(appearance.markStrength, 0);
+      }
+    });
+
+    test('gives a marking a strength only when it has a marking', () {
+      for (final creature in season01Creatures) {
+        final appearance = CreatureAppearance.of(creature);
+
+        expect(
+          appearance.markStrength > 0,
+          appearance.marking != CreatureMarking.none,
+          reason: '${creature.id} disagrees about whether it is marked',
+        );
+      }
+    });
+
+    test('keeps a marking the same animal rather than paint on it', () {
+      for (final creature in season01Creatures) {
+        final appearance = CreatureAppearance.of(creature);
+        if (appearance.marking == CreatureMarking.none) {
+          continue;
+        }
+
+        final coat = HSVColor.fromColor(appearance.body);
+        final mark = HSVColor.fromColor(appearance.markColor);
+
+        expect(mark.hue, closeTo(coat.hue, 1));
+        expect(mark.value, lessThan(coat.value));
+      }
+    });
+
     test('spends more of the oddity budget as the tier climbs', () {
       var previous = -1;
       for (final rarity in Rarity.values) {

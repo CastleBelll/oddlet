@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 
 import '../rules/creature.dart';
 
+/// The coat patterns a creature can wear. A small vocabulary rather than a
+/// free parameter, so every creature reads as belonging to the same world.
+enum CreatureMarking { none, spots, stripes, eyeMask }
+
 /// How one creature looks.
 ///
 /// Assembled rather than drawn: a body, and whichever parts this creature was
@@ -27,6 +31,12 @@ class CreatureAppearance {
     required this.lumpRadius,
     required this.bumpiness,
     required this.glow,
+    required this.mouthWidth,
+    required this.mouthHeight,
+    required this.marking,
+    required this.markScale,
+    required this.markStrength,
+    required this.markColor,
   });
 
   /// Brighter and more saturated than an egg. This is the payoff.
@@ -69,6 +79,16 @@ class CreatureAppearance {
   /// Extra rim light, reserved for the rare ones.
   final double glow;
 
+  /// 0 for a creature with no mouth.
+  final double mouthWidth;
+  final double mouthHeight;
+
+  /// Which coat pattern this one wears.
+  final CreatureMarking marking;
+  final double markScale;
+  final double markStrength;
+  final Color markColor;
+
   /// How many oddities this creature may carry, by tier.
   static int oddityBudget(Rarity rarity) => switch (rarity) {
     Rarity.common => 0,
@@ -103,6 +123,14 @@ class CreatureAppearance {
     final oddEyes = budget >= 3 && _unit(seed, 13) > 0.5;
     final eyeCount = oddEyes ? (_unit(seed, 14) > 0.5 ? 3 : 1) : 2;
 
+    // A mouth is ordinary equipment, so any tier may have one.
+    final hasMouth = _unit(seed, 22) > 0.35;
+
+    // Markings are an oddity: a plain animal is a plain colour.
+    final markings = budget >= 1 && _unit(seed, 23) > 0.30
+        ? CreatureMarking.values[1 + (_unit(seed, 24) * 3).floor().clamp(0, 2)]
+        : CreatureMarking.none;
+
     return CreatureAppearance(
       body: HSVColor.fromAHSV(1, hue, saturation, value).toColor(),
       belly: HSVColor.fromAHSV(
@@ -122,6 +150,21 @@ class CreatureAppearance {
       lumpRadius: hasLump ? _lerp(0.30, 0.52, _unit(seed, 19)) : 0,
       bumpiness: isBumpy ? _lerp(0.35, 1.0, _unit(seed, 20)) : 0,
       glow: budget >= 4 ? _lerp(0.25, 0.55, _unit(seed, 21)) : 0,
+      mouthWidth: hasMouth ? _lerp(0.10, 0.26, _unit(seed, 25)) : 0,
+      mouthHeight: _lerp(0.06, 0.16, _unit(seed, 26)),
+      marking: markings,
+      markScale: _lerp(4.0, 11.0, _unit(seed, 27)),
+      markStrength: markings == CreatureMarking.none
+          ? 0
+          : _lerp(0.30, 0.70, _unit(seed, 28)),
+      // Same hue as the coat, darker: a marking should look like the same
+      // animal, not like paint.
+      markColor: HSVColor.fromAHSV(
+        1,
+        hue,
+        (saturation + 0.12).clamp(0.0, 1.0),
+        (value - 0.34).clamp(0.0, 1.0),
+      ).toColor(),
     );
   }
 
@@ -140,7 +183,13 @@ class CreatureAppearance {
       other.lumpHeight == lumpHeight &&
       other.lumpRadius == lumpRadius &&
       other.bumpiness == bumpiness &&
-      other.glow == glow;
+      other.glow == glow &&
+      other.mouthWidth == mouthWidth &&
+      other.mouthHeight == mouthHeight &&
+      other.marking == marking &&
+      other.markScale == markScale &&
+      other.markStrength == markStrength &&
+      other.markColor == markColor;
 
   @override
   int get hashCode => Object.hashAll([
@@ -157,6 +206,12 @@ class CreatureAppearance {
     lumpRadius,
     bumpiness,
     glow,
+    mouthWidth,
+    mouthHeight,
+    marking,
+    markScale,
+    markStrength,
+    markColor,
   ]);
 }
 

@@ -28,6 +28,14 @@ uniform float uLumpRadius; // 0 for a single mass
 uniform float uBumpiness;  // 0 smooth, 1 lumpy hide
 uniform float uGlow;       // rim light for the rare ones
 
+uniform float uMouthWidth;  // 0 for a creature with no mouth
+uniform float uMouthHeight;
+
+uniform float uMarkKind;     // 0 none, 1 spots, 2 stripes, 3 eye mask
+uniform float uMarkScale;
+uniform float uMarkStrength;
+uniform vec3 uMarkColor;
+
 out vec4 fragColor;
 
 const float CAMERA_DISTANCE = 4.4;
@@ -138,6 +146,16 @@ vec3 eyeDirection(float side) {
   return normalize(vec3(side * uEyeSpacing, 0.16, 1.0));
 }
 
+// A mouth, set below the eyes on the front of the face. Drawn as a marking
+// rather than carved out, which keeps the silhouette clean at collection size.
+float mouthMask(vec3 n) {
+  if (uMouthWidth <= 0.0 || n.z < 0.25) {
+    return 0.0;
+  }
+  vec2 offset = vec2(n.x / uMouthWidth, (n.y + 0.30) / uMouthHeight);
+  return 1.0 - smoothstep(0.75, 1.0, length(offset));
+}
+
 // Distance from this point to whichever eye is closest.
 float toNearestEye(vec3 n) {
   float nearest = uEyeCount < 1.5
@@ -148,6 +166,28 @@ float toNearestEye(vec3 n) {
     nearest = min(nearest, distance(n, normalize(vec3(0.0, 0.62, 1.0))));
   }
   return nearest;
+}
+
+// Coat markings. Kind is a small vocabulary rather than a free parameter, so
+// every creature reads as belonging to the same world.
+float markingMask(vec3 p, vec3 n) {
+  if (uMarkKind < 0.5 || uMarkStrength <= 0.0) {
+    return 0.0;
+  }
+
+  if (uMarkKind < 1.5) { // spots
+    return smoothstep(0.58, 0.72, valueNoise(p * uMarkScale));
+  }
+  if (uMarkKind < 2.5) { // stripes around the body
+    float band = sin(p.y * uMarkScale * 2.0);
+    return smoothstep(0.15, 0.55, abs(band));
+  }
+
+  // a darker patch across the eyes
+  float toEyes = min(
+    distance(n, eyeDirection(-1.0)),
+    distance(n, eyeDirection(1.0)));
+  return 1.0 - smoothstep(uEyeSize * 1.6, uEyeSize * 3.0, toEyes);
 }
 
 void main() {
@@ -192,8 +232,13 @@ void main() {
   vec3 p = ro + rd * (tHit > 0.0 ? tHit : tMin);
   vec3 n = normalAt(p);
 
+  // Markings sit on the coat, so they are picked with the undisplaced normal
+  // and shaded along with everything else.
+  vec3 faceNormal = smoothNormalAt(p);
+
   // Pale underside, the way most small animals are counter-shaded.
   vec3 skin = mix(uBody, uBelly, smoothstep(0.1, -0.8, n.y));
+  skin = mix(skin, uMarkColor, markingMask(p, faceNormal) * uMarkStrength);
 
   vec3 lightDir = normalize(vec3(-0.4, 0.7, 0.6));
   float diffuse = max(dot(n, lightDir), 0.0);
@@ -208,7 +253,7 @@ void main() {
              + uTint * specular
              + uTint * fresnel * (0.22 + uGlow);
 
-  float nearestEye = toNearestEye(smoothNormalAt(p));
+  float nearestEye = toNearestEye(faceNormal);
   float eye = 1.0 - smoothstep(uEyeSize * 0.75, uEyeSize, nearestEye);
   // A highlight is most of what makes an eye look awake.
   float glint = 1.0 - smoothstep(
@@ -216,6 +261,7 @@ void main() {
     uEyeSize * 0.30,
     distance(n, normalize(vec3(-uEyeSpacing + 0.07, 0.26, 1.0))));
 
+  color = mix(color, vec3(0.10, 0.08, 0.11), mouthMask(faceNormal));
   color = mix(color, vec3(0.06, 0.05, 0.08), eye);
   color = mix(color, vec3(1.0), eye * glint * 0.85);
 

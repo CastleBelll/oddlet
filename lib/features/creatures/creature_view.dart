@@ -117,7 +117,15 @@ class _CreaturePainter extends CustomPainter {
       ..setFloat(19, appearance.lumpHeight)
       ..setFloat(20, appearance.lumpRadius)
       ..setFloat(21, appearance.bumpiness)
-      ..setFloat(22, appearance.glow);
+      ..setFloat(22, appearance.glow)
+      ..setFloat(23, appearance.mouthWidth)
+      ..setFloat(24, appearance.mouthHeight)
+      ..setFloat(25, appearance.marking.index.toDouble())
+      ..setFloat(26, appearance.markScale)
+      ..setFloat(27, appearance.markStrength)
+      ..setFloat(28, appearance.markColor.r)
+      ..setFloat(29, appearance.markColor.g)
+      ..setFloat(30, appearance.markColor.b);
 
     canvas.drawRect(Offset.zero & size, Paint()..shader = shader);
   }
