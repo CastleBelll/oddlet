@@ -75,7 +75,9 @@ const season01Creatures = <Creature>[
     conditions: HatchConditions(
       minTouches: 300,
       minShakes: 60,
-      hatchWindow: HatchWindow(fromMinute: 180, toMinute: 240),
+      // The same small hours as the ghost. What makes this one hard is the
+      // handling, not an hour that some countries skip entirely.
+      hatchWindow: HatchWindow(fromMinute: 120, toMinute: 300),
     ),
     priority: 99,
     weight: 10,

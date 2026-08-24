@@ -9,18 +9,33 @@ enum Rarity { common, uncommon, rare, epic, legendary, secret }
 /// branch in the engine.
 @immutable
 class HatchContext {
-  const HatchContext({
+  HatchContext({
     required this.touchCount,
     required this.shakeCount,
     required this.hatchedAt,
-  });
+  }) : assert(
+         !hatchedAt.isUtc,
+         'hatchedAt must be in the user\'s own time. Time conditions ask what '
+         'hour it is where the user is, so a UTC instant would make 3am '
+         'happen at the same moment worldwide, which is the middle of the '
+         'afternoon for most of it. Convert server time to local before it '
+         'gets here.',
+       );
 
   final int touchCount;
   final int shakeCount;
   final DateTime hatchedAt;
 }
 
-/// A time of day range, which may run past midnight.
+/// A range of wall-clock time, which may run past midnight.
+///
+/// Read off the clock on the wall rather than from an instant, so the same
+/// window means the same thing to someone in Seoul and someone in São Paulo:
+/// each of them gets it in their own small hours.
+///
+/// Windows shorter than an hour are a trap where daylight saving applies. The
+/// clock can skip an hour outright in spring, and a window inside the skipped
+/// hour would be unreachable that day for a whole country.
 @immutable
 class HatchWindow {
   const HatchWindow({required this.fromMinute, required this.toMinute});

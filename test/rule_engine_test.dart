@@ -35,6 +35,55 @@ void main() {
     });
   });
 
+  group('time of day is read where the user is', () {
+    test('refuses an instant that is not in the user local time', () {
+      // Server time arrives as UTC. Handing it straight to the rules would
+      // make the small hours land at the same moment worldwide.
+      expect(
+        () => HatchContext(
+          touchCount: 0,
+          shakeCount: 0,
+          hatchedAt: DateTime.utc(2026, 8, 24, 3, 30),
+        ),
+        throwsA(isA<AssertionError>()),
+      );
+    });
+
+    test('depends on the clock face, not on which instant it is', () {
+      final window = HatchWindow.between(2, 5);
+
+      // Same wall-clock time on different dates and years: a user in any
+      // country reads 3:30am off their own clock and gets the same answer.
+      expect(window.contains(DateTime(2026, 1, 1, 3, 30)), isTrue);
+      expect(window.contains(DateTime(2026, 6, 15, 3, 30)), isTrue);
+      expect(window.contains(DateTime(2031, 12, 31, 3, 30)), isTrue);
+    });
+
+    test('stays reachable across a daylight saving jump', () {
+      // Where clocks spring forward, 02:00 to 03:00 does not exist that day.
+      // A window covering only that hour would be impossible for a whole
+      // country, so the dawn windows are wider than the gap.
+      for (final creature in season01Creatures) {
+        final window = creature.conditions.hatchWindow;
+        if (window == null) {
+          continue;
+        }
+
+        final span = window.toMinute > window.fromMinute
+            ? window.toMinute - window.fromMinute
+            : Duration.minutesPerDay - window.fromMinute + window.toMinute;
+
+        expect(
+          span,
+          greaterThan(Duration.minutesPerHour),
+          reason:
+              '${creature.id} has a window no wider than the hour daylight '
+              'saving can remove',
+        );
+      }
+    });
+  });
+
   group('HatchConditions', () {
     test('with nothing set matches anything', () {
       expect(HatchConditions.always.isUnconditional, isTrue);
