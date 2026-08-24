@@ -148,7 +148,7 @@ class _Slot extends StatelessWidget {
           children: [
             _SlotFrame(
               child: CreatureView(
-                creatureId: creature.id,
+                creature: creature,
                 height: CollectionScreen._tileSize * 0.82,
               ),
             ),

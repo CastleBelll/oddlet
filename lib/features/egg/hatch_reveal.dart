@@ -68,7 +68,7 @@ class HatchReveal extends StatelessWidget {
                         ),
                       ExcludeSemantics(
                         child: CreatureView(
-                          creatureId: creature.id,
+                          creature: creature,
                           height: creatureHeight,
                         ),
                       ),

@@ -14,62 +14,140 @@ uniform vec3 uBelly;
 uniform vec3 uTint;
 
 uniform float uSquash;     // above 1 wide and squat, below 1 tall
-uniform float uEyeSpacing; // how far apart the eyes sit
+uniform float uEyeSpacing;
 uniform float uEyeSize;
+uniform float uEyeCount;   // 1, 2 or 3
+
+uniform float uEarLength;  // 0 for no ears
+uniform float uEarSpread;
+uniform float uEarRadius;
+
+uniform float uLumpHeight; // a second mass fused to the body
+uniform float uLumpRadius; // 0 for a single mass
+
+uniform float uBumpiness;  // 0 smooth, 1 lumpy hide
+uniform float uGlow;       // rim light for the rare ones
 
 out vec4 fragColor;
 
-const float CAMERA_DISTANCE = 4.2;
+const float CAMERA_DISTANCE = 4.4;
 const float FOCAL = 1.8;
-const float BODY_RADIUS = 0.86;
-const int MAX_STEPS = 96;
+const float BODY_RADIUS = 0.80;
+const int MAX_STEPS = 128;
 const float HIT_EPS = 0.0008;
-const float MAX_DIST = 8.0;
-const float STEP_SCALE = 0.85;
+const float MAX_DIST = 9.0;
+// Surface displacement breaks the distance bound, so march short steps.
+const float STEP_SCALE = 0.55;
 
-// Placeholder anatomy: a blob with two eyes. Enough to read as alive, and
-// cheap enough to throw away when the real art direction lands.
-float sdBody(vec3 p) {
-  vec3 radii = vec3(
-    BODY_RADIUS * uSquash,
-    BODY_RADIUS / uSquash,
-    BODY_RADIUS * uSquash);
+// Smooth union: parts fuse into one animal rather than reading as glued
+// together.
+float smoothUnion(float a, float b, float k) {
+  float h = clamp(0.5 + 0.5 * (b - a) / k, 0.0, 1.0);
+  return mix(b, a, h) - k * h * (1.0 - h);
+}
 
+float sdEllipsoid(vec3 p, vec3 radii) {
   float k1 = length(p / radii);
   float k2 = max(length(p / (radii * radii)), 1e-6);
   return k1 * (k1 - 1.0) / k2;
 }
 
+float sdCapsule(vec3 p, vec3 a, vec3 b, float radius) {
+  vec3 pa = p - a;
+  vec3 ba = b - a;
+  float h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0);
+  return length(pa - ba * h) - radius;
+}
+
+float hash(vec3 p) {
+  vec3 q = fract(p * 0.3183099 + vec3(0.1, 0.2, 0.3));
+  q *= 17.0;
+  return fract(q.x * q.y * q.z * (q.x + q.y + q.z));
+}
+
+float valueNoise(vec3 p) {
+  vec3 i = floor(p);
+  vec3 f = fract(p);
+  f = f * f * f * (f * (f * 6.0 - 15.0) + 10.0);
+  return mix(
+    mix(mix(hash(i + vec3(0.0, 0.0, 0.0)), hash(i + vec3(1.0, 0.0, 0.0)), f.x),
+        mix(hash(i + vec3(0.0, 1.0, 0.0)), hash(i + vec3(1.0, 1.0, 0.0)), f.x), f.y),
+    mix(mix(hash(i + vec3(0.0, 0.0, 1.0)), hash(i + vec3(1.0, 0.0, 1.0)), f.x),
+        mix(hash(i + vec3(0.0, 1.0, 1.0)), hash(i + vec3(1.0, 1.0, 1.0)), f.x), f.y),
+    f.z);
+}
+
+// The animal without its surface texture. Eyes are placed against this so a
+// lumpy hide cannot scatter them across the body.
+float sdBody(vec3 p) {
+  vec3 radii = vec3(
+    BODY_RADIUS * uSquash,
+    BODY_RADIUS / uSquash,
+    BODY_RADIUS * uSquash);
+  float d = sdEllipsoid(p, radii);
+
+  if (uLumpRadius > 0.0) {
+    float lump = sdEllipsoid(
+      p - vec3(0.0, uLumpHeight, 0.0),
+      vec3(uLumpRadius));
+    d = smoothUnion(d, lump, 0.28);
+  }
+
+  if (uEarLength > 0.0) {
+    // Mirrored across x, so the pair matches without drawing it twice.
+    vec3 mirrored = vec3(abs(p.x), p.y, p.z);
+    vec3 base = vec3(uEarSpread, 0.30, 0.0);
+    vec3 tip = vec3(
+      uEarSpread + uEarLength * 0.45,
+      0.30 + uEarLength,
+      -0.05);
+    d = smoothUnion(d, sdCapsule(mirrored, base, tip, uEarRadius), 0.10);
+  }
+
+  return d;
+}
+
+float sdCreature(vec3 p) {
+  float d = sdBody(p);
+  if (uBumpiness > 0.0) {
+    // Coarse and shallow: at a fine scale this reads as rendering noise
+    // rather than as a hide.
+    d -= uBumpiness * (valueNoise(p * 3.2) - 0.5) * 0.09;
+  }
+  return d;
+}
+
+/// Wide sample, so the lumps shade as lumps instead of speckling.
 vec3 normalAt(vec3 p) {
-  vec2 e = vec2(0.0015, 0.0);
+  vec2 e = vec2(0.007, 0.0);
+  return normalize(vec3(
+    sdCreature(p + e.xyy) - sdCreature(p - e.xyy),
+    sdCreature(p + e.yxy) - sdCreature(p - e.yxy),
+    sdCreature(p + e.yyx) - sdCreature(p - e.yyx)));
+}
+
+vec3 smoothNormalAt(vec3 p) {
+  vec2 e = vec2(0.004, 0.0);
   return normalize(vec3(
     sdBody(p + e.xyy) - sdBody(p - e.xyy),
     sdBody(p + e.yxy) - sdBody(p - e.yxy),
     sdBody(p + e.yyx) - sdBody(p - e.yyx)));
 }
 
-// Eyes are placed by surface direction rather than carved into the shape,
-// which keeps the silhouette clean.
 vec3 eyeDirection(float side) {
   return normalize(vec3(side * uEyeSpacing, 0.16, 1.0));
 }
 
-// How much of this point is eye.
-float eyeMask(vec3 n) {
-  float nearest = min(
-    distance(n, eyeDirection(-1.0)),
-    distance(n, eyeDirection(1.0)));
-  return 1.0 - smoothstep(uEyeSize * 0.75, uEyeSize, nearest);
-}
+// Distance from this point to whichever eye is closest.
+float toNearestEye(vec3 n) {
+  float nearest = uEyeCount < 1.5
+    ? distance(n, normalize(vec3(0.0, 0.12, 1.0)))
+    : min(distance(n, eyeDirection(-1.0)), distance(n, eyeDirection(1.0)));
 
-// Both eyes catch the same light. One lit eye and one dead one reads as a
-// rendering fault rather than a face.
-float eyeGlint(vec3 n) {
-  vec3 offset = vec3(0.06, 0.08, 0.0);
-  float nearest = min(
-    distance(n, normalize(eyeDirection(-1.0) + offset)),
-    distance(n, normalize(eyeDirection(1.0) + offset)));
-  return 1.0 - smoothstep(uEyeSize * 0.20, uEyeSize * 0.34, nearest);
+  if (uEyeCount > 2.5) {
+    nearest = min(nearest, distance(n, normalize(vec3(0.0, 0.62, 1.0))));
+  }
+  return nearest;
 }
 
 void main() {
@@ -86,7 +164,7 @@ void main() {
 
   for (int i = 0; i < MAX_STEPS; i++) {
     vec3 p = ro + rd * t;
-    float d = sdBody(p);
+    float d = sdCreature(p);
     if (d < dMin) {
       dMin = d;
       tMin = t;
@@ -128,15 +206,18 @@ void main() {
 
   vec3 color = skin * (ambient + 0.8 * diffuse + fill)
              + uTint * specular
-             + uTint * fresnel * 0.22;
+             + uTint * fresnel * (0.22 + uGlow);
 
-  float eye = eyeMask(n);
-  vec3 eyeColor = vec3(0.06, 0.05, 0.08);
+  float nearestEye = toNearestEye(smoothNormalAt(p));
+  float eye = 1.0 - smoothstep(uEyeSize * 0.75, uEyeSize, nearestEye);
   // A highlight is most of what makes an eye look awake.
-  float glint = eyeGlint(n);
+  float glint = 1.0 - smoothstep(
+    uEyeSize * 0.18,
+    uEyeSize * 0.30,
+    distance(n, normalize(vec3(-uEyeSpacing + 0.07, 0.26, 1.0))));
 
-  color = mix(color, eyeColor, eye);
-  color = mix(color, vec3(1.0), eye * glint * 0.9);
+  color = mix(color, vec3(0.06, 0.05, 0.08), eye);
+  color = mix(color, vec3(1.0), eye * glint * 0.85);
 
   fragColor = vec4(color * alpha, alpha); // premultiplied
 }

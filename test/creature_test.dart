@@ -11,39 +11,69 @@ import 'package:oddlet/l10n/app_localizations_ko.dart';
 
 void main() {
   group('CreatureAppearance', () {
+    final ghost = season01Creatures.firstWhere((c) => c.id == 'ghost_chick');
+
     test('looks the same every time the creature is found', () {
-      expect(
-        CreatureAppearance.forId('ghost_chick'),
-        CreatureAppearance.forId('ghost_chick'),
-      );
+      expect(CreatureAppearance.of(ghost), CreatureAppearance.of(ghost));
     });
 
     test('gives each creature its own look', () {
-      final looks = season01Creatures
-          .map((creature) => CreatureAppearance.forId(creature.id))
-          .toSet();
+      final looks = season01Creatures.map(CreatureAppearance.of).toSet();
 
       expect(looks, hasLength(season01Creatures.length));
     });
 
     test('keeps every creature within the shape the shader can draw', () {
       for (final creature in season01Creatures) {
-        final appearance = CreatureAppearance.forId(creature.id);
+        final appearance = CreatureAppearance.of(creature);
 
-        expect(appearance.squash, inInclusiveRange(0.8, 1.3));
+        expect(appearance.squash, inInclusiveRange(0.7, 1.6));
         expect(appearance.eyeSpacing, inInclusiveRange(0.2, 0.6));
         expect(appearance.eyeSize, inInclusiveRange(0.1, 0.35));
+        expect(appearance.eyeCount, inInclusiveRange(1, 3));
+        expect(appearance.earLength, inInclusiveRange(0.0, 0.9));
+        expect(appearance.bumpiness, inInclusiveRange(0.0, 1.0));
       }
     });
 
     test('gives every creature a paler underside', () {
       for (final creature in season01Creatures) {
-        final appearance = CreatureAppearance.forId(creature.id);
+        final appearance = CreatureAppearance.of(creature);
 
         expect(
           HSVColor.fromColor(appearance.belly).value,
           greaterThan(HSVColor.fromColor(appearance.body).value),
         );
+      }
+    });
+
+    test('keeps commons plain and lets the rare ones be strange', () {
+      for (final creature in season01Creatures) {
+        final appearance = CreatureAppearance.of(creature);
+
+        if (creature.rarity == Rarity.common) {
+          expect(appearance.earLength, 0, reason: 'a common has no horns');
+          expect(appearance.lumpRadius, 0);
+          expect(appearance.bumpiness, 0);
+          expect(appearance.eyeCount, 2);
+          expect(appearance.glow, 0);
+        }
+        if (creature.rarity.index < Rarity.epic.index) {
+          expect(appearance.eyeCount, 2, reason: 'odd eyes are for odd tiers');
+        }
+        if (creature.rarity.index < Rarity.legendary.index) {
+          expect(appearance.glow, 0, reason: 'only the rare ones glow');
+        }
+      }
+    });
+
+    test('spends more of the oddity budget as the tier climbs', () {
+      var previous = -1;
+      for (final rarity in Rarity.values) {
+        final budget = CreatureAppearance.oddityBudget(rarity);
+
+        expect(budget, greaterThan(previous));
+        previous = budget;
       }
     });
   });

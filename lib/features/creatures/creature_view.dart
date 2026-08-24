@@ -2,6 +2,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 
+import '../rules/creature.dart';
 import 'creature_appearance.dart';
 
 /// Draws one creature the same way the egg is drawn: a shader rather than an
@@ -9,11 +10,11 @@ import 'creature_appearance.dart';
 class CreatureView extends StatefulWidget {
   const CreatureView({
     super.key,
-    required this.creatureId,
+    required this.creature,
     required this.height,
   });
 
-  final String creatureId;
+  final Creature creature;
   final double height;
 
   @override
@@ -70,7 +71,7 @@ class _CreatureViewState extends State<CreatureView> {
       painter: _CreaturePainter(
         shader: shader,
         devicePixelRatio: MediaQuery.devicePixelRatioOf(context),
-        appearance: CreatureAppearance.forId(widget.creatureId),
+        appearance: CreatureAppearance.of(widget.creature),
         tint: Theme.of(context).colorScheme.primary,
       ),
     );
@@ -108,7 +109,15 @@ class _CreaturePainter extends CustomPainter {
       ..setFloat(11, tint.b)
       ..setFloat(12, appearance.squash)
       ..setFloat(13, appearance.eyeSpacing)
-      ..setFloat(14, appearance.eyeSize);
+      ..setFloat(14, appearance.eyeSize)
+      ..setFloat(15, appearance.eyeCount.toDouble())
+      ..setFloat(16, appearance.earLength)
+      ..setFloat(17, appearance.earSpread)
+      ..setFloat(18, appearance.earRadius)
+      ..setFloat(19, appearance.lumpHeight)
+      ..setFloat(20, appearance.lumpRadius)
+      ..setFloat(21, appearance.bumpiness)
+      ..setFloat(22, appearance.glow);
 
     canvas.drawRect(Offset.zero & size, Paint()..shader = shader);
   }
