@@ -1,0 +1,74 @@
+rules_version = '2';
+
+// These rules are the only thing standing between the database and the open
+// internet. The client config is public by design, so anyone can point a
+// request at this project; what they are allowed to do is decided here.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // Season and creature definitions are content, published from a trusted
+    // process. The app reads them and never writes them.
+    match /seasons/{seasonId} {
+      allow read: if isSignedIn();
+      allow write: if false;
+    }
+
+    match /creatures/{creatureId} {
+      allow read: if isSignedIn();
+      allow write: if false;
+    }
+
+    // A user owns exactly their own tree, and nothing else. No listing other
+    // people, no reading someone else's collection.
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+
+      // Today's egg, uploaded once it hatches.
+      match /dailyEggs/{date} {
+        allow read: if isOwner(userId);
+        allow write: if isOwner(userId)
+          && request.resource.data.touchCount is int
+          && request.resource.data.touchCount >= 0
+          && request.resource.data.touchCount <= 100000
+          && request.resource.data.shakeCount is int
+          && request.resource.data.shakeCount >= 0
+          && request.resource.data.shakeCount <= 100000;
+      }
+
+      // What the user has found.
+      //
+      // A find count that only ever grows, and a first find that never moves.
+      // This stops a fumbled write from rewriting history; it does not stop a
+      // determined client from claiming a creature it never hatched. Making
+      // that impossible needs the result decided server-side, which is out of
+      // scope while there is nothing to cheat for.
+      match /collection/{creatureId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId)
+          && request.resource.data.count == 1;
+        allow update: if isOwner(userId)
+          && request.resource.data.count is int
+          && request.resource.data.count > resource.data.count
+          && request.resource.data.firstFoundAt == resource.data.firstFoundAt;
+        allow delete: if false;
+      }
+
+      match /{other=**} {
+        allow read, write: if isOwner(userId);
+      }
+    }
+
+    // Anything not named above is closed.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
