@@ -16,8 +16,8 @@ out vec4 fragColor;
 
 const float CAMERA_DISTANCE = 4.2;
 const float FOCAL = 1.8;
-const float EGG_RADIUS_XZ = 0.72;
-const float EGG_TAPER = 0.30; // how much narrower the top half is
+const float EGG_RADIUS_XZ = 0.86; // chubby rather than slender
+const float EGG_TAPER = 0.20;     // how much narrower the top half is
 const int MAX_STEPS = 96;
 const float HIT_EPS = 0.0008;
 const float MAX_DIST = 8.0;

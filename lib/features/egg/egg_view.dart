@@ -3,6 +3,21 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter/services.dart';
+
+const _pokeDecayPerSecond = 6.5;
+const _pokeFrequency = 4.5; // hertz
+
+/// Decaying oscillation behind the squash-and-rock response to a tap:
+/// 1.0 at the moment of contact, ringing down to zero.
+@visibleForTesting
+double pokeAmplitude(double seconds) {
+  if (seconds <= 0) {
+    return seconds == 0 ? 1.0 : 0.0;
+  }
+  return math.exp(-_pokeDecayPerSecond * seconds) *
+      math.cos(2 * math.pi * _pokeFrequency * seconds);
+}
 
 /// The egg the user keeps for the day.
 ///
@@ -13,7 +28,7 @@ class EggView extends StatefulWidget {
 
   final double height;
 
-  static const _aspectRatio = 0.8; // width / height of the paint box
+  static const _aspectRatio = 0.86; // width / height of the paint box
 
   @override
   State<EggView> createState() => _EggViewState();
@@ -34,6 +49,11 @@ class _EggViewState extends State<EggView> with SingleTickerProviderStateMixin {
   static const _maxSpinSpeed = 6.0; // radians per second
   static const _spinRestSpeed = 0.02;
 
+  /// How far a tap squashes and rocks the shell, and how long it rings.
+  static const _pokeSquash = 0.055;
+  static const _pokeRock = 0.07; // radians
+  static const _pokeDuration = 1.2; // seconds
+
   ui.FragmentShader? _shader;
 
   late final Ticker _ticker;
@@ -44,6 +64,10 @@ class _EggViewState extends State<EggView> with SingleTickerProviderStateMixin {
   double _pitch = 0;
   double _yawSpeed = 0;
   double _pitchSpeed = 0;
+
+  /// Seconds since the last tap, or infinity when the shell is at rest.
+  double _pokeElapsed = double.infinity;
+  double _pokeDirection = 0; // -1 tapped on the left, 1 on the right
 
   @override
   void initState() {
@@ -88,6 +112,7 @@ class _EggViewState extends State<EggView> with SingleTickerProviderStateMixin {
     setState(() {
       _breathPhase = (_breathPhase + dt / (_breathPeriod.inMilliseconds / 1000)) % 1.0;
       _applySpin(dt);
+      _advancePoke(dt);
     });
   }
 
@@ -109,6 +134,26 @@ class _EggViewState extends State<EggView> with SingleTickerProviderStateMixin {
     if (_pitchSpeed.abs() < _spinRestSpeed) {
       _pitchSpeed = 0;
     }
+  }
+
+  void _advancePoke(double dt) {
+    if (!_pokeElapsed.isFinite) {
+      return;
+    }
+    _pokeElapsed += dt;
+    if (_pokeElapsed > _pokeDuration) {
+      _pokeElapsed = double.infinity;
+    }
+  }
+
+  void _onTapDown(TapDownDetails details) {
+    final width = widget.height * EggView._aspectRatio;
+    setState(() {
+      _pokeElapsed = 0;
+      _pokeDirection =
+          ((details.localPosition.dx - width / 2) / (width / 2)).clamp(-1.0, 1.0);
+    });
+    HapticFeedback.lightImpact();
   }
 
   void _rotateBy(double yawDelta, double pitchDelta) {
@@ -153,31 +198,43 @@ class _EggViewState extends State<EggView> with SingleTickerProviderStateMixin {
 
     final scheme = Theme.of(context).colorScheme;
     final breath = 1 + _breathScale * (1 - math.cos(_breathPhase * 2 * math.pi)) / 2;
+    final poke = _pokeElapsed.isFinite ? pokeAmplitude(_pokeElapsed) : 0.0;
 
     return Semantics(
       label: 'Egg',
-      hint: 'Drag to look around the egg',
+      hint: 'Tap to touch the egg, drag to look around it',
       child: GestureDetector(
+        onTapDown: _onTapDown,
         onPanStart: _onPanStart,
         onPanUpdate: _onPanUpdate,
         onPanEnd: _onPanEnd,
-        child: Transform.scale(
-          scale: breath,
-          child: CustomPaint(
-            size: size,
-            painter: _EggPainter(
-              shader: shader,
-              devicePixelRatio: MediaQuery.devicePixelRatioOf(context),
-              yaw: _yaw,
-              pitch: _pitch,
-              // The dark scheme surface is near black; lift it so the shell
-              // still reads as a lit object.
-              base: Color.lerp(
-                scheme.surfaceContainerHighest,
-                scheme.onSurface,
-                0.42,
-              )!,
-              tint: scheme.primary,
+        // The shell sits on its base, so it squashes and rocks about the bottom.
+        child: Transform.rotate(
+          alignment: Alignment.bottomCenter,
+          angle: _pokeRock * poke * _pokeDirection,
+          child: Transform(
+            alignment: Alignment.bottomCenter,
+            transform: Matrix4.diagonal3Values(
+              breath * (1 + _pokeSquash * poke),
+              breath * (1 - _pokeSquash * poke),
+              1,
+            ),
+            child: CustomPaint(
+              size: size,
+              painter: _EggPainter(
+                shader: shader,
+                devicePixelRatio: MediaQuery.devicePixelRatioOf(context),
+                yaw: _yaw,
+                pitch: _pitch,
+                // The dark scheme surface is near black; lift it so the shell
+                // still reads as a lit object.
+                base: Color.lerp(
+                  scheme.surfaceContainerHighest,
+                  scheme.onSurface,
+                  0.42,
+                )!,
+                tint: scheme.primary,
+              ),
             ),
           ),
         ),
