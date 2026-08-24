@@ -1,0 +1,1 @@
+{"flutter":{"platforms":{"android":{"default":{"projectId":"oddlet-app","appId":"1:626132539773:android:2a5fc377b6460dc7f15414","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"oddlet-app","configurations":{"android":"1:626132539773:android:2a5fc377b6460dc7f15414","ios":"1:626132539773:ios:f23e9450f93520aef15414"}}}}}}

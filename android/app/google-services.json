@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "626132539773",
+    "project_id": "oddlet-app",
+    "storage_bucket": "oddlet-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:626132539773:android:2a5fc377b6460dc7f15414",
+        "android_client_info": {
+          "package_name": "com.castlebell.oddlet"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAWmPzrXgZwU3iEVsArqEzilYh0tJWWddc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
