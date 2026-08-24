@@ -22,6 +22,11 @@ class ShareCard extends StatelessWidget {
   /// Portrait, for the places these get posted.
   static const size = Size(1080, 1920);
 
+  /// Where someone who sees the card can go. Correct before release and
+  /// dead until then, which beats inventing a domain nobody owns.
+  static const storeLink =
+      'play.google.com/store/apps/details?id=com.castlebell.oddlet';
+
   final Creature creature;
   final bool isNew;
   final DateTime foundAt;
@@ -32,11 +37,25 @@ class ShareCard extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final locale = Localizations.localeOf(context).toString();
 
+    final accent = rarityColor(scheme, creature.rarity);
+
     return SizedBox(
       width: size.width,
       height: size.height,
-      child: ColoredBox(
-        color: scheme.surface,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          // The rarer the find, the more the card itself is worth posting.
+          // A common gets a plain dark card; the top tiers are lit from behind
+          // by their own colour.
+          gradient: RadialGradient(
+            center: const Alignment(0, -0.35),
+            radius: 0.9,
+            colors: [
+              Color.lerp(scheme.surface, accent, _accentLift(creature.rarity))!,
+              scheme.surface,
+            ],
+          ),
+        ),
         child: Padding(
           padding: const EdgeInsets.all(96),
           child: Column(
@@ -74,17 +93,31 @@ class ShareCard extends StatelessWidget {
               ),
               const Spacer(),
               Text(
-                DateFormat.yMMMd(locale).format(foundAt),
-                style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 40),
+                l10n.shareTagline,
+                textAlign: TextAlign.center,
+                style: TextStyle(color: scheme.onSurface, fontSize: 46),
               ),
-              const SizedBox(height: 28),
+              const SizedBox(height: 56),
+              Text(
+                DateFormat.yMMMd(locale).format(foundAt),
+                style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 34),
+              ),
+              const SizedBox(height: 24),
               Text(
                 // The brand mark, not copy.
                 'ODDLET',
                 style: TextStyle(
-                  color: scheme.onSurfaceVariant,
+                  color: scheme.onSurface,
                   fontSize: 44,
                   letterSpacing: 20,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                storeLink,
+                style: TextStyle(
+                  color: scheme.onSurfaceVariant.withValues(alpha: 0.75),
+                  fontSize: 26,
                 ),
               ),
             ],
@@ -93,4 +126,14 @@ class ShareCard extends StatelessWidget {
       ),
     );
   }
+
+  /// How far the card's own colour is pulled toward the tier's.
+  static double _accentLift(Rarity rarity) => switch (rarity) {
+    Rarity.common => 0.04,
+    Rarity.uncommon => 0.09,
+    Rarity.rare => 0.14,
+    Rarity.epic => 0.20,
+    Rarity.legendary => 0.28,
+    Rarity.secret => 0.34,
+  };
 }
