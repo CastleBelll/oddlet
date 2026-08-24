@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 
+import 'egg_appearance.dart';
 import 'shake_detector.dart';
 
 const _pokeDecayPerSecond = 6.5;
@@ -27,9 +28,17 @@ double pokeAmplitude(double seconds) {
 /// Rendered in 3D by a raymarching fragment shader, so it takes real lighting
 /// and the user can drag to orbit the camera around it.
 class EggView extends StatefulWidget {
-  const EggView({super.key, required this.height, this.shakes});
+  const EggView({
+    super.key,
+    required this.height,
+    required this.appearance,
+    this.shakes,
+  });
 
   final double height;
+
+  /// Colour and pattern of this particular egg.
+  final EggAppearance appearance;
 
   /// Shakes of the device, which knock the egg about harder than a tap.
   final Stream<Shake>? shakes;
@@ -268,13 +277,7 @@ class _EggViewState extends State<EggView> with SingleTickerProviderStateMixin {
                 devicePixelRatio: MediaQuery.devicePixelRatioOf(context),
                 yaw: _yaw,
                 pitch: _pitch,
-                // The dark scheme surface is near black; lift it so the shell
-                // still reads as a lit object.
-                base: Color.lerp(
-                  scheme.surfaceContainerHighest,
-                  scheme.onSurface,
-                  0.42,
-                )!,
+                appearance: widget.appearance,
                 tint: scheme.primary,
               ),
             ),
@@ -291,7 +294,7 @@ class _EggPainter extends CustomPainter {
     required this.devicePixelRatio,
     required this.yaw,
     required this.pitch,
-    required this.base,
+    required this.appearance,
     required this.tint,
   });
 
@@ -299,7 +302,7 @@ class _EggPainter extends CustomPainter {
   final double devicePixelRatio;
   final double yaw;
   final double pitch;
-  final Color base;
+  final EggAppearance appearance;
   final Color tint;
 
   @override
@@ -311,12 +314,19 @@ class _EggPainter extends CustomPainter {
       ..setFloat(2, devicePixelRatio)
       ..setFloat(3, yaw)
       ..setFloat(4, pitch)
-      ..setFloat(5, base.r)
-      ..setFloat(6, base.g)
-      ..setFloat(7, base.b)
-      ..setFloat(8, tint.r)
-      ..setFloat(9, tint.g)
-      ..setFloat(10, tint.b);
+      ..setFloat(5, appearance.shell.r)
+      ..setFloat(6, appearance.shell.g)
+      ..setFloat(7, appearance.shell.b)
+      ..setFloat(8, appearance.speckle.r)
+      ..setFloat(9, appearance.speckle.g)
+      ..setFloat(10, appearance.speckle.b)
+      ..setFloat(11, tint.r)
+      ..setFloat(12, tint.g)
+      ..setFloat(13, tint.b)
+      ..setFloat(14, appearance.textureScale)
+      ..setFloat(15, appearance.textureContrast)
+      ..setFloat(16, appearance.blotchiness)
+      ..setFloat(17, appearance.noiseOffset);
 
     canvas.drawRect(Offset.zero & size, Paint()..shader = shader);
   }
@@ -326,6 +336,6 @@ class _EggPainter extends CustomPainter {
       yaw != oldDelegate.yaw ||
       pitch != oldDelegate.pitch ||
       devicePixelRatio != oldDelegate.devicePixelRatio ||
-      base != oldDelegate.base ||
+      appearance != oldDelegate.appearance ||
       tint != oldDelegate.tint;
 }

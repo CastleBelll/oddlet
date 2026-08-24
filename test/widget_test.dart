@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 
+import 'package:oddlet/features/egg/egg_appearance.dart';
 import 'package:oddlet/features/egg/egg_view.dart';
 import 'package:oddlet/features/egg/home_screen.dart';
 import 'package:oddlet/features/egg/shake_detector.dart';
@@ -67,6 +68,67 @@ void main() {
 
     test('ignores time before contact', () {
       expect(pokeAmplitude(-1), 0.0);
+    });
+  });
+
+  group('EggAppearance', () {
+    test('gives the same egg the same face all day', () {
+      final morning = EggAppearance.forDay(DateTime(2026, 8, 24, 7, 15));
+      final evening = EggAppearance.forDay(DateTime(2026, 8, 24, 23, 59));
+
+      expect(morning.shell, evening.shell);
+      expect(morning.speckle, evening.speckle);
+      expect(morning.textureScale, evening.textureScale);
+      expect(morning.blotchiness, evening.blotchiness);
+    });
+
+    test('gives a different face the next day', () {
+      final today = EggAppearance.forDay(DateTime(2026, 8, 24));
+      final tomorrow = EggAppearance.forDay(DateTime(2026, 8, 25));
+
+      expect(today.shell, isNot(tomorrow.shell));
+    });
+
+    test('spreads shell colours across the whole hue circle', () {
+      final hues = [
+        for (var day = 0; day < 200; day++)
+          HSVColor.fromColor(
+            EggAppearance.forDay(DateTime(2026, 1, 1).add(Duration(days: day))).shell,
+          ).hue,
+      ];
+
+      // Every 60 degree wedge should be represented over half a year.
+      for (var wedge = 0; wedge < 6; wedge++) {
+        expect(
+          hues.any((hue) => hue >= wedge * 60 && hue < (wedge + 1) * 60),
+          isTrue,
+          reason: 'no egg in the ${wedge * 60}-${(wedge + 1) * 60} degree wedge',
+        );
+      }
+    });
+
+    test('keeps shells pastel rather than lurid', () {
+      for (var day = 0; day < 200; day++) {
+        final shell = HSVColor.fromColor(
+          EggAppearance.forDay(DateTime(2026, 1, 1).add(Duration(days: day))).shell,
+        );
+
+        expect(shell.saturation, lessThanOrEqualTo(0.35));
+        expect(shell.value, greaterThanOrEqualTo(0.70));
+      }
+    });
+
+    test('speckles stay darker than the shell they sit on', () {
+      for (var day = 0; day < 50; day++) {
+        final appearance = EggAppearance.forDay(
+          DateTime(2026, 1, 1).add(Duration(days: day)),
+        );
+
+        expect(
+          HSVColor.fromColor(appearance.speckle).value,
+          lessThan(HSVColor.fromColor(appearance.shell).value),
+        );
+      }
     });
   });
 

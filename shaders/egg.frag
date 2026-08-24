@@ -9,8 +9,14 @@ uniform vec2 uSize;   // paint box size, logical pixels
 uniform float uDpr;   // device pixel ratio, for edge antialiasing width
 uniform float uYaw;   // camera orbit, radians
 uniform float uPitch; // camera elevation, radians
-uniform vec3 uBase;   // shell color
-uniform vec3 uTint;   // rim / specular tint
+uniform vec3 uShell;   // shell color
+uniform vec3 uSpeckle; // pattern color across the shell
+uniform vec3 uTint;    // rim / specular tint
+
+uniform float uTextureScale;    // larger is finer
+uniform float uTextureContrast; // how strongly the pattern shows
+uniform float uBlotchiness;     // 0 even freckles, 1 broad blotches
+uniform float uNoiseOffset;     // shifts the pattern between eggs
 
 out vec4 fragColor;
 
@@ -69,7 +75,9 @@ float hash(vec3 p) {
 float valueNoise(vec3 p) {
   vec3 i = floor(p);
   vec3 f = fract(p);
-  f = f * f * (3.0 - 2.0 * f);
+  // Quintic rather than cubic: cubic leaves the lattice visible as blocks once
+  // the pattern gets fine.
+  f = f * f * f * (f * (f * 6.0 - 15.0) + 10.0);
   return mix(
     mix(mix(hash(i + vec3(0.0, 0.0, 0.0)), hash(i + vec3(1.0, 0.0, 0.0)), f.x),
         mix(hash(i + vec3(0.0, 1.0, 0.0)), hash(i + vec3(1.0, 1.0, 0.0)), f.x), f.y),
@@ -126,9 +134,21 @@ void main() {
   vec3 p = ro + rd * (tHit > 0.0 ? tHit : tMin);
   vec3 n = normalAt(p);
 
-  // Shell surface: faint speckles so rotation reads as rotation.
-  float speckle = valueNoise(p * 13.0);
-  vec3 shell = uBase * (0.92 + 0.16 * speckle);
+  // Shell pattern, also what makes rotation read as rotation on a shape this
+  // symmetric. Two octaves: fine freckles blended toward broad blotches.
+  // Two octaves per band, so no single lattice dominates the surface.
+  vec3 patternPoint = p + vec3(uNoiseOffset);
+  float freckles = 0.62 * valueNoise(patternPoint * uTextureScale) +
+                   0.38 * valueNoise(patternPoint * uTextureScale * 2.13 + 7.0);
+  float blotches =
+      0.62 * valueNoise(patternPoint * uTextureScale * 0.35) +
+      0.38 * valueNoise(patternPoint * uTextureScale * 0.74 + 3.0);
+  float pattern = mix(freckles, blotches, uBlotchiness);
+
+  vec3 shell = mix(
+    uShell,
+    uSpeckle,
+    clamp(pattern * uTextureContrast * 3.0, 0.0, 1.0));
 
   vec3 lightDir = normalize(vec3(-0.45, 0.75, 0.55));
   float diffuse = max(dot(n, lightDir), 0.0);
@@ -139,13 +159,13 @@ void main() {
   float fill = max(dot(n, -rd), 0.0) * 0.32;
 
   vec3 halfVector = normalize(lightDir - rd);
-  float specular = pow(max(dot(n, halfVector), 0.0), 42.0) * 0.30;
+  float specular = pow(max(dot(n, halfVector), 0.0), 42.0) * 0.16;
 
   float fresnel = pow(1.0 - max(dot(n, -rd), 0.0), 3.0);
 
   vec3 color = shell * (ambient + 0.85 * diffuse + fill)
              + uTint * specular
-             + uTint * fresnel * 0.28;
+             + uTint * fresnel * 0.20;
 
   fragColor = vec4(color * alpha, alpha); // premultiplied
 }

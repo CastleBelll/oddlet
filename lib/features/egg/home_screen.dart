@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import 'egg_appearance.dart';
 import 'egg_view.dart';
 import 'shake_detector.dart';
 
@@ -21,6 +22,9 @@ class _HomeScreenState extends State<HomeScreen> {
   static const _maxEggHeight = 320.0;
 
   late final ShakeDetector _shakeDetector;
+
+  /// Built once: today's egg must not change its face as the screen rebuilds.
+  late final EggAppearance _appearance = EggAppearance.forDay(DateTime.now());
 
   @override
   void initState() {
@@ -56,6 +60,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Center(
                     child: EggView(
                       height: eggHeight,
+                      appearance: _appearance,
                       shakes: _shakeDetector.shakes,
                     ),
                   ),
