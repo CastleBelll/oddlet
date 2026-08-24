@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../l10n/app_localizations.dart';
+import '../../theme.dart';
 import '../share/share_card.dart';
 import '../share/share_result.dart';
 import '../creatures/creature_labels.dart';
@@ -99,8 +100,8 @@ class _HatchRevealState extends State<HatchReveal> {
 
     return Semantics(
       label: isNew ? '${l10n.revealNew}, $name, $tier' : '$name, $tier',
-      child: ColoredBox(
-        color: scheme.surface,
+      child: DecoratedBox(
+        decoration: const BoxDecoration(gradient: oddletVignette),
         child: SafeArea(
             child: LayoutBuilder(
               builder: (context, constraints) {

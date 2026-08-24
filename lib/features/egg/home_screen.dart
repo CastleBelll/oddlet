@@ -18,6 +18,7 @@ import 'egg_view.dart';
 import 'hatch_reveal.dart';
 import 'hatch_sequence.dart';
 import 'shake_detector.dart';
+import '../../theme.dart';
 
 /// Main screen of the app: the egg, and as little else as possible.
 class HomeScreen extends ConsumerStatefulWidget {
@@ -171,6 +172,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       body: Stack(
         fit: StackFit.expand,
         children: [
+          // The egg sits in a pool of light rather than on a flat page.
+          const DecoratedBox(
+            decoration: BoxDecoration(gradient: oddletVignette),
+          ),
           SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {

@@ -5,6 +5,7 @@ import 'l10n/app_localizations.dart';
 
 import 'features/egg/home_screen.dart';
 import 'firebase_options.dart';
+import 'theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,12 +23,7 @@ class OddletApp extends StatelessWidget {
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       // Dark only: the hatch sequence is staged against a dark room.
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF7C4DFF),
-          brightness: Brightness.dark,
-        ),
-      ),
+      theme: oddletDarkTheme(),
       home: const HomeScreen(),
     );
   }
