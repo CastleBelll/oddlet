@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import '../../l10n/app_localizations.dart';
 
 import 'egg_appearance.dart';
+import 'hatch_sequence.dart';
 import 'shake_detector.dart';
 
 const _pokeDecayPerSecond = 6.5;
@@ -35,10 +36,19 @@ class EggView extends StatefulWidget {
     required this.appearance,
     this.shakes,
     this.onTouch,
+    this.hatchProgress,
+    this.onHatchRequested,
   });
 
   /// Called once per tap on the shell, for whoever is counting.
   final VoidCallback? onTouch;
+
+  /// How far through the hatch sequence the egg is, or null when it is whole.
+  /// While this is set the egg stops taking handling: it has other plans.
+  final double? hatchProgress;
+
+  /// The user asking to open the egg.
+  final VoidCallback? onHatchRequested;
 
   final double height;
 
@@ -73,6 +83,10 @@ class _EggViewState extends State<EggView> with SingleTickerProviderStateMixin {
   static const _pokeSquash = 0.055;
   static const _pokeRock = 0.07; // radians
   static const _pokeDuration = 1.2; // seconds
+
+  /// Buzz of the shell while it is being broken from inside.
+  static const _trembleRock = 0.035; // radians
+  static const _trembleCycles = 26.0; // per breath cycle
 
   /// A shake should throw the shell around harder than a fingertip does.
   static const _shakeKnockScale = 1.6;
@@ -263,18 +277,30 @@ class _EggViewState extends State<EggView> with SingleTickerProviderStateMixin {
         ? pokeAmplitude(_pokeElapsed) * _pokeStrength
         : 0.0;
 
+    final hatch = widget.hatchProgress;
+    final isHatching = hatch != null;
+
+    // A fast jitter on top of everything else, so the shell buzzes rather than
+    // rocks while whatever is inside works at it.
+    final tremble = isHatching ? trembleAt(hatch) : 0.0;
+    final jitter =
+        math.sin(_breathPhase * 2 * math.pi * _trembleCycles) *
+        tremble *
+        _trembleRock;
+
     return Semantics(
       label: l10n.eggLabel,
-      hint: l10n.eggHint,
+      hint: isHatching ? null : l10n.eggHint,
       child: GestureDetector(
-        onTapDown: _onTapDown,
-        onPanStart: _onPanStart,
-        onPanUpdate: _onPanUpdate,
-        onPanEnd: _onPanEnd,
+        onTapDown: isHatching ? null : _onTapDown,
+        onPanStart: isHatching ? null : _onPanStart,
+        onPanUpdate: isHatching ? null : _onPanUpdate,
+        onPanEnd: isHatching ? null : _onPanEnd,
+        onLongPress: isHatching ? null : widget.onHatchRequested,
         // The shell sits on its base, so it squashes and rocks about the bottom.
         child: Transform.rotate(
           alignment: Alignment.bottomCenter,
-          angle: _pokeRock * poke * _pokeDirection,
+          angle: _pokeRock * poke * _pokeDirection + jitter,
           child: Transform(
             alignment: Alignment.bottomCenter,
             transform: Matrix4.diagonal3Values(
@@ -282,15 +308,20 @@ class _EggViewState extends State<EggView> with SingleTickerProviderStateMixin {
               breath * (1 - _pokeSquash * poke),
               1,
             ),
-            child: CustomPaint(
-              size: size,
-              painter: _EggPainter(
-                shader: shader,
-                devicePixelRatio: MediaQuery.devicePixelRatioOf(context),
-                yaw: _yaw,
-                pitch: _pitch,
-                appearance: widget.appearance,
-                tint: scheme.primary,
+            child: Opacity(
+              opacity: isHatching ? shellOpacityAt(hatch) : 1,
+              child: CustomPaint(
+                size: size,
+                painter: _EggPainter(
+                  shader: shader,
+                  devicePixelRatio: MediaQuery.devicePixelRatioOf(context),
+                  yaw: _yaw,
+                  pitch: _pitch,
+                  appearance: widget.appearance,
+                  tint: scheme.primary,
+                  crack: isHatching ? crackProgressAt(hatch) : 0,
+                  crackGlow: Color.lerp(scheme.primary, Colors.white, 0.65)!,
+                ),
               ),
             ),
           ),
@@ -308,6 +339,8 @@ class _EggPainter extends CustomPainter {
     required this.pitch,
     required this.appearance,
     required this.tint,
+    required this.crack,
+    required this.crackGlow,
   });
 
   final ui.FragmentShader shader;
@@ -316,6 +349,8 @@ class _EggPainter extends CustomPainter {
   final double pitch;
   final EggAppearance appearance;
   final Color tint;
+  final double crack;
+  final Color crackGlow;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -338,7 +373,11 @@ class _EggPainter extends CustomPainter {
       ..setFloat(14, appearance.textureScale)
       ..setFloat(15, appearance.textureContrast)
       ..setFloat(16, appearance.blotchiness)
-      ..setFloat(17, appearance.noiseOffset);
+      ..setFloat(17, appearance.noiseOffset)
+      ..setFloat(18, crack)
+      ..setFloat(19, crackGlow.r)
+      ..setFloat(20, crackGlow.g)
+      ..setFloat(21, crackGlow.b);
 
     canvas.drawRect(Offset.zero & size, Paint()..shader = shader);
   }
@@ -349,5 +388,7 @@ class _EggPainter extends CustomPainter {
       pitch != oldDelegate.pitch ||
       devicePixelRatio != oldDelegate.devicePixelRatio ||
       appearance != oldDelegate.appearance ||
-      tint != oldDelegate.tint;
+      tint != oldDelegate.tint ||
+      crack != oldDelegate.crack ||
+      crackGlow != oldDelegate.crackGlow;
 }

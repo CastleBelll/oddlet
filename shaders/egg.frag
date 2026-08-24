@@ -18,6 +18,9 @@ uniform float uTextureContrast; // how strongly the pattern shows
 uniform float uBlotchiness;     // 0 even freckles, 1 broad blotches
 uniform float uNoiseOffset;     // shifts the pattern between eggs
 
+uniform float uCrack;      // 0 whole shell, 1 split open
+uniform vec3 uCrackGlow;   // what shows through the gaps
+
 out vec4 fragColor;
 
 const float CAMERA_DISTANCE = 4.2;
@@ -29,6 +32,9 @@ const float HIT_EPS = 0.0008;
 const float MAX_DIST = 8.0;
 // The taper makes sdEgg a loose distance bound, so march conservatively.
 const float STEP_SCALE = 0.7;
+
+const float CRACK_SCALE = 9.0;   // how far apart the fracture lines run
+const float CRACK_SPREAD = 2.6;  // distance the cracks travel at uCrack = 1
 
 mat3 rotX(float a) {
   float c = cos(a);
@@ -166,6 +172,23 @@ void main() {
   vec3 color = shell * (ambient + 0.85 * diffuse + fill)
              + uTint * specular
              + uTint * fresnel * 0.20;
+
+  // Fractures run out from the top of the shell as uCrack rises. Ridged noise
+  // gives thin branching lines; a spreading mask decides how far they reach.
+  if (uCrack > 0.0) {
+    float ridged = 1.0 - abs(2.0 * valueNoise(p * CRACK_SCALE) - 1.0);
+    float lines = smoothstep(0.90, 1.0, ridged);
+
+    float reach = uCrack * CRACK_SPREAD;
+    float fromCrown = distance(p, vec3(0.0, 1.0, 0.0));
+    float spread = 1.0 - smoothstep(reach - 0.35, reach, fromCrown);
+    float crack = lines * spread;
+
+    color = mix(color, color * 0.10, crack);
+    // Light only escapes once the gaps are wide; before that a crack is just
+    // a dark line, and a glowing web reads as decoration rather than damage.
+    color += uCrackGlow * crack * pow(uCrack, 3.0) * 0.55;
+  }
 
   fragColor = vec4(color * alpha, alpha); // premultiplied
 }
