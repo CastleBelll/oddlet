@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'daily_egg.dart';
@@ -50,6 +51,24 @@ class DailyEggController extends AsyncNotifier<DailyEgg> {
     }
 
     state = AsyncData(egg.hatchedInto(creatureId, ref.read(clockProvider)()));
+    await flush();
+  }
+
+  /// Hands back a whole egg for today, discarding whatever happened to the
+  /// current one.
+  ///
+  /// One egg a day makes the loop, and also makes it slow to try things out.
+  /// Only ever called from a debug-only affordance, so this never reaches a
+  /// released build. It asserts rather than trusting that.
+  Future<void> resetToday() async {
+    assert(
+      kDebugMode,
+      'resetToday hands out a second egg for the day; it must not run in a '
+      'release build',
+    );
+
+    final fresh = DailyEgg.startOf(ref.read(clockProvider)());
+    state = AsyncData(fresh);
     await flush();
   }
 

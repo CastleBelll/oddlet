@@ -172,6 +172,21 @@ void main() {
       expect(egg.isHatched, isTrue);
     });
 
+    test('can be reset while the loop is being worked on', () async {
+      final container = containerAt(noon);
+      await container.read(dailyEggControllerProvider.future);
+      final controller = container.read(dailyEggControllerProvider.notifier);
+
+      controller.recordTouch();
+      await controller.recordHatch('ghost_chick');
+      await controller.resetToday();
+
+      final egg = container.read(dailyEggControllerProvider).requireValue;
+      expect(egg.isHatched, isFalse);
+      expect(egg.touchCount, 0);
+      expect(egg.day, DailyEgg.dayOf(noon), reason: 'still today, just fresh');
+    });
+
     test('is replaced by a whole egg the next day', () async {
       final today = containerAt(noon);
       await today.read(dailyEggControllerProvider.future);

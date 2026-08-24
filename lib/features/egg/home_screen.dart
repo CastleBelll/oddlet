@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -132,6 +133,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
   void _dismissReveal() => setState(() => _hatched = null);
 
+  /// Debug builds only: waiting a day between tries makes the loop slow to
+  /// work on.
+  void _resetEgg() {
+    setState(() => _hatched = null);
+    unawaited(ref.read(dailyEggControllerProvider.notifier).resetToday());
+  }
+
   void _openCollection() => Navigator.of(context).push(
     MaterialPageRoute<void>(builder: (_) => const CollectionScreen()),
   );
@@ -175,8 +183,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                   padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
                   child: Row(
                     children: [
-                      const SizedBox(width: 48),
+                      SizedBox(width: kDebugMode ? 96 : 48),
                       const Expanded(child: Center(child: _Wordmark())),
+                      if (kDebugMode)
+                        IconButton(
+                          onPressed: _resetEgg,
+                          icon: const Icon(Icons.refresh_rounded),
+                          // Debug affordance, never seen by a user, so its
+                          // label stays out of the translation files.
+                          tooltip: 'Reset the egg',
+                        ),
                       IconButton(
                         onPressed: _openCollection,
                         icon: const Icon(Icons.grid_view_rounded),
