@@ -5,6 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../l10n/app_localizations.dart';
+import '../collection/collection_controller.dart';
+import '../collection/collection_screen.dart';
 import '../rules/creature.dart';
 import '../rules/rule_engine.dart';
 import '../rules/season_01.dart';
@@ -41,6 +44,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
   /// What came out, or null while the egg is still whole.
   Creature? _hatched;
+
+  /// Whether that find filled an empty slot.
+  bool _hatchedIsNew = false;
 
   @override
   void initState() {
@@ -104,16 +110,31 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       ),
     );
 
-    setState(() {
-      _hatched = result;
-      _lastStage = null;
-    });
+    _lastStage = null;
     _hatch.reset();
+    unawaited(_fileResult(result));
   }
 
-  /// TODO(TASK-009): record the find in the collection and spend the egg,
-  /// rather than handing the same egg back to be opened again.
+  Future<void> _fileResult(Creature result) async {
+    final isNew = await ref
+        .read(collectionControllerProvider.notifier)
+        .record(result.id);
+    await ref.read(dailyEggControllerProvider.notifier).recordHatch(result.id);
+
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _hatched = result;
+      _hatchedIsNew = isNew;
+    });
+  }
+
   void _dismissReveal() => setState(() => _hatched = null);
+
+  void _openCollection() => Navigator.of(context).push(
+    MaterialPageRoute<void>(builder: (_) => const CollectionScreen()),
+  );
 
   void _beginHatch() {
     if (_hatch.isAnimating) {
@@ -150,13 +171,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
             return Column(
               children: [
-                const Padding(
-                  padding: EdgeInsets.only(top: 24),
-                  child: _Wordmark(),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+                  child: Row(
+                    children: [
+                      const SizedBox(width: 48),
+                      const Expanded(child: Center(child: _Wordmark())),
+                      IconButton(
+                        onPressed: _openCollection,
+                        icon: const Icon(Icons.grid_view_rounded),
+                        tooltip: AppLocalizations.of(context).collectionOpen,
+                      ),
+                    ],
+                  ),
                 ),
                 Expanded(
                   child: Center(
-                    child: egg.hasValue
+                    child: egg.hasValue && egg.requireValue.isHatched
+                        ? const _SpentEgg()
+                        : egg.hasValue
                         ? _Egg(
                             height: eggHeight,
                             day: egg.requireValue.day,
@@ -176,7 +209,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           ),
           if (_hatch.isAnimating) _HatchOverlay(progress: _hatch.value),
           if (_hatched case final creature?)
-            HatchReveal(creature: creature, onDismiss: _dismissReveal),
+            HatchReveal(
+              creature: creature,
+              isNew: _hatchedIsNew,
+              onDismiss: _dismissReveal,
+            ),
         ],
       ),
     );
@@ -235,6 +272,27 @@ class _Egg extends ConsumerWidget {
       onTouch: ref.read(dailyEggControllerProvider.notifier).recordTouch,
       hatchProgress: hatchProgress,
       onHatchRequested: onHatchRequested,
+    );
+  }
+}
+
+/// Where the egg was, once today's has been opened.
+class _SpentEgg extends StatelessWidget {
+  const _SpentEgg();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 32),
+      child: Text(
+        AppLocalizations.of(context).homeNextEgg,
+        textAlign: TextAlign.center,
+        style: theme.textTheme.bodyMedium?.copyWith(
+          color: theme.colorScheme.onSurfaceVariant,
+        ),
+      ),
     );
   }
 }

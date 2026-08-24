@@ -42,10 +42,24 @@ class DailyEggController extends AsyncNotifier<DailyEgg> {
 
   void recordShake() => _record((egg) => egg.shaken());
 
+  /// Spends today's egg. Nothing else happens to it until tomorrow.
+  Future<void> recordHatch(String creatureId) async {
+    final egg = state.value;
+    if (egg == null || egg.isHatched) {
+      return;
+    }
+
+    state = AsyncData(egg.hatchedInto(creatureId, ref.read(clockProvider)()));
+    await flush();
+  }
+
   void _record(DailyEgg Function(DailyEgg) change) {
     final egg = state.value;
     if (egg == null) {
       return; // Still loading; there is no egg to record against yet.
+    }
+    if (egg.isHatched) {
+      return; // Handling an empty shell changes nothing.
     }
 
     // Past midnight the user is holding a different egg, and what they do now

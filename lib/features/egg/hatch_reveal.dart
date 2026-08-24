@@ -10,6 +10,7 @@ class HatchReveal extends StatelessWidget {
   const HatchReveal({
     super.key,
     required this.creature,
+    required this.isNew,
     required this.onDismiss,
   });
 
@@ -18,6 +19,10 @@ class HatchReveal extends StatelessWidget {
   static const _riseDuration = Duration(milliseconds: 900);
 
   final Creature creature;
+
+  /// Whether this find filled an empty slot.
+  final bool isNew;
+
   final VoidCallback onDismiss;
 
   @override
@@ -30,7 +35,7 @@ class HatchReveal extends StatelessWidget {
     final tier = rarityLabel(l10n, creature.rarity);
 
     return Semantics(
-      label: '$name, $tier',
+      label: isNew ? '${l10n.revealNew}, $name, $tier' : '$name, $tier',
       button: true,
       child: GestureDetector(
         onTap: onDismiss,
@@ -50,6 +55,17 @@ class HatchReveal extends StatelessWidget {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
+                      if (isNew)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 16),
+                          child: Text(
+                            l10n.revealNew,
+                            style: theme.textTheme.labelLarge?.copyWith(
+                              color: scheme.primary,
+                              letterSpacing: 4,
+                            ),
+                          ),
+                        ),
                       ExcludeSemantics(
                         child: CreatureView(
                           creatureId: creature.id,

@@ -16,6 +16,11 @@
     "description": "Accessibility hint telling a screen reader user what they can do with the egg. Deliberately says nothing about what the egg will become."
   },
 
+  "revealNew": "NEW",
+  "@revealNew": {
+    "description": "Badge over a creature the user has never found before. Kept in English in every language, like the rarity tiers and the wordmark."
+  },
+
   "revealDismiss": "Tap to continue",
   "@revealDismiss": {
     "description": "Prompt under a newly hatched creature, telling the user how to leave the reveal."
@@ -81,5 +86,47 @@
   "creatureTheQuietOne": "The Quiet One",
   "@creatureTheQuietOne": {
     "description": "Creature name for the secret creature. See creaturePlainChick."
+  },
+
+  "collectionTitle": "COLLECTION",
+  "@collectionTitle": {
+    "description": "Heading of the screen listing every creature found so far."
+  },
+
+  "collectionOpen": "Open collection",
+  "@collectionOpen": {
+    "description": "Accessibility label for the button that opens the collection from the home screen."
+  },
+
+  "collectionClose": "Close collection",
+  "@collectionClose": {
+    "description": "Accessibility label for the button that leaves the collection."
+  },
+
+  "collectionProgress": "{found} of {total} found",
+  "@collectionProgress": {
+    "description": "How much of the season the user has filled in. Shown under the collection heading.",
+    "placeholders": {
+      "found": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+
+  "collectionUndiscovered": "Not found yet",
+  "@collectionUndiscovered": {
+    "description": "Accessibility label for an empty slot. Screen reader users must not be told more than sighted users, so this never hints at what the creature is or how to get it."
+  },
+
+  "collectionFoundCount": "Found {count} times",
+  "@collectionFoundCount": {
+    "description": "Accessibility detail for a creature the user has found, read after its name.",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "homeNextEgg": "Your next egg arrives tomorrow",
+  "@homeNextEgg": {
+    "description": "Shown where the egg was, once today's has been opened. Says nothing about what was inside."
   }
 }

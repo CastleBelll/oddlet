@@ -13,6 +13,8 @@ class DailyEgg {
     required this.createdAt,
     this.touchCount = 0,
     this.shakeCount = 0,
+    this.hatchedAt,
+    this.resultCreatureId,
   });
 
   /// Ceiling on any single count.
@@ -28,6 +30,13 @@ class DailyEgg {
   final int touchCount;
   final int shakeCount;
 
+  /// Set once the egg has been opened. A spent egg is not replaced until the
+  /// next day: one egg a day is the whole shape of the loop.
+  final DateTime? hatchedAt;
+  final String? resultCreatureId;
+
+  bool get isHatched => hatchedAt != null;
+
   factory DailyEgg.startOf(DateTime now) =>
       DailyEgg(day: dayOf(now), createdAt: now);
 
@@ -39,6 +48,15 @@ class DailyEgg {
 
   DailyEgg shaken() => _copyWith(shakeCount: _bump(shakeCount));
 
+  DailyEgg hatchedInto(String creatureId, DateTime at) => DailyEgg(
+    day: day,
+    createdAt: createdAt,
+    touchCount: touchCount,
+    shakeCount: shakeCount,
+    hatchedAt: at,
+    resultCreatureId: creatureId,
+  );
+
   static int _bump(int count) => count >= maxCount ? maxCount : count + 1;
 
   DailyEgg _copyWith({int? touchCount, int? shakeCount}) => DailyEgg(
@@ -46,6 +64,8 @@ class DailyEgg {
     createdAt: createdAt,
     touchCount: touchCount ?? this.touchCount,
     shakeCount: shakeCount ?? this.shakeCount,
+    hatchedAt: hatchedAt,
+    resultCreatureId: resultCreatureId,
   );
 
   Map<String, Object?> toJson() => {
@@ -53,6 +73,8 @@ class DailyEgg {
     'createdAt': createdAt.toIso8601String(),
     'touchCount': touchCount,
     'shakeCount': shakeCount,
+    'hatchedAt': hatchedAt?.toIso8601String(),
+    'resultCreatureId': resultCreatureId,
   };
 
   /// Throws [FormatException] on anything it cannot read, so the caller can
@@ -64,11 +86,19 @@ class DailyEgg {
       throw const FormatException('daily egg is missing its dates');
     }
 
+    final hatchedAt = json['hatchedAt'];
+    final resultCreatureId = json['resultCreatureId'];
+    if (hatchedAt is! String? || resultCreatureId is! String?) {
+      throw const FormatException('daily egg has an unreadable hatch record');
+    }
+
     return DailyEgg(
       day: DateTime.parse(day),
       createdAt: DateTime.parse(createdAt),
       touchCount: _readCount(json['touchCount']),
       shakeCount: _readCount(json['shakeCount']),
+      hatchedAt: hatchedAt == null ? null : DateTime.parse(hatchedAt),
+      resultCreatureId: resultCreatureId,
     );
   }
 
@@ -90,10 +120,19 @@ class DailyEgg {
       other.day == day &&
       other.createdAt == createdAt &&
       other.touchCount == touchCount &&
-      other.shakeCount == shakeCount;
+      other.shakeCount == shakeCount &&
+      other.hatchedAt == hatchedAt &&
+      other.resultCreatureId == resultCreatureId;
 
   @override
-  int get hashCode => Object.hash(day, createdAt, touchCount, shakeCount);
+  int get hashCode => Object.hash(
+    day,
+    createdAt,
+    touchCount,
+    shakeCount,
+    hatchedAt,
+    resultCreatureId,
+  );
 
   @override
   String toString() =>

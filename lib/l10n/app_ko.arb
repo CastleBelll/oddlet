@@ -7,6 +7,8 @@
 
   "eggHint": "탭하면 알을 만지고, 드래그하면 돌려볼 수 있습니다",
 
+  "revealNew": "NEW",
+
   "revealDismiss": "탭하여 계속",
 
   "rarityCommon": "COMMON",
@@ -24,5 +26,13 @@
   "creatureStaticChick": "정전기 병아리",
   "creatureStormChick": "폭풍 병아리",
   "creatureDawnRunner": "새벽 질주자",
-  "creatureTheQuietOne": "조용한 것"
+  "creatureTheQuietOne": "조용한 것",
+
+  "collectionTitle": "도감",
+  "collectionOpen": "도감 열기",
+  "collectionClose": "도감 닫기",
+  "collectionProgress": "{total}종 중 {found}종 발견",
+  "collectionUndiscovered": "아직 발견하지 못함",
+  "collectionFoundCount": "{count}번 발견",
+  "homeNextEgg": "다음 알은 내일 도착합니다"
 }
