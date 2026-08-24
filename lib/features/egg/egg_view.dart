@@ -1,9 +1,12 @@
+import 'dart:async';
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
+
+import 'shake_detector.dart';
 
 const _pokeDecayPerSecond = 6.5;
 const _pokeFrequency = 4.5; // hertz
@@ -24,9 +27,12 @@ double pokeAmplitude(double seconds) {
 /// Rendered in 3D by a raymarching fragment shader, so it takes real lighting
 /// and the user can drag to orbit the camera around it.
 class EggView extends StatefulWidget {
-  const EggView({super.key, required this.height});
+  const EggView({super.key, required this.height, this.shakes});
 
   final double height;
+
+  /// Shakes of the device, which knock the egg about harder than a tap.
+  final Stream<Shake>? shakes;
 
   static const _aspectRatio = 0.86; // width / height of the paint box
 
@@ -54,6 +60,10 @@ class _EggViewState extends State<EggView> with SingleTickerProviderStateMixin {
   static const _pokeRock = 0.07; // radians
   static const _pokeDuration = 1.2; // seconds
 
+  /// A shake should throw the shell around harder than a fingertip does.
+  static const _shakeKnockScale = 1.6;
+  static const _maxKnockStrength = 2.4;
+
   ui.FragmentShader? _shader;
 
   late final Ticker _ticker;
@@ -67,17 +77,31 @@ class _EggViewState extends State<EggView> with SingleTickerProviderStateMixin {
 
   /// Seconds since the last tap, or infinity when the shell is at rest.
   double _pokeElapsed = double.infinity;
-  double _pokeDirection = 0; // -1 tapped on the left, 1 on the right
+  double _pokeDirection = 0; // -1 knocked from the left, 1 from the right
+  double _pokeStrength = 1;
+
+  StreamSubscription<Shake>? _shakeSubscription;
 
   @override
   void initState() {
     super.initState();
     _ticker = createTicker(_onTick)..start();
+    _shakeSubscription = widget.shakes?.listen(_onShake);
     _loadShader();
   }
 
   @override
+  void didUpdateWidget(EggView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.shakes != oldWidget.shakes) {
+      _shakeSubscription?.cancel();
+      _shakeSubscription = widget.shakes?.listen(_onShake);
+    }
+  }
+
+  @override
   void dispose() {
+    _shakeSubscription?.cancel();
     _ticker.dispose();
     _shader?.dispose();
     super.dispose();
@@ -146,14 +170,30 @@ class _EggViewState extends State<EggView> with SingleTickerProviderStateMixin {
     }
   }
 
-  void _onTapDown(TapDownDetails details) {
-    final width = widget.height * EggView._aspectRatio;
+  /// Knock the shell so it squashes and rocks away from [direction].
+  void _knock({required double direction, required double strength}) {
     setState(() {
       _pokeElapsed = 0;
-      _pokeDirection =
-          ((details.localPosition.dx - width / 2) / (width / 2)).clamp(-1.0, 1.0);
+      _pokeDirection = direction.clamp(-1.0, 1.0);
+      _pokeStrength = strength;
     });
+  }
+
+  void _onTapDown(TapDownDetails details) {
+    final width = widget.height * EggView._aspectRatio;
+    _knock(
+      direction: (details.localPosition.dx - width / 2) / (width / 2),
+      strength: 1,
+    );
     HapticFeedback.lightImpact();
+  }
+
+  void _onShake(Shake shake) {
+    // No haptics here: the device is already moving in the user's hand.
+    _knock(
+      direction: shake.direction,
+      strength: (shake.strength * _shakeKnockScale).clamp(1.0, _maxKnockStrength),
+    );
   }
 
   void _rotateBy(double yawDelta, double pitchDelta) {
@@ -198,7 +238,9 @@ class _EggViewState extends State<EggView> with SingleTickerProviderStateMixin {
 
     final scheme = Theme.of(context).colorScheme;
     final breath = 1 + _breathScale * (1 - math.cos(_breathPhase * 2 * math.pi)) / 2;
-    final poke = _pokeElapsed.isFinite ? pokeAmplitude(_pokeElapsed) : 0.0;
+    final poke = _pokeElapsed.isFinite
+        ? pokeAmplitude(_pokeElapsed) * _pokeStrength
+        : 0.0;
 
     return Semantics(
       label: 'Egg',
