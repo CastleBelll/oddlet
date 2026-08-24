@@ -110,6 +110,7 @@ class Creature {
     this.conditions = HatchConditions.always,
     this.priority = 0,
     this.weight = 100,
+    this.designSalt = 0,
   }) : assert(weight > 0, 'a creature with no weight can never be drawn');
 
   final String id;
@@ -122,4 +123,11 @@ class Creature {
 
   /// Relative chance among candidates that tie on [priority].
   final int weight;
+
+  /// Nudges this creature's generated look without changing its id.
+  ///
+  /// Two creatures can land on the same look by chance. Renaming one would
+  /// break every collection that already holds it, so the look is moved
+  /// instead. Bump this by one until the catalogue test passes.
+  final int designSalt;
 }

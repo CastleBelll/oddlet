@@ -12,9 +12,14 @@ enum CreatureMarking { none, spots, stripes, eyeMask }
 /// given. Everything comes from its id, so a creature looks the same every
 /// time anyone finds it, which is what lets players compare notes.
 ///
-/// Rarity is the budget. A common is a plain animal; each tier up can afford
-/// another oddity, and the legendary ones glow. Tier is meant to be legible
-/// before the label is read.
+/// Rarity is the budget, but only for what is genuinely strange. Ears, a
+/// mouth and markings are ordinary equipment: a spotted animal with ears is
+/// not odd, it is an animal. What a tier buys is a second fused mass, a lumpy
+/// hide, an eye count other than two, and finally a glow.
+///
+/// Splitting it this way keeps rarity legible at a glance while leaving the
+/// common tier enough room to hold dozens of creatures that still look
+/// different from each other.
 @immutable
 class CreatureAppearance {
   const CreatureAppearance({
@@ -99,8 +104,26 @@ class CreatureAppearance {
     Rarity.secret => 5,
   };
 
+  /// The parts of a look a person tells apart at a glance.
+  ///
+  /// Two creatures with the same signature read as the same animal in a
+  /// different shade, however far apart their exact numbers are. The season
+  /// catalogue is tested for duplicates, and [Creature.designSalt] is how one
+  /// is nudged apart without renaming it.
+  String get signature {
+    final hueBucket = (HSVColor.fromColor(body).hue ~/ 30).clamp(0, 11);
+    final proportion = squash < 0.95 ? 'tall' : (squash < 1.12 ? 'round' : 'wide');
+    final ears = earLength == 0 ? 0 : (earLength < 0.55 ? 1 : 2);
+    final lump = lumpRadius == 0 ? 0 : (lumpRadius < 0.41 ? 1 : 2);
+    final mouth = mouthWidth == 0 ? 0 : (mouthWidth < 0.18 ? 1 : 2);
+    final hide = bumpiness == 0 ? 0 : 1;
+
+    return 'h$hueBucket/$proportion/ear$ears/lump$lump/'
+        'eye$eyeCount/mouth$mouth/${marking.name}/hide$hide';
+  }
+
   factory CreatureAppearance.of(Creature creature) {
-    final seed = _hashString(creature.id);
+    final seed = _hashString(creature.id) ^ (creature.designSalt * 0x9E3779B1);
     final budget = oddityBudget(creature.rarity);
 
     final hue = _unit(seed, 1) * 360;
@@ -115,21 +138,20 @@ class CreatureAppearance {
       _unit(seed, 4),
     ).clamp(_minSquash, _maxSquash * stretch);
 
-    final hasEars = budget >= 1 && _unit(seed, 10) > 0.35;
-    final hasLump = budget >= 1 && _unit(seed, 11) > 0.55;
+    // Ordinary equipment, open to every tier.
+    final hasEars = _unit(seed, 10) > 0.30;
+    final hasMouth = _unit(seed, 22) > 0.30;
+    final markings = _unit(seed, 23) > 0.35
+        ? CreatureMarking.values[1 + (_unit(seed, 24) * 3).floor().clamp(0, 2)]
+        : CreatureMarking.none;
+
+    // Bought with the oddity budget.
+    final hasLump = budget >= 1 && _unit(seed, 11) > 0.45;
     final isBumpy = budget >= 2 && _unit(seed, 12) > 0.45;
 
     // Two eyes is the norm. Only the strange ones look back with more or less.
     final oddEyes = budget >= 3 && _unit(seed, 13) > 0.5;
     final eyeCount = oddEyes ? (_unit(seed, 14) > 0.5 ? 3 : 1) : 2;
-
-    // A mouth is ordinary equipment, so any tier may have one.
-    final hasMouth = _unit(seed, 22) > 0.35;
-
-    // Markings are an oddity: a plain animal is a plain colour.
-    final markings = budget >= 1 && _unit(seed, 23) > 0.30
-        ? CreatureMarking.values[1 + (_unit(seed, 24) * 3).floor().clamp(0, 2)]
-        : CreatureMarking.none;
 
     return CreatureAppearance(
       body: HSVColor.fromAHSV(1, hue, saturation, value).toColor(),

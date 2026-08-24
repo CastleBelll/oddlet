@@ -52,8 +52,9 @@ void main() {
         final appearance = CreatureAppearance.of(creature);
 
         if (creature.rarity == Rarity.common) {
-          expect(appearance.earLength, 0, reason: 'a common has no horns');
-          expect(appearance.lumpRadius, 0);
+          // Ears, a mouth and markings are ordinary; a common may have them.
+          // What it may not have is anything actually strange.
+          expect(appearance.lumpRadius, 0, reason: 'a common has one body');
           expect(appearance.bumpiness, 0);
           expect(appearance.eyeCount, 2);
           expect(appearance.glow, 0);
@@ -64,18 +65,6 @@ void main() {
         if (creature.rarity.index < Rarity.legendary.index) {
           expect(appearance.glow, 0, reason: 'only the rare ones glow');
         }
-      }
-    });
-
-    test('leaves a common with a plain coat', () {
-      for (final creature in season01Creatures) {
-        if (creature.rarity != Rarity.common) {
-          continue;
-        }
-        final appearance = CreatureAppearance.of(creature);
-
-        expect(appearance.marking, CreatureMarking.none);
-        expect(appearance.markStrength, 0);
       }
     });
 
@@ -103,6 +92,51 @@ void main() {
 
         expect(mark.hue, closeTo(coat.hue, 1));
         expect(mark.value, lessThan(coat.value));
+      }
+    });
+
+    test('no two creatures in the season read as the same animal', () {
+      final seen = <String, String>{};
+
+      for (final creature in season01Creatures) {
+        final signature = CreatureAppearance.of(creature).signature;
+        final clash = seen[signature];
+
+        expect(
+          clash,
+          isNull,
+          reason:
+              '${creature.id} looks like $clash ($signature). Bump the '
+              "designSalt on one of them rather than renaming it.",
+        );
+        seen[signature] = creature.id;
+      }
+    });
+
+    test('every tier has room for a season without repeating itself', () {
+      // Draws far more creatures than a season holds and counts how many read
+      // as different animals. A change that narrows the generator shows up
+      // here before it shows up as two creatures that look alike.
+      const draws = 200;
+      const needed = 140;
+
+      for (final rarity in Rarity.values) {
+        final looks = <String>{};
+        for (var i = 0; i < draws; i++) {
+          looks.add(
+            CreatureAppearance.of(
+              Creature(id: 'probe_${rarity.name}_$i', rarity: rarity),
+            ).signature,
+          );
+        }
+
+        expect(
+          looks.length,
+          greaterThan(needed),
+          reason:
+              '${rarity.name} can only manage ${looks.length} different looks '
+              'in $draws draws, which is too few to fill a season',
+        );
       }
     });
 
