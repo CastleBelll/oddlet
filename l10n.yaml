@@ -1,0 +1,8 @@
+arb-dir: lib/l10n
+template-arb-file: app_en.arb
+output-localization-file: app_localizations.dart
+output-class: AppLocalizations
+nullable-getter: false
+# Lists anything a translation is missing, so English does not quietly ship
+# inside another language.
+untranslated-messages-file: l10n_missing.txt

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:oddlet/l10n/app_localizations.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 
 import 'package:oddlet/features/egg/egg_appearance.dart';
@@ -14,29 +15,64 @@ UserAccelerometerEvent sample(double magnitude, DateTime at) =>
     UserAccelerometerEvent(magnitude, 0, 0, at);
 
 void main() {
+  Widget appUnder(Locale locale) => MaterialApp(
+    locale: locale,
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
+    home: HomeScreen(shakeDetector: ShakeDetector(samples: const Stream.empty())),
+  );
+
   group('home screen', () {
     testWidgets('shows the wordmark and the egg', (tester) async {
-      await tester.pumpWidget(
-        MaterialApp(
-          home: HomeScreen(shakeDetector: ShakeDetector(samples: Stream.empty())),
-        ),
-      );
+      await tester.pumpWidget(appUnder(const Locale('en')));
 
       expect(find.text('ODDLET'), findsOneWidget);
       expect(find.byType(EggView), findsOneWidget);
     });
 
+    testWidgets('keeps the wordmark untranslated', (tester) async {
+      await tester.pumpWidget(appUnder(const Locale('ko')));
+
+      // The wordmark is the brand mark, not copy.
+      expect(find.text('ODDLET'), findsOneWidget);
+    });
+
     testWidgets('egg keeps animating without settling', (tester) async {
-      await tester.pumpWidget(
-        MaterialApp(
-          home: HomeScreen(shakeDetector: ShakeDetector(samples: Stream.empty())),
-        ),
-      );
+      await tester.pumpWidget(appUnder(const Locale('en')));
 
       // A repeating idle animation never settles; pumpAndSettle would time out.
       await tester.pump(const Duration(milliseconds: 500));
 
       expect(tester.hasRunningAnimations, isTrue);
+    });
+  });
+
+  group('localization', () {
+    testWidgets('announces the egg in the device language', (tester) async {
+      await tester.pumpWidget(appUnder(const Locale('ko')));
+
+      expect(
+        tester.getSemantics(find.byType(EggView)).label,
+        '알',
+      );
+    });
+
+    testWidgets('falls back to English for an unsupported language', (
+      tester,
+    ) async {
+      await tester.pumpWidget(appUnder(const Locale('fr')));
+
+      expect(
+        tester.getSemantics(find.byType(EggView)).label,
+        'Egg',
+      );
+    });
+
+    test('every supported locale is declared', () {
+      expect(
+        AppLocalizations.supportedLocales.map((locale) => locale.languageCode),
+        containsAll(<String>['en', 'ko']),
+      );
     });
   });
 

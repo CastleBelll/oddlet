@@ -5,6 +5,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
+import '../../l10n/app_localizations.dart';
 
 import 'egg_appearance.dart';
 import 'shake_detector.dart';
@@ -240,9 +241,15 @@ class _EggViewState extends State<EggView> with SingleTickerProviderStateMixin {
   Widget build(BuildContext context) {
     final shader = _shader;
     final size = Size(widget.height * EggView._aspectRatio, widget.height);
+    final l10n = AppLocalizations.of(context);
 
+    // The egg keeps its label while the shader loads; a screen reader user
+    // should not be told there is nothing here.
     if (shader == null) {
-      return SizedBox.fromSize(size: size);
+      return Semantics(
+        label: l10n.eggLabel,
+        child: SizedBox.fromSize(size: size),
+      );
     }
 
     final scheme = Theme.of(context).colorScheme;
@@ -252,8 +259,8 @@ class _EggViewState extends State<EggView> with SingleTickerProviderStateMixin {
         : 0.0;
 
     return Semantics(
-      label: 'Egg',
-      hint: 'Tap to touch the egg, drag to look around it',
+      label: l10n.eggLabel,
+      hint: l10n.eggHint,
       child: GestureDetector(
         onTapDown: _onTapDown,
         onPanStart: _onPanStart,

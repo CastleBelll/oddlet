@@ -82,6 +82,7 @@ class _Wordmark extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
 
     return Text(
+      // The brand mark, not copy: it reads the same in every language.
       'ODDLET',
       style: Theme.of(context).textTheme.labelLarge?.copyWith(
         color: scheme.onSurfaceVariant,

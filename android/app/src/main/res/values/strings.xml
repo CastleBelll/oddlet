@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Name under the launcher icon. The brand mark, so it stays as is in
+         languages written in the Latin alphabet. -->
+    <string name="app_name">ODDLET</string>
+</resources>

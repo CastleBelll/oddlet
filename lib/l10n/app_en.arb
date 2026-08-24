@@ -1,0 +1,18 @@
+{
+  "@@locale": "en",
+
+  "appTitle": "ODDLET",
+  "@appTitle": {
+    "description": "Name of the app as the operating system shows it, for example in the task switcher. NEVER TRANSLATE THIS. The app is called ODDLET in every language, and so is the wordmark drawn on screen."
+  },
+
+  "eggLabel": "Egg",
+  "@eggLabel": {
+    "description": "Accessibility label for the egg on the home screen. Screen readers announce this in place of the 3D shell."
+  },
+
+  "eggHint": "Tap to touch the egg, drag to look around it",
+  "@eggHint": {
+    "description": "Accessibility hint telling a screen reader user what they can do with the egg. Deliberately says nothing about what the egg will become."
+  }
+}
