@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../../l10n/app_localizations.dart';
+import '../../theme.dart';
 import '../creatures/creature_labels.dart';
 import '../creatures/creature_view.dart';
 import '../rules/creature.dart';
@@ -72,6 +73,7 @@ class ShareCard extends StatelessWidget {
                       fontSize: 56,
                       letterSpacing: 16,
                       fontWeight: FontWeight.w500,
+                      shadows: neonGlow(scheme.primary, blur: 44),
                     ),
                   ),
                 ),
@@ -86,9 +88,12 @@ class ShareCard extends StatelessWidget {
               Text(
                 rarityLabel(l10n, creature.rarity),
                 style: TextStyle(
-                  color: rarityColor(scheme, creature.rarity),
+                  color: accent,
                   fontSize: 48,
                   letterSpacing: 12,
+                  shadows: rarityGlows(creature.rarity)
+                      ? neonGlow(accent, blur: 40)
+                      : null,
                 ),
               ),
               const Spacer(),

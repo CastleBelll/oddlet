@@ -3,8 +3,9 @@ import 'package:flutter/material.dart';
 /// The look of the whole app, in one place.
 ///
 /// Dark only, and not a neutral grey dark: flat grey reads as a settings
-/// screen. These are inked toward violet so the app feels like night, with
-/// off-white text rather than pure white so nothing glares in a dark room.
+/// screen. Near-black inked toward violet, with a small set of colours that
+/// look lit rather than printed. Text is off-white rather than pure white so
+/// nothing glares in a dark room, while the few things that matter glow.
 ///
 /// Nothing outside this file should name a colour. Everything reads from the
 /// scheme, which is what lets the whole app be retuned from here.
@@ -16,8 +17,19 @@ abstract final class OddletColors {
   static const parchment = Color(0xFFECE8F0);
   static const parchmentDim = Color(0xFF938DA1);
 
-  static const accent = Color(0xFFB79CFF);
+  /// The lit colours. Kept few and kept saturated: a screen where everything
+  /// glows is a screen where nothing does.
+  static const accent = Color(0xFFB14BFF);
+  static const accentCool = Color(0xFF4DD4FF);
 }
+
+/// A colour bleeding into the dark around it, the way a lit sign does.
+///
+/// Used on the handful of things worth drawing the eye to. Applying it
+/// everywhere would flatten it back out into decoration.
+List<Shadow> neonGlow(Color color, {double blur = 18, double opacity = 0.75}) => [
+  Shadow(color: color.withValues(alpha: opacity), blurRadius: blur),
+];
 
 /// Light pooled behind whatever the screen is about, so an object sits in a
 /// room rather than on a page.

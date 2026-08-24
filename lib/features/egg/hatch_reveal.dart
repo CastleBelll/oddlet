@@ -123,6 +123,7 @@ class _HatchRevealState extends State<HatchReveal> {
                             style: theme.textTheme.labelLarge?.copyWith(
                               color: scheme.primary,
                               letterSpacing: 4,
+                              shadows: neonGlow(scheme.primary),
                             ),
                           ),
                         ),
@@ -146,6 +147,9 @@ class _HatchRevealState extends State<HatchReveal> {
                         style: theme.textTheme.labelLarge?.copyWith(
                           color: rarityColor(scheme, creature.rarity),
                           letterSpacing: 3,
+                          shadows: rarityGlows(creature.rarity)
+                              ? neonGlow(rarityColor(scheme, creature.rarity))
+                              : null,
                         ),
                       ),
                       const SizedBox(height: 40),

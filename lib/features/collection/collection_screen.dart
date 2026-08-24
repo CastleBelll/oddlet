@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../l10n/app_localizations.dart';
+import '../../theme.dart';
 import '../creatures/creature_labels.dart';
 import '../creatures/creature_view.dart';
 import '../rules/creature.dart';
@@ -95,6 +96,9 @@ class _RaritySection extends StatelessWidget {
             style: theme.textTheme.labelMedium?.copyWith(
               color: rarityColor(theme.colorScheme, rarity),
               letterSpacing: 2,
+              shadows: rarityGlows(rarity)
+                  ? neonGlow(rarityColor(theme.colorScheme, rarity), blur: 12)
+                  : null,
             ),
           ),
           const SizedBox(height: 12),

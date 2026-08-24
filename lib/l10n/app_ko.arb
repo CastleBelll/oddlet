@@ -9,17 +9,17 @@
 
   "revealNew": "NEW",
 
-  "introLine1": "알을 하나 받았다.",
-  "introLine2": "이게 무엇이 될지는 아무도 모른다.",
-  "introLine3": "당신이 무엇을 하느냐에 달렸다.",
+  "introLine1": "알이 하나 생겼어.",
+  "introLine2": "뭐가 될지는 아무도 몰라.",
+  "introLine3": "그건 네가 하기 나름이고.",
 
-  "introContinue": "탭하여 시작",
+  "introContinue": "탭해서 시작",
 
-  "shareTagline": "당신의 알은 무엇이 될까?",
+  "shareTagline": "네 알은 뭐가 될까?",
 
   "revealShare": "공유",
 
-  "revealDismiss": "탭하여 계속",
+  "revealDismiss": "탭해서 계속",
 
   "rarityCommon": "COMMON",
   "rarityUncommon": "UNCOMMON",

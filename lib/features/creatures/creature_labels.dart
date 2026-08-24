@@ -37,10 +37,15 @@ String rarityLabel(AppLocalizations l10n, Rarity rarity) => switch (rarity) {
 /// Rarity is never carried by colour alone: the tier is always spelled out
 /// beside it, so this only has to reinforce, never inform.
 Color rarityColor(ColorScheme scheme, Rarity rarity) => switch (rarity) {
+  // Common stays unlit on purpose. If every tier glowed, the glow would stop
+  // meaning anything.
   Rarity.common => scheme.onSurfaceVariant,
-  Rarity.uncommon => const Color(0xFF6FD08C),
-  Rarity.rare => const Color(0xFF57A6FF),
-  Rarity.epic => const Color(0xFFB07CFF),
-  Rarity.legendary => const Color(0xFFFFC24D),
-  Rarity.secret => const Color(0xFFFF6B8A),
+  Rarity.uncommon => const Color(0xFF4DFFA6),
+  Rarity.rare => const Color(0xFF4DD4FF),
+  Rarity.epic => const Color(0xFFC77DFF),
+  Rarity.legendary => const Color(0xFFFFD24D),
+  Rarity.secret => const Color(0xFFFF4D9D),
 };
+
+/// Whether this tier is worth lighting up.
+bool rarityGlows(Rarity rarity) => rarity != Rarity.common;
