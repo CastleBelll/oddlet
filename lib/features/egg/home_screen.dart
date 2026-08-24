@@ -5,9 +5,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../rules/creature.dart';
+import '../rules/rule_engine.dart';
+import '../rules/season_01.dart';
 import 'daily_egg_controller.dart';
 import 'egg_appearance.dart';
 import 'egg_view.dart';
+import 'hatch_reveal.dart';
 import 'hatch_sequence.dart';
 import 'shake_detector.dart';
 
@@ -32,6 +36,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   late final AnimationController _hatch;
   StreamSubscription<Shake>? _shakeCounter;
   HatchStage? _lastStage;
+
+  late final RuleEngine _rules = RuleEngine(season01Creatures);
+
+  /// What came out, or null while the egg is still whole.
+  Creature? _hatched;
 
   @override
   void initState() {
@@ -78,11 +87,33 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     if (status != AnimationStatus.completed) {
       return;
     }
-    // TODO(TASK-008): hand the result over to the reveal instead of putting
-    // the egg back. Resetting keeps the sequence replayable while it is tuned.
-    _lastStage = null;
+
+    final egg = ref.read(dailyEggControllerProvider).value;
+    if (egg == null) {
+      _lastStage = null;
+      _hatch.reset();
+      return;
+    }
+
+    // The rules see only what the user actually did.
+    final result = _rules.select(
+      HatchContext(
+        touchCount: egg.touchCount,
+        shakeCount: egg.shakeCount,
+        hatchedAt: ref.read(clockProvider)(),
+      ),
+    );
+
+    setState(() {
+      _hatched = result;
+      _lastStage = null;
+    });
     _hatch.reset();
   }
+
+  /// TODO(TASK-009): record the find in the collection and spend the egg,
+  /// rather than handing the same egg back to be opened again.
+  void _dismissReveal() => setState(() => _hatched = null);
 
   void _beginHatch() {
     if (_hatch.isAnimating) {
@@ -144,6 +175,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             ),
           ),
           if (_hatch.isAnimating) _HatchOverlay(progress: _hatch.value),
+          if (_hatched case final creature?)
+            HatchReveal(creature: creature, onDismiss: _dismissReveal),
         ],
       ),
     );

@@ -14,5 +14,72 @@
   "eggHint": "Tap to touch the egg, drag to look around it",
   "@eggHint": {
     "description": "Accessibility hint telling a screen reader user what they can do with the egg. Deliberately says nothing about what the egg will become."
+  },
+
+  "revealDismiss": "Tap to continue",
+  "@revealDismiss": {
+    "description": "Prompt under a newly hatched creature, telling the user how to leave the reveal."
+  },
+
+  "rarityCommon": "COMMON",
+  "@rarityCommon": {
+    "description": "Rarity tier. The six tier names are treated as brand terms and are left in English in every language, the way the ODDLET wordmark is. Translate only if the whole tier scheme is being localized."
+  },
+  "rarityUncommon": "UNCOMMON",
+  "@rarityUncommon": {
+    "description": "Rarity tier. See rarityCommon."
+  },
+  "rarityRare": "RARE",
+  "@rarityRare": {
+    "description": "Rarity tier. See rarityCommon."
+  },
+  "rarityEpic": "EPIC",
+  "@rarityEpic": {
+    "description": "Rarity tier. See rarityCommon."
+  },
+  "rarityLegendary": "LEGENDARY",
+  "@rarityLegendary": {
+    "description": "Rarity tier. See rarityCommon."
+  },
+  "raritySecret": "SECRET",
+  "@raritySecret": {
+    "description": "Rarity tier. See rarityCommon."
+  },
+
+  "creaturePlainChick": "Plain Chick",
+  "@creaturePlainChick": {
+    "description": "Creature name. Never hint at how it was obtained: the user is meant to work that out."
+  },
+  "creatureSleepyChick": "Sleepy Chick",
+  "@creatureSleepyChick": {
+    "description": "Creature name. See creaturePlainChick."
+  },
+  "creatureDizzyChick": "Dizzy Chick",
+  "@creatureDizzyChick": {
+    "description": "Creature name. See creaturePlainChick."
+  },
+  "creatureAngryChick": "Angry Chick",
+  "@creatureAngryChick": {
+    "description": "Creature name. See creaturePlainChick."
+  },
+  "creatureGhostChick": "Ghost Chick",
+  "@creatureGhostChick": {
+    "description": "Creature name. See creaturePlainChick."
+  },
+  "creatureStaticChick": "Static Chick",
+  "@creatureStaticChick": {
+    "description": "Creature name. See creaturePlainChick."
+  },
+  "creatureStormChick": "Storm Chick",
+  "@creatureStormChick": {
+    "description": "Creature name. See creaturePlainChick."
+  },
+  "creatureDawnRunner": "Dawn Runner",
+  "@creatureDawnRunner": {
+    "description": "Creature name. See creaturePlainChick."
+  },
+  "creatureTheQuietOne": "The Quiet One",
+  "@creatureTheQuietOne": {
+    "description": "Creature name for the secret creature. See creaturePlainChick."
   }
 }

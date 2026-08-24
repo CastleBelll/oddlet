@@ -5,5 +5,24 @@
 
   "eggLabel": "알",
 
-  "eggHint": "탭하면 알을 만지고, 드래그하면 돌려볼 수 있습니다"
+  "eggHint": "탭하면 알을 만지고, 드래그하면 돌려볼 수 있습니다",
+
+  "revealDismiss": "탭하여 계속",
+
+  "rarityCommon": "COMMON",
+  "rarityUncommon": "UNCOMMON",
+  "rarityRare": "RARE",
+  "rarityEpic": "EPIC",
+  "rarityLegendary": "LEGENDARY",
+  "raritySecret": "SECRET",
+
+  "creaturePlainChick": "평범한 병아리",
+  "creatureSleepyChick": "졸린 병아리",
+  "creatureDizzyChick": "어지러운 병아리",
+  "creatureAngryChick": "화난 병아리",
+  "creatureGhostChick": "유령 병아리",
+  "creatureStaticChick": "정전기 병아리",
+  "creatureStormChick": "폭풍 병아리",
+  "creatureDawnRunner": "새벽 질주자",
+  "creatureTheQuietOne": "조용한 것"
 }

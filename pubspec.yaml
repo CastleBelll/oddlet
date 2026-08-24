@@ -69,6 +69,7 @@ flutter:
 
   shaders:
     - shaders/egg.frag
+    - shaders/creature.frag
 
   # To add assets to your application, add an assets section, like this:
   # assets:
