@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:oddlet/features/naming/creature_name.dart';
+import 'package:oddlet/features/naming/naming_repository.dart';
 
 void main() {
   group('tidyName', () {
@@ -75,6 +76,59 @@ void main() {
     test('refuses accents stacked to break the line', () {
       expect(checkName('hè́̂̃llo'), NameProblem.repeats);
       expect(checkName('café'), isNull, reason: 'one accent is a word');
+    });
+  });
+
+  group('rejectionFor', () {
+    test('tells a taken name apart from a taken creature', () {
+      // One means try another name; the other means the creature is gone.
+      // The same message for both would send someone on retrying something
+      // that cannot succeed.
+      expect(rejectionFor('already-exists', 'name:taken'), NameRejection.taken);
+      expect(
+        rejectionFor('already-exists', 'species:named'),
+        NameRejection.alreadyNamed,
+      );
+    });
+
+    test('separates a bad nickname from a bad name', () {
+      expect(
+        rejectionFor('invalid-argument', 'handle:tooShort'),
+        NameRejection.handleProblem,
+      );
+      expect(
+        rejectionFor('invalid-argument', 'name:tooShort'),
+        NameRejection.tooShort,
+      );
+    });
+
+    test('reads the shape problems the server reports', () {
+      expect(
+        rejectionFor('invalid-argument', 'name:blocked'),
+        NameRejection.blocked,
+      );
+      expect(
+        rejectionFor('invalid-argument', 'name:badCharacters'),
+        NameRejection.badCharacters,
+      );
+    });
+
+    test('turns a refused account into something answerable', () {
+      for (final code in ['unauthenticated', 'permission-denied']) {
+        expect(rejectionFor(code, null), NameRejection.needsAccount);
+      }
+    });
+
+    test('treats a closed or slow server as something to retry', () {
+      expect(rejectionFor('unavailable', null), NameRejection.unreachable);
+      expect(rejectionFor('deadline-exceeded', null), NameRejection.unreachable);
+    });
+
+    test('admits it does not know rather than guessing', () {
+      // Anything unrecognised is reported rather than shown as a plausible
+      // wrong reason, so a new server message surfaces instead of hiding.
+      expect(rejectionFor('internal', 'something:new'), NameRejection.unknown);
+      expect(rejectionFor('internal', null), NameRejection.unknown);
     });
   });
 }

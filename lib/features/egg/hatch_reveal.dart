@@ -1,15 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../../theme.dart';
+import '../../ui/oddlet_dialog.dart';
+import '../account/account_controller.dart';
 import '../share/share_card.dart';
 import '../share/share_result.dart';
+import '../creatures/creature_appearance.dart';
 import '../creatures/creature_labels.dart';
 import '../creatures/creature_view.dart';
+import '../naming/name_it_sheet.dart';
+import '../naming/naming_repository.dart';
+import '../naming/species_name.dart';
 import '../rules/creature.dart';
 
 /// What was inside, rising out of the dark the hatch sequence ended on.
-class HatchReveal extends StatefulWidget {
+///
+/// Also where a creature gets its name. Naming waits until the hatch has
+/// finished playing — the animation is the payoff and must not be interrupted
+/// — and is offered here rather than later because this is the moment the
+/// finder cares about it.
+class HatchReveal extends ConsumerStatefulWidget {
   const HatchReveal({
     super.key,
     required this.creature,
@@ -30,19 +42,70 @@ class HatchReveal extends StatefulWidget {
   final VoidCallback onDismiss;
 
   @override
-  State<HatchReveal> createState() => _HatchRevealState();
+  ConsumerState<HatchReveal> createState() => _HatchRevealState();
 }
 
-class _HatchRevealState extends State<HatchReveal> {
+class _HatchRevealState extends ConsumerState<HatchReveal> {
   static const _creatureHeightRatio = 0.34;
   static const _maxCreatureHeight = 280.0;
 
   final _cardKey = GlobalKey();
 
+  /// Which of the season's creatures this is. Two people holding the same
+  /// species are holding the same creature, which is what a first discovery
+  /// is claimed against.
+  int get _species => CreatureAppearance.of(widget.creature).species;
+
   void _share() => shareCapturedCard(
     cardKey: _cardKey,
     creatureId: widget.creature.id,
   );
+
+  Future<void> _nameIt() async {
+    final named = await showNameItSheet(context, species: _species);
+    if (named != null && mounted) {
+      await showOddletMessage(
+        context,
+        AppLocalizations.of(context).nameItDone(named),
+      );
+    }
+  }
+
+  /// Leaves the reveal, checking first if a nameless creature is being left
+  /// nameless.
+  ///
+  /// Asked once and only once. The choice cannot be taken back, so it should
+  /// not be made by a stray tap; asking twice would be nagging.
+  Future<void> _leave() async {
+    // hasValue, not value == null: while the lookup is in flight the two are
+    // indistinguishable, and asking about naming a creature that already has
+    // a name would be nonsense.
+    final lookup = ref.read(speciesNameProvider(_species));
+    final unnamed =
+        lookup.hasValue &&
+        lookup.value == null &&
+        !ref.read(accountProvider.notifier).isAnonymous;
+
+    if (unnamed) {
+      final l10n = AppLocalizations.of(context);
+      final passed = await showOddletChoice(
+        context,
+        title: l10n.namePassTitle,
+        message: l10n.namePassBody,
+        confirmLabel: l10n.namePassConfirm,
+        cancelLabel: l10n.namePassBack,
+      );
+      if (!mounted) {
+        return;
+      }
+      if (!passed) {
+        await _nameIt();
+        return;
+      }
+    }
+
+    widget.onDismiss();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,7 +115,15 @@ class _HatchRevealState extends State<HatchReveal> {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
 
-    final name = creatureName(l10n, creature.id);
+    final lookup = ref.watch(speciesNameProvider(_species));
+    final registered = lookup.value;
+    // Offered only once the answer is in. Held back while the lookup is in
+    // flight, so the button does not appear and then vanish under a thumb
+    // already on its way to it.
+    final offerNaming = lookup.hasValue && registered == null;
+    // A registered name wins over the one shipped with the app: the shipped
+    // one is a placeholder for a creature nobody has claimed yet.
+    final name = registered?.name ?? creatureName(l10n, creature.id);
     final tier = rarityLabel(l10n, creature.rarity);
 
     return Stack(
@@ -81,7 +152,16 @@ class _HatchRevealState extends State<HatchReveal> {
         // Must cover the card completely; anything it leaves uncovered would
         // show a corner of a 1080x1920 card.
         Positioned.fill(
-          child: _revealBody(context, l10n, scheme, theme, name, tier),
+          child: _revealBody(
+            context,
+            l10n,
+            scheme,
+            theme,
+            name,
+            tier,
+            registered,
+            offerNaming,
+          ),
         ),
       ],
     );
@@ -94,9 +174,14 @@ class _HatchRevealState extends State<HatchReveal> {
     ThemeData theme,
     String name,
     String tier,
+    SpeciesName? registered,
+    bool offerNaming,
   ) {
     final creature = widget.creature;
     final isNew = widget.isNew;
+    final mine =
+        registered != null &&
+        registered.discovererUid == ref.watch(accountProvider).value?.uid;
 
     return Semantics(
       label: isNew ? '${l10n.revealNew}, $name, $tier' : '$name, $tier',
@@ -152,7 +237,29 @@ class _HatchRevealState extends State<HatchReveal> {
                               : null,
                         ),
                       ),
+                      if (registered != null) ...[
+                        const SizedBox(height: 14),
+                        Text(
+                          mine
+                              ? l10n.nameDiscoveredByYou
+                              : l10n.nameDiscoveredBy(
+                                  registered.discovererHandle,
+                                ),
+                          textAlign: TextAlign.center,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: scheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
                       const SizedBox(height: 40),
+                      if (offerNaming)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: FilledButton(
+                            onPressed: _nameIt,
+                            child: Text(l10n.nameItButton),
+                          ),
+                        ),
                       TextButton.icon(
                         onPressed: _share,
                         icon: const Icon(Icons.ios_share_rounded),
@@ -163,7 +270,7 @@ class _HatchRevealState extends State<HatchReveal> {
                       // Share used to dismiss the reveal and take the only
                       // chance to post it with it.
                       TextButton(
-                        onPressed: widget.onDismiss,
+                        onPressed: _leave,
                         child: Text(
                           l10n.revealDismiss,
                           style: theme.textTheme.bodySmall?.copyWith(

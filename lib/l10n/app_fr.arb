@@ -58,5 +58,32 @@
   "collectionFoundCount": "{count, plural, =1{Trouvé une fois} other{Trouvé {count} fois}}",
   "homeNextEgg": "reviens demain pour en avoir un nouveau",
 
-  "dialogDismiss": "ok"
+  "dialogDismiss": "ok",
+
+  "nameItButton": "donne-lui un nom",
+  "nameItTitle": "personne ne l'a encore nommé",
+  "nameItBody": "le nom que tu lui donnes, tous ceux qui le trouveront le verront",
+  "nameItField": "nom",
+  "nameItHandle": "pseudo",
+  "nameItHandleHint": "il sera signé à côté du nom. pas ton vrai nom",
+  "nameItSubmit": "enregistrer",
+  "nameItLater": "pas maintenant",
+  "nameItDone": "il s'appelle {name} maintenant",
+  "namePassTitle": "vraiment le laisser sans nom ?",
+  "namePassBody": "la prochaine personne qui le trouvera aura sa chance. c'est sans retour",
+  "namePassConfirm": "je laisse",
+  "namePassBack": "je le nomme",
+  "nameDiscoveredBy": "trouvé en premier par {handle}",
+  "nameDiscoveredByYou": "ce nom, c'est toi",
+  "nameErrorTooShort": "trop court",
+  "nameErrorTooLong": "trop long",
+  "nameErrorBadCharacters": "lettres et chiffres seulement",
+  "nameErrorRepeats": "tu as gardé une touche enfoncée",
+  "nameErrorBlocked": "pas celui-là",
+  "nameErrorTaken": "une autre créature porte déjà ce nom",
+  "nameErrorAlreadyNamed": "quelqu'un l'a nommé avant toi",
+  "nameErrorHandle": "revois le pseudo",
+  "nameErrorNeedsAccount": "connecte un compte pour le nommer",
+  "nameErrorUnreachable": "pas de connexion là. réessaie dans un instant",
+  "nameErrorUnknown": "impossible d'enregistrer ce nom"
 }

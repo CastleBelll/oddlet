@@ -58,5 +58,32 @@
   "collectionFoundCount": "{count, plural, other{发现过{count}次}}",
   "homeNextEgg": "下一颗蛋明天到",
 
-  "dialogDismiss": "知道了"
+  "dialogDismiss": "知道了",
+
+  "nameItButton": "取名",
+  "nameItTitle": "还没人给它取名",
+  "nameItBody": "你取的名字，之后遇到它的人都会看到",
+  "nameItField": "名字",
+  "nameItHandle": "昵称",
+  "nameItHandleHint": "会署在名字旁边。别用真名",
+  "nameItSubmit": "登记",
+  "nameItLater": "先不取",
+  "nameItDone": "它现在叫{name}了",
+  "namePassTitle": "真的不取？",
+  "namePassBody": "不登记就轮到下一个发现的人。没法反悔",
+  "namePassConfirm": "让给别人",
+  "namePassBack": "我来取",
+  "nameDiscoveredBy": "最先发现 {handle}",
+  "nameDiscoveredByYou": "这名字是你取的",
+  "nameErrorTooShort": "太短了",
+  "nameErrorTooLong": "太长了",
+  "nameErrorBadCharacters": "只能用文字和数字",
+  "nameErrorRepeats": "同一个字按太多次了",
+  "nameErrorBlocked": "这个名字不行",
+  "nameErrorTaken": "这个名字已经有别的家伙在用",
+  "nameErrorAlreadyNamed": "有人先取了名字",
+  "nameErrorHandle": "再看看昵称",
+  "nameErrorNeedsAccount": "要取名得先连账号",
+  "nameErrorUnreachable": "现在连不上。等一下再试",
+  "nameErrorUnknown": "没能登记这个名字"
 }

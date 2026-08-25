@@ -195,5 +195,120 @@
   "dialogDismiss": "got it",
   "@dialogDismiss": {
     "description": "The only button on a message popup. Closes it."
+  },
+
+  "nameItButton": "name it",
+  "@nameItButton": {
+    "description": "Button on the reveal screen for a creature nobody has named. Starts naming it."
+  },
+  "nameItTitle": "nobody has named this one",
+  "@nameItTitle": {
+    "description": "Heading of the naming sheet. States the fact that makes naming worth doing."
+  },
+  "nameItBody": "what you call it is what everyone who finds it will see",
+  "@nameItBody": {
+    "description": "Why the name matters: it is what every later finder sees. Never hints at how the creature was obtained."
+  },
+  "nameItField": "name",
+  "@nameItField": {
+    "description": "Label of the field the creature name is typed into."
+  },
+  "nameItHandle": "nickname",
+  "@nameItHandle": {
+    "description": "Label of the field the nickname is typed into. Only shown to someone who has not set one."
+  },
+  "nameItHandleHint": "signed next to the name. not your real one",
+  "@nameItHandleHint": {
+    "description": "Under the nickname field. Warns against using a real name, since strangers read it."
+  },
+  "nameItSubmit": "register",
+  "@nameItSubmit": {
+    "description": "Button that sends the name to the server."
+  },
+  "nameItLater": "not now",
+  "@nameItLater": {
+    "description": "Button that leaves the naming sheet without naming. Leads to the confirmation."
+  },
+  "nameItDone": "it is {name} now",
+  "@nameItDone": {
+    "description": "Shown once the name is registered.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "namePassTitle": "really leave it nameless?",
+  "@namePassTitle": {
+    "description": "Heading of the confirmation shown when leaving without naming."
+  },
+  "namePassBody": "the next person to find it gets the chance instead. there is no going back",
+  "@namePassBody": {
+    "description": "Says what is lost by not naming: the chance goes to the next finder and does not come back. Asked once only; a second ask would be nagging."
+  },
+  "namePassConfirm": "pass it on",
+  "@namePassConfirm": {
+    "description": "Button confirming the chance is given up."
+  },
+  "namePassBack": "let me name it",
+  "@namePassBack": {
+    "description": "Button returning to naming."
+  },
+  "nameDiscoveredBy": "first found by {handle}",
+  "@nameDiscoveredBy": {
+    "description": "Credit line under a creature somebody else named. The handle is a nickname, never an account name.",
+    "placeholders": {
+      "handle": {
+        "type": "String"
+      }
+    }
+  },
+  "nameDiscoveredByYou": "you named this one",
+  "@nameDiscoveredByYou": {
+    "description": "Credit line under a creature the reader named."
+  },
+  "nameErrorTooShort": "too short",
+  "@nameErrorTooShort": {
+    "description": "Naming refused: the name is shorter than two characters."
+  },
+  "nameErrorTooLong": "too long",
+  "@nameErrorTooLong": {
+    "description": "Naming refused: the name is longer than twenty characters."
+  },
+  "nameErrorBadCharacters": "letters and numbers only",
+  "@nameErrorBadCharacters": {
+    "description": "Naming refused: something outside letters, digits and the joiners a name may use."
+  },
+  "nameErrorRepeats": "you held a key down",
+  "@nameErrorRepeats": {
+    "description": "Naming refused: one character repeated past the point of being a name."
+  },
+  "nameErrorBlocked": "not that one",
+  "@nameErrorBlocked": {
+    "description": "Naming refused by the word list. Deliberately vague: naming the rule would explain how to get around it."
+  },
+  "nameErrorTaken": "another creature already has that name",
+  "@nameErrorTaken": {
+    "description": "Naming refused: some other creature already carries that name."
+  },
+  "nameErrorAlreadyNamed": "somebody named it first",
+  "@nameErrorAlreadyNamed": {
+    "description": "Naming refused: somebody named this creature first. There is no second try at this one."
+  },
+  "nameErrorHandle": "have another look at the nickname",
+  "@nameErrorHandle": {
+    "description": "Naming refused because of the nickname rather than the name."
+  },
+  "nameErrorNeedsAccount": "connect an account to name it",
+  "@nameErrorNeedsAccount": {
+    "description": "Naming refused to an anonymous account. A name everyone lives with belongs to someone who can be asked about it."
+  },
+  "nameErrorUnreachable": "cannot reach it right now. try in a moment",
+  "@nameErrorUnreachable": {
+    "description": "The naming server could not be reached."
+  },
+  "nameErrorUnknown": "could not register that name",
+  "@nameErrorUnknown": {
+    "description": "Naming failed for a reason the app has no better words for."
   }
 }

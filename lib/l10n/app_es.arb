@@ -58,5 +58,32 @@
   "collectionFoundCount": "{count, plural, =1{Encontrado una vez} other{Encontrado {count} veces}}",
   "homeNextEgg": "vuelve mañana a por uno nuevo",
 
-  "dialogDismiss": "vale"
+  "dialogDismiss": "vale",
+
+  "nameItButton": "ponle nombre",
+  "nameItTitle": "nadie le ha puesto nombre todavía",
+  "nameItBody": "lo que tú le pongas es lo que verá todo el que lo encuentre",
+  "nameItField": "nombre",
+  "nameItHandle": "apodo",
+  "nameItHandleHint": "va firmado junto al nombre. no pongas el tuyo de verdad",
+  "nameItSubmit": "registrar",
+  "nameItLater": "ahora no",
+  "nameItDone": "ahora se llama {name}",
+  "namePassTitle": "¿lo dejas sin nombre?",
+  "namePassBody": "el siguiente que lo encuentre tendrá la oportunidad. no hay vuelta atrás",
+  "namePassConfirm": "que lo haga otro",
+  "namePassBack": "déjame ponerle nombre",
+  "nameDiscoveredBy": "lo encontró primero {handle}",
+  "nameDiscoveredByYou": "este nombre lo pusiste tú",
+  "nameErrorTooShort": "demasiado corto",
+  "nameErrorTooLong": "demasiado largo",
+  "nameErrorBadCharacters": "solo letras y números",
+  "nameErrorRepeats": "has dejado una tecla pulsada",
+  "nameErrorBlocked": "ese no",
+  "nameErrorTaken": "otra criatura ya tiene ese nombre",
+  "nameErrorAlreadyNamed": "alguien lo nombró antes",
+  "nameErrorHandle": "revisa el apodo",
+  "nameErrorNeedsAccount": "conecta una cuenta para ponerle nombre",
+  "nameErrorUnreachable": "ahora mismo no hay conexión. inténtalo en un momento",
+  "nameErrorUnknown": "no se pudo registrar ese nombre"
 }

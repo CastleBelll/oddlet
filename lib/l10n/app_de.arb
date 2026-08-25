@@ -58,5 +58,32 @@
   "collectionFoundCount": "{count, plural, =1{Einmal gefunden} other{{count}-mal gefunden}}",
   "homeNextEgg": "morgen kommt ein neues",
 
-  "dialogDismiss": "alles klar"
+  "dialogDismiss": "alles klar",
+
+  "nameItButton": "gib ihm einen Namen",
+  "nameItTitle": "noch niemand hat ihm einen Namen gegeben",
+  "nameItBody": "wie du es nennst, sehen alle, die es finden",
+  "nameItField": "Name",
+  "nameItHandle": "Spitzname",
+  "nameItHandleHint": "steht neben dem Namen. nicht dein echter",
+  "nameItSubmit": "eintragen",
+  "nameItLater": "jetzt nicht",
+  "nameItDone": "es heißt jetzt {name}",
+  "namePassTitle": "wirklich ohne Namen lassen?",
+  "namePassBody": "wer es als Nächstes findet, bekommt die Chance. das lässt sich nicht zurücknehmen",
+  "namePassConfirm": "weitergeben",
+  "namePassBack": "ich nenne es",
+  "nameDiscoveredBy": "zuerst gefunden von {handle}",
+  "nameDiscoveredByYou": "den Namen hast du vergeben",
+  "nameErrorTooShort": "zu kurz",
+  "nameErrorTooLong": "zu lang",
+  "nameErrorBadCharacters": "nur Buchstaben und Zahlen",
+  "nameErrorRepeats": "du hast eine Taste gehalten",
+  "nameErrorBlocked": "der nicht",
+  "nameErrorTaken": "ein anderes Wesen heißt schon so",
+  "nameErrorAlreadyNamed": "jemand war beim Namen schneller",
+  "nameErrorHandle": "schau nochmal auf den Spitznamen",
+  "nameErrorNeedsAccount": "verbinde ein Konto, um es zu benennen",
+  "nameErrorUnreachable": "gerade keine Verbindung. gleich nochmal",
+  "nameErrorUnknown": "der Name ließ sich nicht eintragen"
 }

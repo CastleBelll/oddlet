@@ -58,5 +58,32 @@
   "collectionFoundCount": "{count, plural, other{Ditemukan {count} kali}}",
   "homeNextEgg": "telur berikutnya datang besok",
 
-  "dialogDismiss": "oke"
+  "dialogDismiss": "oke",
+
+  "nameItButton": "kasih nama",
+  "nameItTitle": "belum ada yang kasih nama",
+  "nameItBody": "nama dari kamu bakal dilihat semua orang yang nemu dia",
+  "nameItField": "nama",
+  "nameItHandle": "nama panggilan",
+  "nameItHandleHint": "ditulis di sebelah namanya. jangan nama asli",
+  "nameItSubmit": "daftarkan",
+  "nameItLater": "nanti aja",
+  "nameItDone": "sekarang namanya {name}",
+  "namePassTitle": "yakin nggak dikasih nama?",
+  "namePassBody": "yang nemu berikutnya yang dapat giliran. nggak bisa dibalik",
+  "namePassConfirm": "kasih ke orang lain",
+  "namePassBack": "aku kasih nama",
+  "nameDiscoveredBy": "pertama ditemukan {handle}",
+  "nameDiscoveredByYou": "nama ini kamu yang kasih",
+  "nameErrorTooShort": "kependekan",
+  "nameErrorTooLong": "kepanjangan",
+  "nameErrorBadCharacters": "cuma huruf dan angka",
+  "nameErrorRepeats": "kamu nahan satu tombol",
+  "nameErrorBlocked": "yang itu jangan",
+  "nameErrorTaken": "nama itu sudah dipakai makhluk lain",
+  "nameErrorAlreadyNamed": "ada yang kasih nama duluan",
+  "nameErrorHandle": "cek lagi nama panggilannya",
+  "nameErrorNeedsAccount": "hubungkan akun dulu buat kasih nama",
+  "nameErrorUnreachable": "lagi nggak nyambung. coba sebentar lagi",
+  "nameErrorUnknown": "nama itu nggak bisa didaftarkan"
 }

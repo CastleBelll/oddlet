@@ -58,5 +58,32 @@
   "collectionFoundCount": "{count, plural, other{{count}번 발견}}",
   "homeNextEgg": "다음 알은 내일 도착합니다",
 
-  "dialogDismiss": "알겠어"
+  "dialogDismiss": "알겠어",
+
+  "nameItButton": "이름 짓기",
+  "nameItTitle": "아직 아무도 이름을 안 붙였어",
+  "nameItBody": "네가 붙이면 이 애를 만나는 모두가 그 이름으로 봐",
+  "nameItField": "이름",
+  "nameItHandle": "닉네임",
+  "nameItHandleHint": "이름 옆에 남을 이름. 본명 말고",
+  "nameItSubmit": "등록",
+  "nameItLater": "안 지을래",
+  "nameItDone": "이제 {name}이야",
+  "namePassTitle": "정말 안 지을래?",
+  "namePassBody": "등록 안 하면 다음 발견자한테 기회가 넘어가. 되돌릴 수 없어",
+  "namePassConfirm": "넘길래",
+  "namePassBack": "지을래",
+  "nameDiscoveredBy": "최초 발견 {handle}",
+  "nameDiscoveredByYou": "네가 지은 이름",
+  "nameErrorTooShort": "너무 짧아",
+  "nameErrorTooLong": "너무 길어",
+  "nameErrorBadCharacters": "글자랑 숫자만 돼",
+  "nameErrorRepeats": "같은 글자를 너무 많이 눌렀어",
+  "nameErrorBlocked": "이 이름은 안 돼",
+  "nameErrorTaken": "그 이름은 이미 다른 애가 쓰고 있어",
+  "nameErrorAlreadyNamed": "누가 먼저 이름을 붙였어",
+  "nameErrorHandle": "닉네임을 다시 봐",
+  "nameErrorNeedsAccount": "이름을 지으려면 계정을 연결해야 해",
+  "nameErrorUnreachable": "지금은 연결이 안 돼. 잠깐 뒤에 다시",
+  "nameErrorUnknown": "이름을 등록하지 못했어"
 }

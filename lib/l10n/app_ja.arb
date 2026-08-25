@@ -58,5 +58,32 @@
   "collectionFoundCount": "{count, plural, other{{count}回発見}}",
   "homeNextEgg": "次のたまごは明日とどく",
 
-  "dialogDismiss": "わかった"
+  "dialogDismiss": "わかった",
+
+  "nameItButton": "名前をつける",
+  "nameItTitle": "まだ誰も名前をつけていない",
+  "nameItBody": "君がつけた名前を、この子に出会う全員が見る",
+  "nameItField": "名前",
+  "nameItHandle": "ニックネーム",
+  "nameItHandleHint": "名前の横に残る。本名じゃなくていい",
+  "nameItSubmit": "登録",
+  "nameItLater": "つけない",
+  "nameItDone": "これで{name}だ",
+  "namePassTitle": "本当につけない？",
+  "namePassBody": "登録しないと次に見つけた人に順番がいく。取り消せない",
+  "namePassConfirm": "ゆずる",
+  "namePassBack": "つける",
+  "nameDiscoveredBy": "最初の発見者 {handle}",
+  "nameDiscoveredByYou": "君がつけた名前",
+  "nameErrorTooShort": "短すぎる",
+  "nameErrorTooLong": "長すぎる",
+  "nameErrorBadCharacters": "文字と数字だけ",
+  "nameErrorRepeats": "同じ文字を押しすぎ",
+  "nameErrorBlocked": "その名前はだめ",
+  "nameErrorTaken": "その名前はもう別の子が使っている",
+  "nameErrorAlreadyNamed": "先に名前をつけられた",
+  "nameErrorHandle": "ニックネームを見直して",
+  "nameErrorNeedsAccount": "名前をつけるにはアカウントが要る",
+  "nameErrorUnreachable": "今はつながらない。少しあとで",
+  "nameErrorUnknown": "名前を登録できなかった"
 }

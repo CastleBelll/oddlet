@@ -50,6 +50,7 @@ dependencies:
   # Already here through Flutter; named so a name can be measured in what a
   # reader calls a character rather than in code units.
   characters: ^1.4.0
+  cloud_functions: ^6.4.0
 
 dev_dependencies:
   flutter_test:
