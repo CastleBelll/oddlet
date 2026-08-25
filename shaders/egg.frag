@@ -50,6 +50,11 @@ const float PEEL_LAST = 1.35;
 // How much a piece's own number moves its turn, so they do not leave in rows.
 const float PEEL_SCATTER = 0.22;
 
+// The light inside, as it grows. Kept well short of the shell so the first
+// openings show a glow deep in the egg rather than a wall of white.
+const float CORE_MIN_RADIUS = 0.18;
+const float CORE_MAX_RADIUS = 0.62;
+
 mat3 rotX(float a) {
   float c = cos(a);
   float s = sin(a);
@@ -152,6 +157,77 @@ vec3 plateInfo(vec3 p) {
   return vec3(second - nearest, hash(owner), owner.y);
 }
 
+/// The space the shell is broken up in.
+///
+/// Nudged off the lattice first, so a seam wanders the way a break in
+/// something brittle does instead of running dead straight.
+vec3 shatterSpace(vec3 p) {
+  return p * PLATE_SCALE
+       + CRACK_RAGGED * vec3(valueNoise(p * 11.0),
+                             valueNoise(p * 11.0 + 5.0),
+                             valueNoise(p * 11.0 + 9.0));
+}
+
+/// Whether this piece of shell has already come away.
+///
+/// A whole piece leaves at once, so this is a step rather than a fade: half a
+/// piece dissolving is not what breaking looks like. The edge it leaves lands
+/// on a seam, which is dark already, so nothing shows the hard change.
+///
+/// Height decides most of the timing, so the shell opens from the crown down,
+/// and the piece's own settled number decides the rest, so they do not leave
+/// in rows. Pieces low on the egg are timed past the end of the sequence and
+/// never leave: the creature is uncovered rather than the egg ceasing to be.
+float peelTurn(vec3 plate) {
+  float height = clamp(plate.z / (PLATE_SCALE * 1.2), -1.0, 1.0);
+  return mix(PEEL_FIRST, PEEL_LAST, 0.5 - 0.5 * height)
+       + PEEL_SCATTER * plate.y;
+}
+
+float tornAt(vec3 plate) {
+  return step(peelTurn(plate), uCrack);
+}
+
+/// What a ray finds once it is through an opening.
+///
+/// This is the whole point of taking a piece away: the light is behind the
+/// shell, not painted on it. A ray that gets in crosses the hollow, so the far
+/// inner wall shows at its own depth and the opening has thickness.
+vec3 insideEgg(vec3 from, vec3 rd) {
+  // The far side of the shell, found from within: inside the egg the distance
+  // to the surface is the negated one.
+  float ti = 0.0;
+  for (int i = 0; i < 48; i++) {
+    float d = -sdEgg(from + rd * ti);
+    if (d < HIT_EPS) {
+      break;
+    }
+    ti += d * STEP_SCALE;
+    if (ti > MAX_DIST) {
+      break;
+    }
+  }
+
+  vec3 wall = from + rd * ti;
+  // Facing back into the hollow, and lit only by what is in the middle of it.
+  // Kept dark: an opening has to look like a hole first and a light second,
+  // or the egg turns into a lamp with a pattern on it.
+  vec3 wallNormal = -normalAt(wall);
+  float lit = max(dot(wallNormal, normalize(-wall)), 0.0);
+  float falloff = 1.0 / (1.0 + 2.5 * dot(wall, wall));
+  vec3 color = uCrackGlow * lit * falloff * 0.12;
+
+  // The light itself, as a glow rather than a lamp with an edge: how near the
+  // ray passes the middle is what decides its brightness. Tight, so most of
+  // an opening is dark and only the middle of the egg burns.
+  float toCentre = length(from - rd * dot(from, rd));
+  float radius = mix(CORE_MIN_RADIUS, CORE_MAX_RADIUS, uCrack);
+  float halo = clamp(radius / max(toCentre, 1e-3), 0.0, 1.0);
+  color += uCrackGlow * pow(halo, 3.5) * mix(0.35, 2.0, uCrack);
+
+  return color;
+}
+
 void main() {
   vec2 frag = FlutterFragCoord().xy;
   vec2 uv = (frag - 0.5 * uSize) / uSize.y;
@@ -200,6 +276,20 @@ void main() {
   vec3 p = ro + rd * (tHit > 0.0 ? tHit : tMin);
   vec3 n = normalAt(p);
 
+  // Which piece of shell this is, and whether it is still there.
+  vec3 plate = vec3(8.0, 0.0, 0.0);
+  if (uCrack > 0.0) {
+    plate = plateInfo(shatterSpace(p));
+
+    // Nothing to shade where a piece has gone: the ray carries on into the egg
+    // and comes back with what is in there. Stepping in past the surface first
+    // so the march does not immediately call itself a hit.
+    if (tHit > 0.0 && tornAt(plate) > 0.5) {
+      fragColor = vec4(insideEgg(p + rd * 0.02, rd), 1.0);
+      return;
+    }
+  }
+
   // Shell pattern, also what makes rotation read as rotation on a shape this
   // symmetric. Two octaves: fine freckles blended toward broad blotches.
   // Two octaves per band, so no single lattice dominates the surface.
@@ -233,16 +323,9 @@ void main() {
              + uTint * specular
              + uTint * fresnel * 0.20;
 
-  // The shell splits, then comes away in pieces, starting at the crown and
-  // working down. What is underneath is lit, so every opening leaks.
+  // Everything from here shades a piece of shell that is still attached: the
+  // ones that have gone never reach this far.
   if (uCrack > 0.0) {
-    // Nudged off the lattice before the cells are found, so a seam wanders the
-    // way a break in something brittle does instead of running dead straight.
-    vec3 broken = p * PLATE_SCALE
-                + CRACK_RAGGED * vec3(valueNoise(p * 11.0),
-                                      valueNoise(p * 11.0 + 5.0),
-                                      valueNoise(p * 11.0 + 9.0));
-    vec3 plate = plateInfo(broken);
     float seam = plate.x;
 
     float reach = uCrack * CRACK_SPREAD;
@@ -257,13 +340,12 @@ void main() {
     float width = mix(CRACK_MIN_WIDTH, CRACK_MAX_WIDTH, uCrack * uCrack);
     float gap = (1.0 - smoothstep(0.0, width, seam)) * spread;
 
-    // When this particular piece lets go. Height decides most of it so the
-    // shell opens from the top, and the piece's own number decides the rest so
-    // they do not all leave together like a curtain.
-    float height = clamp(plate.z / (PLATE_SCALE * 1.2), -1.0, 1.0);
-    float turn = mix(PEEL_FIRST, PEEL_LAST, 0.5 - 0.5 * height)
-               + PEEL_SCATTER * plate.y;
-    float torn = smoothstep(turn, turn + 0.10, uCrack);
+    // A piece does not vanish out of a flat shell. It works loose first:
+    // tilting off the light and going into shadow, so by the time it leaves
+    // the eye has already been told it was coming away.
+    float turn = peelTurn(plate);
+    float loosening = smoothstep(turn - 0.22, turn, uCrack);
+    color *= 1.0 - 0.60 * loosening;
 
     // A wider, softer band of shadow either side of a seam. Without it the
     // pieces look painted on; with it they have thickness and an edge.
@@ -272,21 +354,15 @@ void main() {
 
     color = mix(color, color * 0.06, gap);
 
-    // Inside. Brightest in the middle of a hole and falling off toward the
-    // torn edge, which is what makes it read as light coming from within
-    // rather than as the piece being repainted.
-    float depth = smoothstep(0.0, 0.22, seam);
-    vec3 inside = uCrackGlow * (0.55 + 1.15 * depth);
-
-    // The shell around an opening catches that light too. Skipping this is
-    // what makes a hole look like a sticker. Held back hard at the start: a
-    // hairline that already glows is decoration, and the whole point of the
-    // first few seconds is that the egg looks damaged rather than decorated.
+    // What is behind the shell, showing through the seams before anything has
+    // actually come away. Held back hard at the start: a hairline that already
+    // glows is decoration, and the first seconds have to look like damage.
     color += uCrackGlow * gap * pow(uCrack, 2.5) * 0.9;
-    color = mix(color, inside, torn);
 
-    // Whatever is in there is waking up.
-    color += uCrackGlow * torn * pow(uCrack, 2.0) * 0.35;
+    // The broken edge of a piece that is still attached catches the light from
+    // inside. This is the whole of the thickness the shell has, and without it
+    // an opening next door looks cut out with scissors.
+    color += uCrackGlow * lip * loosening * pow(uCrack, 2.0) * 0.55;
   }
 
   fragColor = vec4(color * alpha, alpha); // premultiplied

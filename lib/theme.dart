@@ -21,6 +21,13 @@ abstract final class OddletColors {
   /// glows is a screen where nothing does.
   static const accent = Color(0xFFB14BFF);
   static const accentCool = Color(0xFF4DD4FF);
+
+  /// What is burning inside an egg that is opening.
+  ///
+  /// Deliberately not the accent. The brand colour reads as an effect applied
+  /// to the egg from outside; light from inside something alive is warm, and
+  /// the moment stops looking like a filter as soon as it is.
+  static const hatchLight = Color(0xFFFFE3A6);
 }
 
 /// The one typeface, declared in pubspec.yaml. Covers Latin and Hangul in the

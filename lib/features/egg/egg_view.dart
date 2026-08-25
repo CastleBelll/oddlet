@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import '../../l10n/app_localizations.dart';
+import '../../theme.dart';
 
 import 'egg_appearance.dart';
 import 'hatch_sequence.dart';
@@ -320,7 +321,10 @@ class _EggViewState extends State<EggView> with SingleTickerProviderStateMixin {
                   appearance: widget.appearance,
                   tint: scheme.primary,
                   crack: isHatching ? crackProgressAt(hatch) : 0,
-                  crackGlow: Color.lerp(scheme.primary, Colors.white, 0.65)!,
+                  // Warm, and not the accent. Brand violet coming out of an
+                  // egg reads as a filter over the screen rather than as
+                  // something alive in there.
+                  crackGlow: OddletColors.hatchLight,
                 ),
               ),
             ),
