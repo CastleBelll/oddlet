@@ -1,0 +1,62 @@
+{
+  "@@locale": "es",
+
+  "appTitle": "ODDLET",
+
+  "eggLabel": "Huevo",
+
+  "eggHint": "Toca para tocarlo, arrastra para girarlo, mantén pulsado para abrirlo",
+
+  "eggHoldToOpen": "mantén pulsado para abrir",
+
+  "revealNew": "NEW",
+
+  "introLine1": "Ha aparecido un huevo.",
+  "introLine2": "Nadie sabe en qué se convierte.",
+  "introLine3": "Eso depende de ti.",
+
+  "introContinue": "toca para empezar",
+
+  "shareTagline": "¿en qué se convertirá el tuyo?",
+
+  "revealShare": "Compartir",
+
+  "revealDismiss": "toca para seguir",
+
+  "rarityCommon": "COMMON",
+  "rarityUncommon": "UNCOMMON",
+  "rarityRare": "RARE",
+  "rarityEpic": "EPIC",
+  "rarityLegendary": "LEGENDARY",
+  "raritySecret": "SECRET",
+
+  "creaturePlainChick": "Pollito Común",
+  "creatureSleepyChick": "Pollito Dormilón",
+  "creatureDizzyChick": "Pollito Mareado",
+  "creatureAngryChick": "Pollito Enfadado",
+  "creatureGhostChick": "Pollito Fantasma",
+  "creatureStaticChick": "Pollito Estático",
+  "creatureStormChick": "Pollito Tormenta",
+  "creatureDawnRunner": "Corredor del Alba",
+  "creatureTheQuietOne": "El Silencioso",
+
+  "accountLocalOnly": "esta colección solo existe en este móvil",
+  "accountConnect": "guardarla",
+  "accountSheetTitle": "guarda tu colección",
+  "accountSheetBody": "conecta una cuenta y te sigue al cambiar de móvil",
+  "accountWithGoogle": "continuar con Google",
+  "accountWithApple": "continuar con Apple",
+  "accountLinked": "listo. ya es tuya",
+  "accountSwitched": "has entrado en una cuenta que ya tenías. lo que encontraste antes no está en ella",
+  "accountFailed": "no se pudo conectar esa cuenta",
+
+  "collectionTitle": "COLECCIÓN",
+  "collectionOpen": "Abrir la colección",
+  "collectionClose": "Cerrar la colección",
+  "collectionProgress": "{found} de {total} encontrados",
+  "collectionUndiscovered": "Aún sin encontrar",
+  "collectionFoundCount": "{count, plural, =1{Encontrado una vez} other{Encontrado {count} veces}}",
+  "homeNextEgg": "vuelve mañana a por uno nuevo",
+
+  "dialogDismiss": "vale"
+}

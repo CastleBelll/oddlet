@@ -1,0 +1,62 @@
+{
+  "@@locale": "ja",
+
+  "appTitle": "ODDLET",
+
+  "eggLabel": "たまご",
+
+  "eggHint": "タップでさわる、ドラッグで回す、長押しで開く",
+
+  "eggHoldToOpen": "長押しで開く",
+
+  "revealNew": "NEW",
+
+  "introLine1": "たまごが来た。",
+  "introLine2": "何になるかは誰も知らない。",
+  "introLine3": "それは君しだい。",
+
+  "introContinue": "タップではじめる",
+
+  "shareTagline": "君のは何になる？",
+
+  "revealShare": "シェア",
+
+  "revealDismiss": "タップでつづける",
+
+  "rarityCommon": "COMMON",
+  "rarityUncommon": "UNCOMMON",
+  "rarityRare": "RARE",
+  "rarityEpic": "EPIC",
+  "rarityLegendary": "LEGENDARY",
+  "raritySecret": "SECRET",
+
+  "creaturePlainChick": "ふつうのヒヨコ",
+  "creatureSleepyChick": "ねむいヒヨコ",
+  "creatureDizzyChick": "めまいヒヨコ",
+  "creatureAngryChick": "おこったヒヨコ",
+  "creatureGhostChick": "ゆうれいヒヨコ",
+  "creatureStaticChick": "せいでんきヒヨコ",
+  "creatureStormChick": "あらしのヒヨコ",
+  "creatureDawnRunner": "夜明けの走者",
+  "creatureTheQuietOne": "しずかなやつ",
+
+  "accountLocalOnly": "この図鑑はこのスマホの中にしかない",
+  "accountConnect": "まもる",
+  "accountSheetTitle": "図鑑をまもる",
+  "accountSheetBody": "アカウントをつなげば機種変してもついてくる",
+  "accountWithGoogle": "Googleでつづける",
+  "accountWithApple": "Appleでつづける",
+  "accountLinked": "できた。もう君のもの",
+  "accountSwitched": "もともとあったアカウントでログインした。ログインする前に集めたものはこのアカウントにはない",
+  "accountFailed": "アカウントをつなげなかった",
+
+  "collectionTitle": "図鑑",
+  "collectionOpen": "図鑑をひらく",
+  "collectionClose": "図鑑をとじる",
+  "collectionProgress": "{total}種のうち{found}種発見",
+  "collectionUndiscovered": "まだ見つけていない",
+  "collectionFoundCount": "{count, plural, other{{count}回発見}}",
+  "homeNextEgg": "次のたまごは明日とどく",
+
+  "dialogDismiss": "わかった"
+}

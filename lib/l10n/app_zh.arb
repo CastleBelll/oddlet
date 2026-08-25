@@ -1,0 +1,62 @@
+{
+  "@@locale": "zh",
+
+  "appTitle": "ODDLET",
+
+  "eggLabel": "蛋",
+
+  "eggHint": "点一下摸它，拖动转它，长按打开",
+
+  "eggHoldToOpen": "长按打开",
+
+  "revealNew": "NEW",
+
+  "introLine1": "来了一颗蛋。",
+  "introLine2": "谁也不知道它会变成什么。",
+  "introLine3": "那得看你。",
+
+  "introContinue": "点一下开始",
+
+  "shareTagline": "你的会变成什么？",
+
+  "revealShare": "分享",
+
+  "revealDismiss": "点一下继续",
+
+  "rarityCommon": "COMMON",
+  "rarityUncommon": "UNCOMMON",
+  "rarityRare": "RARE",
+  "rarityEpic": "EPIC",
+  "rarityLegendary": "LEGENDARY",
+  "raritySecret": "SECRET",
+
+  "creaturePlainChick": "普通小鸡",
+  "creatureSleepyChick": "困小鸡",
+  "creatureDizzyChick": "晕小鸡",
+  "creatureAngryChick": "生气小鸡",
+  "creatureGhostChick": "幽灵小鸡",
+  "creatureStaticChick": "静电小鸡",
+  "creatureStormChick": "暴风小鸡",
+  "creatureDawnRunner": "破晓奔跑者",
+  "creatureTheQuietOne": "沉默的那只",
+
+  "accountLocalOnly": "这本图鉴只存在这台手机里",
+  "accountConnect": "保住它",
+  "accountSheetTitle": "保住你的图鉴",
+  "accountSheetBody": "连上账号，换手机它也跟着你",
+  "accountWithGoogle": "用 Google 继续",
+  "accountWithApple": "用 Apple 继续",
+  "accountLinked": "好了。现在是你的了",
+  "accountSwitched": "登录了你本来就有的账号。登录前收集的东西不在这个账号上",
+  "accountFailed": "没能连上这个账号",
+
+  "collectionTitle": "图鉴",
+  "collectionOpen": "打开图鉴",
+  "collectionClose": "关闭图鉴",
+  "collectionProgress": "{total}种中已发现{found}种",
+  "collectionUndiscovered": "还没发现",
+  "collectionFoundCount": "{count, plural, other{发现过{count}次}}",
+  "homeNextEgg": "下一颗蛋明天到",
+
+  "dialogDismiss": "知道了"
+}

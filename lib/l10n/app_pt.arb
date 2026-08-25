@@ -1,0 +1,62 @@
+{
+  "@@locale": "pt",
+
+  "appTitle": "ODDLET",
+
+  "eggLabel": "Ovo",
+
+  "eggHint": "Toque para encostar, arraste para girar, segure para abrir",
+
+  "eggHoldToOpen": "segure para abrir",
+
+  "revealNew": "NEW",
+
+  "introLine1": "Apareceu um ovo.",
+  "introLine2": "Ninguém sabe no que ele vira.",
+  "introLine3": "Isso é com você.",
+
+  "introContinue": "toque para começar",
+
+  "shareTagline": "no que o seu vai virar?",
+
+  "revealShare": "Compartilhar",
+
+  "revealDismiss": "toque para continuar",
+
+  "rarityCommon": "COMMON",
+  "rarityUncommon": "UNCOMMON",
+  "rarityRare": "RARE",
+  "rarityEpic": "EPIC",
+  "rarityLegendary": "LEGENDARY",
+  "raritySecret": "SECRET",
+
+  "creaturePlainChick": "Pintinho Comum",
+  "creatureSleepyChick": "Pintinho Sonolento",
+  "creatureDizzyChick": "Pintinho Tonto",
+  "creatureAngryChick": "Pintinho Bravo",
+  "creatureGhostChick": "Pintinho Fantasma",
+  "creatureStaticChick": "Pintinho Elétrico",
+  "creatureStormChick": "Pintinho Tempestade",
+  "creatureDawnRunner": "Corredor da Madrugada",
+  "creatureTheQuietOne": "O Silencioso",
+
+  "accountLocalOnly": "esta coleção só existe neste celular",
+  "accountConnect": "guardar",
+  "accountSheetTitle": "guarde sua coleção",
+  "accountSheetBody": "conecte uma conta e ela te acompanha na troca de celular",
+  "accountWithGoogle": "continuar com o Google",
+  "accountWithApple": "continuar com a Apple",
+  "accountLinked": "pronto. agora é sua",
+  "accountSwitched": "você entrou numa conta que já tinha. o que achou antes não está nela",
+  "accountFailed": "não deu para conectar essa conta",
+
+  "collectionTitle": "COLEÇÃO",
+  "collectionOpen": "Abrir a coleção",
+  "collectionClose": "Fechar a coleção",
+  "collectionProgress": "{found} de {total} encontrados",
+  "collectionUndiscovered": "Ainda não encontrado",
+  "collectionFoundCount": "{count, plural, =1{Encontrado uma vez} other{Encontrado {count} vezes}}",
+  "homeNextEgg": "volte amanhã para pegar outro",
+
+  "dialogDismiss": "beleza"
+}

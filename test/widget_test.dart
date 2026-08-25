@@ -13,6 +13,7 @@ import 'package:oddlet/features/egg/egg_appearance.dart';
 import 'package:oddlet/features/egg/egg_view.dart';
 import 'package:oddlet/features/egg/home_screen.dart';
 import 'package:oddlet/features/egg/shake_detector.dart';
+import 'package:oddlet/main.dart';
 import 'package:oddlet/theme.dart';
 
 /// A sample the detector should read as a shake of [magnitude] m/s^2 along x.
@@ -28,6 +29,9 @@ void main() {
       locale: locale,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
+      // The same resolution the real app uses, so the fallback test measures
+      // production behaviour rather than the test's own wiring.
+      localeListResolutionCallback: resolveLocale,
       home: HomeScreen(
         shakeDetector: ShakeDetector(samples: const Stream.empty()),
       ),
@@ -79,7 +83,15 @@ void main() {
     testWidgets('falls back to English for an unsupported language', (
       tester,
     ) async {
-      await pumpApp(tester, const Locale('fr'));
+      const unsupported = Locale('fi');
+      // Guarded so that shipping Finnish one day fails this test rather than
+      // letting it pass for the wrong reason.
+      expect(
+        AppLocalizations.supportedLocales.map((locale) => locale.languageCode),
+        isNot(contains(unsupported.languageCode)),
+      );
+
+      await pumpApp(tester, unsupported);
 
       expect(
         tester.getSemantics(find.byType(EggView)).label,
@@ -90,8 +102,42 @@ void main() {
     test('every supported locale is declared', () {
       expect(
         AppLocalizations.supportedLocales.map((locale) => locale.languageCode),
-        containsAll(<String>['en', 'ko']),
+        containsAll(<String>[
+          'en',
+          'ko',
+          'ja',
+          'zh',
+          'es',
+          'pt',
+          'fr',
+          'de',
+          'id',
+        ]),
       );
+    });
+
+    test('traditional Chinese is its own translation, not just zh', () {
+      // Simplified and traditional are different scripts, and a reader of one
+      // does not simply read the other. gen-l10n only emits the script variant
+      // if the file is named for it, so this catches a rename.
+      expect(
+        AppLocalizations.supportedLocales,
+        contains(
+          Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hant'),
+        ),
+      );
+    });
+
+    test('the wordmark survives every translation', () {
+      // The rarity tiers and the wordmark are brand marks, not copy: §1.1 of
+      // the plan says the app is called ODDLET in every language.
+      for (final locale in AppLocalizations.supportedLocales) {
+        final l10n = lookupAppLocalizations(locale);
+
+        expect(l10n.appTitle, 'ODDLET', reason: '$locale renamed the app');
+        expect(l10n.rarityRare, 'RARE', reason: '$locale translated a tier');
+        expect(l10n.revealNew, 'NEW', reason: '$locale translated the badge');
+      }
     });
   });
 

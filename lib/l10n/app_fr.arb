@@ -1,0 +1,62 @@
+{
+  "@@locale": "fr",
+
+  "appTitle": "ODDLET",
+
+  "eggLabel": "Œuf",
+
+  "eggHint": "Touche pour le toucher, glisse pour le tourner, appuie longuement pour l'ouvrir",
+
+  "eggHoldToOpen": "appuie longuement pour ouvrir",
+
+  "revealNew": "NEW",
+
+  "introLine1": "Un œuf est arrivé.",
+  "introLine2": "Personne ne sait en quoi il se transforme.",
+  "introLine3": "Ça, ça dépend de toi.",
+
+  "introContinue": "touche pour commencer",
+
+  "shareTagline": "et le tien, il deviendra quoi ?",
+
+  "revealShare": "Partager",
+
+  "revealDismiss": "touche pour continuer",
+
+  "rarityCommon": "COMMON",
+  "rarityUncommon": "UNCOMMON",
+  "rarityRare": "RARE",
+  "rarityEpic": "EPIC",
+  "rarityLegendary": "LEGENDARY",
+  "raritySecret": "SECRET",
+
+  "creaturePlainChick": "Poussin Ordinaire",
+  "creatureSleepyChick": "Poussin Endormi",
+  "creatureDizzyChick": "Poussin Étourdi",
+  "creatureAngryChick": "Poussin Fâché",
+  "creatureGhostChick": "Poussin Fantôme",
+  "creatureStaticChick": "Poussin Statique",
+  "creatureStormChick": "Poussin Tempête",
+  "creatureDawnRunner": "Coureur de l'Aube",
+  "creatureTheQuietOne": "Le Silencieux",
+
+  "accountLocalOnly": "cette collection n'existe que sur ce téléphone",
+  "accountConnect": "la garder",
+  "accountSheetTitle": "garde ta collection",
+  "accountSheetBody": "connecte un compte et elle te suit sur un nouveau téléphone",
+  "accountWithGoogle": "continuer avec Google",
+  "accountWithApple": "continuer avec Apple",
+  "accountLinked": "c'est fait. elle est à toi",
+  "accountSwitched": "tu t'es connecté à un compte que tu avais déjà. ce que tu as trouvé avant n'y est pas",
+  "accountFailed": "impossible de connecter ce compte",
+
+  "collectionTitle": "COLLECTION",
+  "collectionOpen": "Ouvrir la collection",
+  "collectionClose": "Fermer la collection",
+  "collectionProgress": "{found} sur {total} trouvés",
+  "collectionUndiscovered": "Pas encore trouvé",
+  "collectionFoundCount": "{count, plural, =1{Trouvé une fois} other{Trouvé {count} fois}}",
+  "homeNextEgg": "reviens demain pour en avoir un nouveau",
+
+  "dialogDismiss": "ok"
+}

@@ -38,6 +38,27 @@ class _Entry extends ConsumerWidget {
   }
 }
 
+/// Picks the language to run in.
+///
+/// Flutter's own resolution falls back to the first supported locale, and the
+/// generated list is alphabetical: without this, someone whose phone is set to
+/// a language ODDLET does not speak would be shown German. English is the
+/// language the app is written in, so it is what an unknown reader gets.
+Locale resolveLocale(List<Locale>? deviceLocales, Iterable<Locale> supported) {
+  final wanted = deviceLocales ?? const <Locale>[];
+  final understood = wanted.any(
+    (locale) =>
+        supported.any((option) => option.languageCode == locale.languageCode),
+  );
+
+  // Only the no-match case is ours. Everything else goes through Flutter's
+  // resolution, which is what gets zh-Hant to the traditional translation
+  // rather than to the simplified one.
+  return understood
+      ? basicLocaleListResolution(wanted, supported)
+      : const Locale('en');
+}
+
 class OddletApp extends StatelessWidget {
   const OddletApp({super.key});
 
@@ -47,6 +68,7 @@ class OddletApp extends StatelessWidget {
       onGenerateTitle: (context) => AppLocalizations.of(context).appTitle,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
+      localeListResolutionCallback: resolveLocale,
       // Dark only: the hatch sequence is staged against a dark room.
       theme: oddletDarkTheme(),
       home: const _Entry(),

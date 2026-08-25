@@ -1,0 +1,62 @@
+{
+  "@@locale": "de",
+
+  "appTitle": "ODDLET",
+
+  "eggLabel": "Ei",
+
+  "eggHint": "Tippen zum Anfassen, ziehen zum Drehen, gedrückt halten zum Öffnen",
+
+  "eggHoldToOpen": "gedrückt halten zum Öffnen",
+
+  "revealNew": "NEW",
+
+  "introLine1": "Da ist ein Ei aufgetaucht.",
+  "introLine2": "Keiner weiß, was daraus wird.",
+  "introLine3": "Das liegt an dir.",
+
+  "introContinue": "tippen zum Starten",
+
+  "shareTagline": "was wird wohl aus deinem?",
+
+  "revealShare": "Teilen",
+
+  "revealDismiss": "tippen zum Weitermachen",
+
+  "rarityCommon": "COMMON",
+  "rarityUncommon": "UNCOMMON",
+  "rarityRare": "RARE",
+  "rarityEpic": "EPIC",
+  "rarityLegendary": "LEGENDARY",
+  "raritySecret": "SECRET",
+
+  "creaturePlainChick": "Gewöhnliches Küken",
+  "creatureSleepyChick": "Müdes Küken",
+  "creatureDizzyChick": "Schwindliges Küken",
+  "creatureAngryChick": "Wütendes Küken",
+  "creatureGhostChick": "Geisterküken",
+  "creatureStaticChick": "Statisches Küken",
+  "creatureStormChick": "Sturmküken",
+  "creatureDawnRunner": "Läufer der Dämmerung",
+  "creatureTheQuietOne": "Der Stille",
+
+  "accountLocalOnly": "diese Sammlung gibt es nur auf diesem Handy",
+  "accountConnect": "behalten",
+  "accountSheetTitle": "behalt deine Sammlung",
+  "accountSheetBody": "verbinde ein Konto, dann kommt sie aufs nächste Handy mit",
+  "accountWithGoogle": "weiter mit Google",
+  "accountWithApple": "weiter mit Apple",
+  "accountLinked": "fertig. gehört jetzt dir",
+  "accountSwitched": "du bist jetzt in einem Konto, das du schon hattest. was du vorher gefunden hast, ist nicht drin",
+  "accountFailed": "das Konto ließ sich nicht verbinden",
+
+  "collectionTitle": "SAMMLUNG",
+  "collectionOpen": "Sammlung öffnen",
+  "collectionClose": "Sammlung schließen",
+  "collectionProgress": "{found} von {total} gefunden",
+  "collectionUndiscovered": "Noch nicht gefunden",
+  "collectionFoundCount": "{count, plural, =1{Einmal gefunden} other{{count}-mal gefunden}}",
+  "homeNextEgg": "morgen kommt ein neues",
+
+  "dialogDismiss": "alles klar"
+}

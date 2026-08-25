@@ -179,9 +179,9 @@
     "description": "Accessibility label for an empty slot. Screen reader users must not be told more than sighted users, so this never hints at what the creature is or how to get it."
   },
 
-  "collectionFoundCount": "Found {count} times",
+  "collectionFoundCount": "{count, plural, =1{Found once} other{Found {count} times}}",
   "@collectionFoundCount": {
-    "description": "Accessibility detail for a creature the user has found, read after its name.",
+    "description": "Accessibility detail for a creature the user has found, read after its name. A plural because a first find is the common case and 'Found 1 times' is wrong in English before it is wrong anywhere else.",
     "placeholders": {
       "count": { "type": "int" }
     }

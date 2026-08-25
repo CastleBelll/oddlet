@@ -1,0 +1,62 @@
+{
+  "@@locale": "id",
+
+  "appTitle": "ODDLET",
+
+  "eggLabel": "Telur",
+
+  "eggHint": "Ketuk buat menyentuhnya, geser buat memutarnya, tekan lama buat membukanya",
+
+  "eggHoldToOpen": "tekan lama buat buka",
+
+  "revealNew": "NEW",
+
+  "introLine1": "Ada telur datang.",
+  "introLine2": "Nggak ada yang tahu bakal jadi apa.",
+  "introLine3": "Itu tergantung kamu.",
+
+  "introContinue": "ketuk buat mulai",
+
+  "shareTagline": "punyamu bakal jadi apa?",
+
+  "revealShare": "Bagikan",
+
+  "revealDismiss": "ketuk buat lanjut",
+
+  "rarityCommon": "COMMON",
+  "rarityUncommon": "UNCOMMON",
+  "rarityRare": "RARE",
+  "rarityEpic": "EPIC",
+  "rarityLegendary": "LEGENDARY",
+  "raritySecret": "SECRET",
+
+  "creaturePlainChick": "Anak Ayam Biasa",
+  "creatureSleepyChick": "Anak Ayam Ngantuk",
+  "creatureDizzyChick": "Anak Ayam Pusing",
+  "creatureAngryChick": "Anak Ayam Marah",
+  "creatureGhostChick": "Anak Ayam Hantu",
+  "creatureStaticChick": "Anak Ayam Statis",
+  "creatureStormChick": "Anak Ayam Badai",
+  "creatureDawnRunner": "Pelari Fajar",
+  "creatureTheQuietOne": "Si Pendiam",
+
+  "accountLocalOnly": "koleksi ini cuma ada di hp ini",
+  "accountConnect": "simpan",
+  "accountSheetTitle": "simpan koleksimu",
+  "accountSheetBody": "hubungkan akun, nanti ikut pindah ke hp baru",
+  "accountWithGoogle": "lanjut dengan Google",
+  "accountWithApple": "lanjut dengan Apple",
+  "accountLinked": "beres. sekarang punyamu",
+  "accountSwitched": "kamu masuk ke akun yang sudah kamu punya. yang kamu temukan sebelum login nggak ada di akun ini",
+  "accountFailed": "akun itu nggak bisa dihubungkan",
+
+  "collectionTitle": "KOLEKSI",
+  "collectionOpen": "Buka koleksi",
+  "collectionClose": "Tutup koleksi",
+  "collectionProgress": "{found} dari {total} ditemukan",
+  "collectionUndiscovered": "Belum ditemukan",
+  "collectionFoundCount": "{count, plural, other{Ditemukan {count} kali}}",
+  "homeNextEgg": "telur berikutnya datang besok",
+
+  "dialogDismiss": "oke"
+}

@@ -1,0 +1,62 @@
+{
+  "@@locale": "zh_Hant",
+
+  "appTitle": "ODDLET",
+
+  "eggLabel": "蛋",
+
+  "eggHint": "點一下摸牠，拖曳轉牠，長按打開",
+
+  "eggHoldToOpen": "長按打開",
+
+  "revealNew": "NEW",
+
+  "introLine1": "來了一顆蛋。",
+  "introLine2": "沒人知道牠會變成什麼。",
+  "introLine3": "那要看你。",
+
+  "introContinue": "點一下開始",
+
+  "shareTagline": "你的會變成什麼？",
+
+  "revealShare": "分享",
+
+  "revealDismiss": "點一下繼續",
+
+  "rarityCommon": "COMMON",
+  "rarityUncommon": "UNCOMMON",
+  "rarityRare": "RARE",
+  "rarityEpic": "EPIC",
+  "rarityLegendary": "LEGENDARY",
+  "raritySecret": "SECRET",
+
+  "creaturePlainChick": "普通小雞",
+  "creatureSleepyChick": "想睡小雞",
+  "creatureDizzyChick": "暈頭小雞",
+  "creatureAngryChick": "生氣小雞",
+  "creatureGhostChick": "幽靈小雞",
+  "creatureStaticChick": "靜電小雞",
+  "creatureStormChick": "暴風小雞",
+  "creatureDawnRunner": "破曉奔跑者",
+  "creatureTheQuietOne": "沉默的那隻",
+
+  "accountLocalOnly": "這本圖鑑只存在這支手機裡",
+  "accountConnect": "保住它",
+  "accountSheetTitle": "保住你的圖鑑",
+  "accountSheetBody": "連上帳號，換手機它也跟著你",
+  "accountWithGoogle": "用 Google 繼續",
+  "accountWithApple": "用 Apple 繼續",
+  "accountLinked": "好了。現在是你的了",
+  "accountSwitched": "登入了你本來就有的帳號。登入前收集的東西不在這個帳號上",
+  "accountFailed": "沒能連上這個帳號",
+
+  "collectionTitle": "圖鑑",
+  "collectionOpen": "打開圖鑑",
+  "collectionClose": "關閉圖鑑",
+  "collectionProgress": "{total}種中已發現{found}種",
+  "collectionUndiscovered": "還沒發現",
+  "collectionFoundCount": "{count, plural, other{發現過{count}次}}",
+  "homeNextEgg": "下一顆蛋明天到",
+
+  "dialogDismiss": "知道了"
+}
