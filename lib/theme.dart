@@ -39,6 +39,12 @@ abstract final class OddletColors {
 /// have would only get a synthetic bold that smears.
 const oddletFontFamily = 'BlackHanSans';
 
+/// How much bigger than Material's defaults everything is set.
+///
+/// One number rather than a rewritten scale, so the relationships between the
+/// sizes stay where Material put them and only the whole thing moves.
+const oddletTextScale = 1.18;
+
 /// A colour bleeding into the dark around it, the way a lit sign does.
 ///
 /// Used on the handful of things worth drawing the eye to. Applying it
@@ -68,13 +74,13 @@ ThemeData oddletDarkTheme() {
     shadow: Color(0xFF000000),
   );
 
-  return ThemeData(
-    colorScheme: scheme,
+  // A poster face. Nothing here is official; a system font would make the app
+  // look like it is reporting something to the user rather than playing with
+  // them.
+  final base = ThemeData(colorScheme: scheme, fontFamily: oddletFontFamily);
+
+  return base.copyWith(
     scaffoldBackgroundColor: scheme.surface,
-    // Hand-drawn, and drawn a little badly on purpose. Nothing here is
-    // official; a system font would make the app look like it is reporting
-    // something to the user rather than playing with them.
-    fontFamily: oddletFontFamily,
     dialogTheme: DialogThemeData(
       backgroundColor: OddletColors.inkRaised,
       surfaceTintColor: Colors.transparent,
@@ -89,15 +95,28 @@ ThemeData oddletDarkTheme() {
       scrolledUnderElevation: 0,
       centerTitle: true,
     ),
+    // Scaled first and adjusted second. Material's own sizes have to be the
+    // ones scaled — a factor applied to a partial theme has nothing to
+    // multiply — and the tracking and leading below then survive it.
+    //
     // Wide tracking is for labels only. Latin words set as specimen labels
     // (ODDLET, RARE) want the air; Korean sentences do not, and tracking them
     // pushes single syllables onto their own line.
-    textTheme: const TextTheme(
-      headlineSmall: TextStyle(fontWeight: FontWeight.w400, height: 1.4),
-      titleLarge: TextStyle(fontWeight: FontWeight.w400, height: 1.6),
-      labelLarge: TextStyle(letterSpacing: 3),
-      labelMedium: TextStyle(letterSpacing: 2),
-      bodySmall: TextStyle(letterSpacing: 0.6),
-    ).apply(bodyColor: scheme.onSurface, displayColor: scheme.onSurface),
+    textTheme: Typography.material2021(colorScheme: scheme).englishLike
+        .apply(
+          bodyColor: scheme.onSurface,
+          displayColor: scheme.onSurface,
+          fontFamily: oddletFontFamily,
+          fontSizeFactor: oddletTextScale,
+        )
+        .merge(
+          const TextTheme(
+            headlineSmall: TextStyle(fontWeight: FontWeight.w400, height: 1.4),
+            titleLarge: TextStyle(fontWeight: FontWeight.w400, height: 1.6),
+            labelLarge: TextStyle(letterSpacing: 3),
+            labelMedium: TextStyle(letterSpacing: 2),
+            bodySmall: TextStyle(letterSpacing: 0.6),
+          ),
+        ),
   );
 }

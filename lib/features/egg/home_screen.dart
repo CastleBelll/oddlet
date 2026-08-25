@@ -45,6 +45,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   late final RuleEngine _rules = RuleEngine(season01Creatures);
 
   /// What came out, or null while the egg is still whole.
+  /// From the moment the egg starts giving way until the reveal is gone.
+  ///
+  /// Not the animation controller's own `isAnimating`: that turns false on the
+  /// frame the sequence ends, which is several frames before the reveal is
+  /// ready, and the egg would sit there whole again in between.
+  bool _opening = false;
+
   Creature? _hatched;
 
   /// Whether that find filled an empty slot.
@@ -99,8 +106,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
     final egg = ref.read(dailyEggControllerProvider).value;
     if (egg == null) {
-      _lastStage = null;
-      _hatch.reset();
+      setState(_closeHatch);
       return;
     }
 
@@ -113,8 +119,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       ),
     );
 
-    _lastStage = null;
-    _hatch.reset();
+    // The shell is left where the sequence ended it — open, and blacked out —
+    // until the reveal is over it. Resetting here put a whole undamaged egg
+    // back on screen for the frames it takes to file the find away.
     unawaited(_fileResult(result));
   }
 
@@ -134,12 +141,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     });
   }
 
-  void _dismissReveal() => setState(() => _hatched = null);
+  void _dismissReveal() => setState(() {
+    _hatched = null;
+    _closeHatch();
+  });
 
   /// Debug builds only: waiting a day between tries makes the loop slow to
   /// work on.
   void _resetEgg() {
-    setState(() => _hatched = null);
+    setState(() {
+      _hatched = null;
+      _closeHatch();
+    });
     unawaited(ref.read(dailyEggControllerProvider.notifier).resetToday());
   }
 
@@ -148,11 +161,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   );
 
   void _beginHatch() {
-    if (_hatch.isAnimating) {
+    if (_opening) {
       return;
     }
     HapticFeedback.selectionClick();
+    setState(() => _opening = true);
     _hatch.forward(from: 0);
+  }
+
+  /// Puts the whole egg back, once there is no longer a reveal over it.
+  void _closeHatch() {
+    _lastStage = null;
+    _opening = false;
+    _hatch.reset();
   }
 
   @override
@@ -221,9 +242,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                                 height: eggHeight,
                                 day: egg.requireValue.day,
                                 shakes: _shakeDetector.shakes,
-                                hatchProgress: _hatch.isAnimating
-                                    ? _hatch.value
-                                    : null,
+                                hatchProgress: _opening ? _hatch.value : null,
                                 onHatchRequested: _beginHatch,
                               ),
                               const SizedBox(height: 36),
@@ -231,7 +250,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                               // there is no way to find out that a long press
                               // is what opens the egg.
                               AnimatedOpacity(
-                                opacity: _hatch.isAnimating ? 0 : 1,
+                                opacity: _opening ? 0 : 1,
                                 duration: const Duration(milliseconds: 300),
                                 child: Text(
                                   AppLocalizations.of(context).eggHoldToOpen,
@@ -250,7 +269,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               },
             ),
           ),
-          if (_hatch.isAnimating) _HatchOverlay(progress: _hatch.value),
+          if (_opening) _HatchOverlay(progress: _hatch.value),
           if (_hatched case final creature?)
             HatchReveal(
               creature: creature,
