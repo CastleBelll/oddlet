@@ -62,6 +62,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '626132539773',
     projectId: 'oddlet-app',
     storageBucket: 'oddlet-app.firebasestorage.app',
+    androidClientId: '626132539773-prikoer1eri3rhc4n1vkagqug4qe3oft.apps.googleusercontent.com',
+    iosClientId: '626132539773-4f9735hathma01qu7hp5a6suff1n3cr3.apps.googleusercontent.com',
     iosBundleId: 'com.castlebell.oddlet',
   );
 }

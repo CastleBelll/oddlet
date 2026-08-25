@@ -12,7 +12,20 @@
           "package_name": "com.castlebell.oddlet"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "626132539773-prikoer1eri3rhc4n1vkagqug4qe3oft.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.castlebell.oddlet",
+            "certificate_hash": "7109d5210d092b26ed47af3083fd23d90d002a7c"
+          }
+        },
+        {
+          "client_id": "626132539773-krib0ams3pvq03dguvttvm0flpaaccto.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyAWmPzrXgZwU3iEVsArqEzilYh0tJWWddc"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "626132539773-krib0ams3pvq03dguvttvm0flpaaccto.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "626132539773-4f9735hathma01qu7hp5a6suff1n3cr3.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.castlebell.oddlet"
+              }
+            }
+          ]
         }
       }
     }
