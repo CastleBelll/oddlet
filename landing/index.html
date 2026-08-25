@@ -106,10 +106,14 @@
     text-align: center;
   }
 
+  /* Not the poster face. A hero line is still a line someone reads, and a
+     whole page set in a display weight stops being emphasis and becomes
+     shouting. */
   .lede {
-    font-family: var(--display);
-    font-size: clamp(22px, 5.2vw, 38px);
-    line-height: 1.45;
+    font-family: var(--body);
+    font-weight: 500;
+    font-size: clamp(20px, 4.4vw, 31px);
+    line-height: 1.55;
     margin: 0;
     max-width: 22ch;
     white-space: pre-line;
@@ -159,10 +163,12 @@
     margin: 0 0 18px;
   }
 
+  /* The one place the poster face earns its keep: a single statement per
+     section, with nothing else near it set that heavy. */
   h2 {
     font-family: var(--display);
-    font-size: clamp(28px, 6vw, 46px);
-    line-height: 1.3;
+    font-size: clamp(25px, 5vw, 38px);
+    line-height: 1.34;
     margin: 0 0 28px;
     text-wrap: balance;
   }
@@ -177,9 +183,10 @@
   }
 
   .beats li {
-    font-family: var(--display);
-    font-size: clamp(19px, 3.6vw, 26px);
-    line-height: 1.55;
+    font-family: var(--body);
+    font-weight: 400;
+    font-size: clamp(16px, 2.8vw, 19px);
+    line-height: 1.75;
     color: var(--parchment);
     padding-left: 26px;
     position: relative;
@@ -239,7 +246,7 @@
 
   .card .name {
     font-family: var(--display);
-    font-size: 30px;
+    font-size: 27px;
     color: var(--parchment);
   }
 
@@ -263,8 +270,9 @@
   }
 
   .store {
-    font-family: var(--display);
-    font-size: 16px;
+    font-family: var(--body);
+    font-weight: 500;
+    font-size: 15px;
     letter-spacing: 0.04em;
     padding: 14px 26px;
     border-radius: 999px;
