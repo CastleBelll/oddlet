@@ -85,5 +85,18 @@
   "nameErrorHandle": "revois le pseudo",
   "nameErrorNeedsAccount": "connecte un compte pour le nommer",
   "nameErrorUnreachable": "pas de connexion là. réessaie dans un instant",
-  "nameErrorUnknown": "impossible d'enregistrer ce nom"
+  "nameErrorUnknown": "impossible d'enregistrer ce nom",
+
+  "signInTitle": "il te faut un compte pour commencer",
+  "signInBody": "ta collection y est rattachée, elle te suit sur un nouveau téléphone",
+  "signInEmail": "e-mail",
+  "signInPassword": "mot de passe",
+  "signInContinue": "continuer",
+  "signInOr": "ou",
+  "signInErrorEmail": "ce n'est pas une adresse e-mail",
+  "signInErrorPassword": "ce mot de passe est trop court",
+  "signInErrorWrong": "cette adresse existe déjà et le mot de passe ne l'ouvre pas",
+  "handleTitle": "on t'appelle comment ?",
+  "handleBody": "il apparaîtra à côté des noms que tu donnes. pas ton vrai nom",
+  "handleContinue": "c'est moi"
 }

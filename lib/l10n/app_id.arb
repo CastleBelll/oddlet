@@ -85,5 +85,18 @@
   "nameErrorHandle": "cek lagi nama panggilannya",
   "nameErrorNeedsAccount": "hubungkan akun dulu buat kasih nama",
   "nameErrorUnreachable": "lagi nggak nyambung. coba sebentar lagi",
-  "nameErrorUnknown": "nama itu nggak bisa didaftarkan"
+  "nameErrorUnknown": "nama itu nggak bisa didaftarkan",
+
+  "signInTitle": "butuh akun dulu buat mulai",
+  "signInBody": "koleksimu nempel di akun, jadi ikut pindah ke hp baru",
+  "signInEmail": "email",
+  "signInPassword": "kata sandi",
+  "signInContinue": "lanjut",
+  "signInOr": "atau",
+  "signInErrorEmail": "itu bukan alamat email",
+  "signInErrorPassword": "kata sandinya kependekan",
+  "signInErrorWrong": "alamat itu sudah ada dan kata sandinya nggak cocok",
+  "handleTitle": "mau dipanggil apa?",
+  "handleBody": "bakal ada di sebelah nama yang kamu kasih. jangan nama asli",
+  "handleContinue": "ini aku"
 }

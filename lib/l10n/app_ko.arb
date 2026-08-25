@@ -85,5 +85,18 @@
   "nameErrorHandle": "닉네임을 다시 봐",
   "nameErrorNeedsAccount": "이름을 지으려면 계정을 연결해야 해",
   "nameErrorUnreachable": "지금은 연결이 안 돼. 잠깐 뒤에 다시",
-  "nameErrorUnknown": "이름을 등록하지 못했어"
+  "nameErrorUnknown": "이름을 등록하지 못했어",
+
+  "signInTitle": "시작하려면 계정이 필요해",
+  "signInBody": "도감은 계정에 붙어 있어. 폰을 바꿔도 따라오게",
+  "signInEmail": "이메일",
+  "signInPassword": "비밀번호",
+  "signInContinue": "계속",
+  "signInOr": "또는",
+  "signInErrorEmail": "이메일 주소가 아니야",
+  "signInErrorPassword": "비밀번호가 너무 짧아",
+  "signInErrorWrong": "그 주소는 이미 있고 비밀번호가 안 맞아",
+  "handleTitle": "뭐라고 부를까",
+  "handleBody": "네가 지은 이름 옆에 남을 이름이야. 본명 말고",
+  "handleContinue": "이걸로 할래"
 }

@@ -85,5 +85,18 @@
   "nameErrorHandle": "ニックネームを見直して",
   "nameErrorNeedsAccount": "名前をつけるにはアカウントが要る",
   "nameErrorUnreachable": "今はつながらない。少しあとで",
-  "nameErrorUnknown": "名前を登録できなかった"
+  "nameErrorUnknown": "名前を登録できなかった",
+
+  "signInTitle": "はじめるにはアカウントがいる",
+  "signInBody": "図鑑はアカウントについてくる。機種変しても残るように",
+  "signInEmail": "メール",
+  "signInPassword": "パスワード",
+  "signInContinue": "つづける",
+  "signInOr": "または",
+  "signInErrorEmail": "メールアドレスじゃない",
+  "signInErrorPassword": "パスワードが短すぎる",
+  "signInErrorWrong": "そのアドレスはもうあって、パスワードが合わない",
+  "handleTitle": "なんて呼べばいい？",
+  "handleBody": "君がつけた名前の横に残る名前。本名じゃなくていい",
+  "handleContinue": "これでいく"
 }

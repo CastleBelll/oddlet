@@ -146,3 +146,33 @@ async function wordList(): Promise<readonly string[]> {
   cachedAt = now;
   return cachedTerms;
 }
+
+/**
+ * Sets the nickname this account signs its names with.
+ *
+ * A handle is read by strangers next to a name they did not choose, so it goes
+ * through the same filter a creature name does and is written here rather than
+ * from the app: rules forbid the client touching the field at all.
+ *
+ * Changing an existing one is allowed. A handle is how somebody wants to be
+ * called, not a record of who was first — that is the name, and that is the
+ * one that cannot move.
+ */
+export const setHandle = onCall({ region: REGION }, async (request) => {
+  const uid = request.auth?.uid;
+  if (!uid) {
+    throw new HttpsError("unauthenticated", "sign in first");
+  }
+  if (request.auth?.token.firebase?.sign_in_provider === "anonymous") {
+    throw new HttpsError("permission-denied", "connect a real account first");
+  }
+
+  const handle = tidy(String((request.data ?? {}).handle ?? ""));
+  reject(checkShape(handle), "handle");
+  if (isBlocked(handle, await wordList())) {
+    throw new HttpsError("invalid-argument", "handle:blocked");
+  }
+
+  await db.doc(`users/${uid}`).set({ handle }, { merge: true });
+  return { handle };
+});

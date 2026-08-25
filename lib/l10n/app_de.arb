@@ -85,5 +85,18 @@
   "nameErrorHandle": "schau nochmal auf den Spitznamen",
   "nameErrorNeedsAccount": "verbinde ein Konto, um es zu benennen",
   "nameErrorUnreachable": "gerade keine Verbindung. gleich nochmal",
-  "nameErrorUnknown": "der Name ließ sich nicht eintragen"
+  "nameErrorUnknown": "der Name ließ sich nicht eintragen",
+
+  "signInTitle": "zum Anfangen brauchst du ein Konto",
+  "signInBody": "deine Sammlung hängt daran und kommt aufs nächste Handy mit",
+  "signInEmail": "E-Mail",
+  "signInPassword": "Passwort",
+  "signInContinue": "weiter",
+  "signInOr": "oder",
+  "signInErrorEmail": "das ist keine E-Mail-Adresse",
+  "signInErrorPassword": "das Passwort ist zu kurz",
+  "signInErrorWrong": "die Adresse gibt es schon und das Passwort passt nicht",
+  "handleTitle": "wie sollen wir dich nennen?",
+  "handleBody": "steht neben den Namen, die du vergibst. nicht dein echter",
+  "handleContinue": "das bin ich"
 }

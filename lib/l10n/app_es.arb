@@ -85,5 +85,18 @@
   "nameErrorHandle": "revisa el apodo",
   "nameErrorNeedsAccount": "conecta una cuenta para ponerle nombre",
   "nameErrorUnreachable": "ahora mismo no hay conexión. inténtalo en un momento",
-  "nameErrorUnknown": "no se pudo registrar ese nombre"
+  "nameErrorUnknown": "no se pudo registrar ese nombre",
+
+  "signInTitle": "necesitas una cuenta para empezar",
+  "signInBody": "tu colección va en ella, así que te sigue al cambiar de móvil",
+  "signInEmail": "correo",
+  "signInPassword": "contraseña",
+  "signInContinue": "continuar",
+  "signInOr": "o",
+  "signInErrorEmail": "eso no es un correo",
+  "signInErrorPassword": "esa contraseña es demasiado corta",
+  "signInErrorWrong": "ese correo ya existe y la contraseña no lo abre",
+  "handleTitle": "¿cómo te llamamos?",
+  "handleBody": "irá junto a los nombres que pongas. no pongas el tuyo de verdad",
+  "handleContinue": "ese soy yo"
 }

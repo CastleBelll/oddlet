@@ -76,6 +76,11 @@
     font-family: var(--body);
     -webkit-font-smoothing: antialiased;
     overflow-x: hidden;
+    /* Korean breaks between any two syllables unless told otherwise, which is
+       how "보냈는지가" ends up split across two lines. This makes a line break
+       only at a space, the way a reader expects. */
+    word-break: keep-all;
+    overflow-wrap: break-word;
   }
 
   /* Hero ---------------------------------------------------------------- */
@@ -145,7 +150,7 @@
     font-size: clamp(19px, 3.4vw, 26px);
     line-height: 1.6;
     margin: 0;
-    max-width: 30ch;
+    max-width: 34ch;
     white-space: pre-line;
     min-height: 3.2em;
   }
@@ -197,10 +202,19 @@
 
   /* The one place the poster face earns its keep: a single statement per
      section, with nothing else near it set that heavy. */
+  /* Broken where the sentence breaks, not wherever the line happens to run
+     out. Each sentence is its own block once there is room for two lines;
+     on a narrow screen they run together and wrap normally, because a break
+     forced there would land in the middle of a phrase. */
+  h2 span { display: block; }
+  @media (max-width: 560px) {
+    h2 span { display: inline; }
+  }
+
   h2 {
     font-family: var(--display);
     font-weight: 800;
-    max-width: 24ch;
+    max-width: 40ch;
     font-size: clamp(23px, 3.6vw, 32px);
     line-height: 1.4;
     margin: 0 0 28px;
@@ -224,7 +238,6 @@
     color: var(--parchment);
     padding-left: 26px;
     position: relative;
-    max-width: 46ch;
     min-height: 1.8em;
   }
 
@@ -244,7 +257,7 @@
 
   .aside {
     margin: 26px 0 0;
-    max-width: var(--measure);
+    max-width: 52ch;
     color: var(--parchment-dim);
     font-size: 15px;
     line-height: 1.8;
@@ -367,7 +380,7 @@
 <main>
   <section id="what">
     <p class="eyebrow">이게 뭐야</p>
-    <h2>버튼을 눌러 뽑는 게 아니다. 네가 하루를 어떻게 보냈는지가 결과다.</h2>
+    <h2><span>버튼을 눌러 뽑는 게 아니다.</span> <span>네가 하루를 어떻게 보냈는지가 결과다.</span></h2>
     <ol class="beats">
       <li data-type="아침에 알이 하나 온다. 모두 같은 알이다."></li>
       <li data-type="만지고, 흔들고, 언제 여는지가 조용히 기록된다."></li>
@@ -382,7 +395,7 @@
 
   <section id="naming">
     <p class="eyebrow">최초 발견</p>
-    <h2>이름 없는 애를 처음 만나면, 이름은 네가 짓는다.</h2>
+    <h2><span>이름 없는 애를 처음 만나면,</span> <span>이름은 네가 짓는다.</span></h2>
     <ol class="beats">
       <li data-type="아직 아무도 만난 적 없는 종이 나오면 이름을 지을 수 있다."></li>
       <li data-type="그 이름은 이후 그 애를 만나는 모든 사람에게 보인다."></li>

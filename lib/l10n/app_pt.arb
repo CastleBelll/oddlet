@@ -85,5 +85,18 @@
   "nameErrorHandle": "dá outra olhada no apelido",
   "nameErrorNeedsAccount": "conecte uma conta para dar o nome",
   "nameErrorUnreachable": "sem conexão agora. tente daqui a pouco",
-  "nameErrorUnknown": "não deu para registrar esse nome"
+  "nameErrorUnknown": "não deu para registrar esse nome",
+
+  "signInTitle": "você precisa de uma conta para começar",
+  "signInBody": "sua coleção fica nela, então te acompanha na troca de celular",
+  "signInEmail": "e-mail",
+  "signInPassword": "senha",
+  "signInContinue": "continuar",
+  "signInOr": "ou",
+  "signInErrorEmail": "isso não é um e-mail",
+  "signInErrorPassword": "essa senha é curta demais",
+  "signInErrorWrong": "esse e-mail já existe e a senha não abre",
+  "handleTitle": "como te chamamos?",
+  "handleBody": "fica ao lado dos nomes que você der. não use o seu de verdade",
+  "handleContinue": "sou eu"
 }

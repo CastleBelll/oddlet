@@ -18,6 +18,15 @@ enum UpgradeOutcome {
 
   cancelled,
   failed,
+
+  /// The address is not an address.
+  badEmail,
+
+  /// Firebase will not take a password that short.
+  weakPassword,
+
+  /// That address exists and the password does not open it.
+  wrongPassword,
 }
 
 final accountProvider = AsyncNotifierProvider<AccountController, User?>(
@@ -26,39 +35,18 @@ final accountProvider = AsyncNotifierProvider<AccountController, User?>(
 
 /// Who the user is, as far as the backend is concerned.
 ///
-/// Everyone starts anonymous and stays that way until they have a reason not
-/// to. Asking for an account before someone has seen an egg would spend the
-/// whole opening on a form; the account starts mattering once there is a
-/// collection worth keeping, or a name worth putting someone's word behind.
-///
-/// The same account is later upgraded to Google, Apple or email in place, so
-/// nothing found before signing in is lost.
+/// Null until somebody has signed in, and the app does not start without one.
+/// Nothing signs itself in quietly here: an account that appeared on its own is
+/// an account nobody chose, and this one carries a nickname other people read
+/// and names other people have to live with.
 class AccountController extends AsyncNotifier<User?> {
   @override
-  Future<User?> build() async {
-    final auth = FirebaseAuth.instance;
-    final existing = auth.currentUser;
-    if (existing != null) {
-      return existing;
-    }
+  Future<User?> build() async => FirebaseAuth.instance.currentUser;
 
-    try {
-      final credential = await auth.signInAnonymously();
-      return credential.user;
-    } on FirebaseAuthException catch (error, stack) {
-      // The app is playable without an account: today's egg lives on the
-      // device. Report it and carry on rather than blocking the loop on a
-      // network that may not be there.
-      FlutterError.reportError(
-        FlutterErrorDetails(
-          exception: error,
-          stack: stack,
-          library: 'oddlet',
-          context: ErrorDescription('signing in'),
-        ),
-      );
-      return null;
-    }
+  /// Sends the user back to the sign-in wall.
+  Future<void> signOut() async {
+    await FirebaseAuth.instance.signOut();
+    state = const AsyncData(null);
   }
 
   /// Whether this is still the throwaway account.
@@ -108,12 +96,22 @@ class AccountController extends AsyncNotifier<User?> {
     }
   }
 
-  /// Attaches [credential] to the account the user is already using, so a
-  /// collection found before signing in comes along.
+  /// Signs in with [credential], or attaches it to a throwaway account already
+  /// in use so that anything found under it comes along.
   Future<UpgradeOutcome> _link(AuthCredential credential) async {
     final auth = FirebaseAuth.instance;
+    final existing = auth.currentUser;
+
+    // Nothing to attach it to. Now that the app asks for an account before it
+    // starts, this is the ordinary path and linking is the exception.
+    if (existing == null || !existing.isAnonymous) {
+      final result = await auth.signInWithCredential(credential);
+      state = AsyncData(result.user);
+      return UpgradeOutcome.linked;
+    }
+
     try {
-      final result = await auth.currentUser!.linkWithCredential(credential);
+      final result = await existing.linkWithCredential(credential);
       state = AsyncData(result.user);
       return UpgradeOutcome.linked;
     } on FirebaseAuthException catch (error, stack) {
@@ -130,6 +128,50 @@ class AccountController extends AsyncNotifier<User?> {
       return UpgradeOutcome.switchedToExistingAccount;
     }
   }
+
+  /// Signs in with an email address, creating the account if it is new.
+  ///
+  /// One button rather than two. Whether an address has been here before is
+  /// something the server already knows, and making somebody pick the right
+  /// door first is a question asked for the implementation's benefit.
+  Future<UpgradeOutcome> continueWithEmail({
+    required String email,
+    required String password,
+  }) async {
+    final auth = FirebaseAuth.instance;
+    try {
+      await auth.signInWithEmailAndPassword(email: email, password: password);
+      state = AsyncData(auth.currentUser);
+      return UpgradeOutcome.linked;
+    } on FirebaseAuthException catch (error, stack) {
+      if (error.code != 'user-not-found') {
+        return _reportEmail(error, stack);
+      }
+      try {
+        await auth.createUserWithEmailAndPassword(
+          email: email,
+          password: password,
+        );
+        state = AsyncData(auth.currentUser);
+        return UpgradeOutcome.linked;
+      } on FirebaseAuthException catch (error, stack) {
+        return _reportEmail(error, stack);
+      }
+    }
+  }
+
+  /// Told apart from everything else because these are the failures somebody
+  /// can actually do something about: a typo in the address, a password too
+  /// short, one that does not open the account that address already has.
+  UpgradeOutcome _reportEmail(FirebaseAuthException error, StackTrace stack) =>
+      switch (error.code) {
+        'invalid-email' => UpgradeOutcome.badEmail,
+        'weak-password' => UpgradeOutcome.weakPassword,
+        'wrong-password' ||
+        'invalid-credential' ||
+        'email-already-in-use' => UpgradeOutcome.wrongPassword,
+        _ => _report(error, stack, 'signing in with an email address'),
+      };
 
   UpgradeOutcome _report(Object error, StackTrace stack, String context) {
     FlutterError.reportError(

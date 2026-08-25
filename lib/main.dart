@@ -4,7 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'l10n/app_localizations.dart';
 
 import 'features/account/account_controller.dart';
+import 'features/account/onboarding.dart';
 import 'features/egg/home_screen.dart';
+import 'features/naming/naming_repository.dart';
 import 'features/intro/intro_controller.dart';
 import 'features/intro/intro_screen.dart';
 import 'firebase_options.dart';
@@ -16,24 +18,56 @@ Future<void> main() async {
   runApp(const ProviderScope(child: OddletApp()));
 }
 
-/// The opening plays once, then never again.
+/// Whether this account has already chosen a nickname.
+///
+/// Its own provider rather than a field on the account, so that finishing the
+/// nickname step can invalidate it and the app moves on by itself.
+final handleProvider = FutureProvider<String?>((ref) async {
+  final uid = ref.watch(accountProvider).value?.uid;
+  if (uid == null) {
+    return null;
+  }
+  return ref.watch(namingRepositoryProvider).myHandle(uid);
+});
+
+/// Everything that has to be true before the egg.
+///
+/// In order: an account, a nickname, and the opening. The account comes first
+/// because everything the app keeps belongs to one — the collection, a name
+/// other people live with — and none of that can be handed to somebody who
+/// never chose an account. The nickname comes next because the first thing the
+/// app can offer is naming something, and a name has to be signed.
 class _Entry extends ConsumerWidget {
   const _Entry();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Starts signing in without holding anything up. Today's egg is on the
-    // device, so the loop works whether or not this lands.
-    ref.watch(accountProvider);
+    const waiting = ColoredBox(color: OddletColors.ink);
 
-    final seen = ref.watch(introSeenProvider);
+    final account = ref.watch(accountProvider);
+    if (account.isLoading) {
+      return waiting;
+    }
+    if (account.value == null) {
+      return const SignInScreen();
+    }
+
+    final handle = ref.watch(handleProvider);
+    if (handle.isLoading) {
+      return waiting;
+    }
+    if ((handle.value ?? '').isEmpty) {
+      return HandleScreen(
+        onDone: () => ref.invalidate(handleProvider),
+      );
+    }
 
     // Nothing on screen until the answer is known: a flash of the egg followed
     // by an opening would be worse than a moment of dark.
-    return switch (seen) {
+    return switch (ref.watch(introSeenProvider)) {
       AsyncData(value: true) => const HomeScreen(),
       AsyncData() => const IntroScreen(),
-      _ => const ColoredBox(color: OddletColors.ink),
+      _ => waiting,
     };
   }
 }

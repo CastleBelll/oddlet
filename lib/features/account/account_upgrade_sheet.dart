@@ -49,6 +49,12 @@ class _AccountUpgradeSheetState extends ConsumerState<_AccountUpgradeSheet> {
       // than telling them.
       UpgradeOutcome.switchedToExistingAccount => l10n.accountSwitched,
       UpgradeOutcome.failed => l10n.accountFailed,
+      // Only an email address can fail these ways, and this sheet does not
+      // offer one. Named rather than defaulted so adding a provider here does
+      // not silently swallow its errors.
+      UpgradeOutcome.badEmail => l10n.signInErrorEmail,
+      UpgradeOutcome.weakPassword => l10n.signInErrorPassword,
+      UpgradeOutcome.wrongPassword => l10n.signInErrorWrong,
       UpgradeOutcome.cancelled => null,
     };
 

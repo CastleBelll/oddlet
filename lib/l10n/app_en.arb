@@ -310,5 +310,54 @@
   "nameErrorUnknown": "could not register that name",
   "@nameErrorUnknown": {
     "description": "Naming failed for a reason the app has no better words for."
+  },
+
+  "signInTitle": "you need an account to start",
+  "@signInTitle": {
+    "description": "Heading of the screen shown before anything else. The app does not start without an account."
+  },
+  "signInBody": "your collection lives on it, so it follows you to a new phone",
+  "@signInBody": {
+    "description": "Why an account is asked for at all: the collection is attached to it. Never mentions features it unlocks."
+  },
+  "signInEmail": "email",
+  "@signInEmail": {
+    "description": "Label of the email field."
+  },
+  "signInPassword": "password",
+  "@signInPassword": {
+    "description": "Label of the password field."
+  },
+  "signInContinue": "continue",
+  "@signInContinue": {
+    "description": "Button that signs in with the typed address, creating the account if it is new. One button, because whether the address has been here before is something the server already knows."
+  },
+  "signInOr": "or",
+  "@signInOr": {
+    "description": "Divider between the provider buttons and the email form."
+  },
+  "signInErrorEmail": "that is not an email address",
+  "@signInErrorEmail": {
+    "description": "The typed address is not an address."
+  },
+  "signInErrorPassword": "that password is too short",
+  "@signInErrorPassword": {
+    "description": "The typed password is shorter than the backend will accept."
+  },
+  "signInErrorWrong": "that address exists and the password does not open it",
+  "@signInErrorWrong": {
+    "description": "That address already has an account and this password does not open it."
+  },
+  "handleTitle": "what should we call you",
+  "@handleTitle": {
+    "description": "Heading of the nickname step, straight after signing in."
+  },
+  "handleBody": "this sits next to the names you give. not your real one",
+  "@handleBody": {
+    "description": "Warns that the nickname is public next to any name they give, and should not be a real name."
+  },
+  "handleContinue": "that is me",
+  "@handleContinue": {
+    "description": "Button that saves the nickname and enters the app."
   }
 }

@@ -85,5 +85,18 @@
   "nameErrorHandle": "再看看暱稱",
   "nameErrorNeedsAccount": "要取名得先連帳號",
   "nameErrorUnreachable": "現在連不上。等一下再試",
-  "nameErrorUnknown": "沒能登記這個名字"
+  "nameErrorUnknown": "沒能登記這個名字",
+
+  "signInTitle": "開始前需要一個帳號",
+  "signInBody": "圖鑑掛在帳號上，換手機也跟著你",
+  "signInEmail": "電子郵件",
+  "signInPassword": "密碼",
+  "signInContinue": "繼續",
+  "signInOr": "或者",
+  "signInErrorEmail": "這不是電子郵件地址",
+  "signInErrorPassword": "密碼太短了",
+  "signInErrorWrong": "這個地址已經存在，密碼不對",
+  "handleTitle": "怎麼稱呼你？",
+  "handleBody": "會留在你取的名字旁邊。別用真名",
+  "handleContinue": "就這個"
 }

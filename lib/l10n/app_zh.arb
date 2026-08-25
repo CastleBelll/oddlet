@@ -85,5 +85,18 @@
   "nameErrorHandle": "再看看昵称",
   "nameErrorNeedsAccount": "要取名得先连账号",
   "nameErrorUnreachable": "现在连不上。等一下再试",
-  "nameErrorUnknown": "没能登记这个名字"
+  "nameErrorUnknown": "没能登记这个名字",
+
+  "signInTitle": "开始前需要一个账号",
+  "signInBody": "图鉴挂在账号上，换手机也跟着你",
+  "signInEmail": "邮箱",
+  "signInPassword": "密码",
+  "signInContinue": "继续",
+  "signInOr": "或者",
+  "signInErrorEmail": "这不是邮箱地址",
+  "signInErrorPassword": "密码太短了",
+  "signInErrorWrong": "这个地址已经存在，密码不对",
+  "handleTitle": "怎么称呼你？",
+  "handleBody": "会留在你取的名字旁边。别用真名",
+  "handleContinue": "就这个"
 }
