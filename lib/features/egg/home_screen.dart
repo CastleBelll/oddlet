@@ -167,6 +167,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   @override
   Widget build(BuildContext context) {
     final egg = ref.watch(dailyEggControllerProvider);
+    final theme = Theme.of(context);
 
     return Scaffold(
       body: Stack(
@@ -213,14 +214,33 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                     child: egg.hasValue && egg.requireValue.isHatched
                         ? const _SpentEgg()
                         : egg.hasValue
-                        ? _Egg(
-                            height: eggHeight,
-                            day: egg.requireValue.day,
-                            shakes: _shakeDetector.shakes,
-                            hatchProgress: _hatch.isAnimating
-                                ? _hatch.value
-                                : null,
-                            onHatchRequested: _beginHatch,
+                        ? Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              _Egg(
+                                height: eggHeight,
+                                day: egg.requireValue.day,
+                                shakes: _shakeDetector.shakes,
+                                hatchProgress: _hatch.isAnimating
+                                    ? _hatch.value
+                                    : null,
+                                onHatchRequested: _beginHatch,
+                              ),
+                              const SizedBox(height: 36),
+                              // The one instruction in the app. Without it
+                              // there is no way to find out that a long press
+                              // is what opens the egg.
+                              AnimatedOpacity(
+                                opacity: _hatch.isAnimating ? 0 : 1,
+                                duration: const Duration(milliseconds: 300),
+                                child: Text(
+                                  AppLocalizations.of(context).eggHoldToOpen,
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: theme.colorScheme.onSurfaceVariant,
+                                  ),
+                                ),
+                              ),
+                            ],
                           )
                         : SizedBox(height: eggHeight),
                   ),

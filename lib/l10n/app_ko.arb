@@ -5,7 +5,9 @@
 
   "eggLabel": "알",
 
-  "eggHint": "탭하면 알을 만지고, 드래그하면 돌려볼 수 있습니다",
+  "eggHint": "탭하면 만지고, 드래그하면 돌리고, 꾹 누르면 열려요",
+
+  "eggHoldToOpen": "꾹 누르면 열려",
 
   "revealNew": "NEW",
 

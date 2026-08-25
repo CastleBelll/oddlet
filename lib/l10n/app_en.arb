@@ -11,9 +11,14 @@
     "description": "Accessibility label for the egg on the home screen. Screen readers announce this in place of the 3D shell."
   },
 
-  "eggHint": "Tap to touch the egg, drag to look around it",
+  "eggHint": "Tap to touch it, drag to turn it, press and hold to open it",
   "@eggHint": {
-    "description": "Accessibility hint telling a screen reader user what they can do with the egg. Deliberately says nothing about what the egg will become."
+    "description": "Accessibility hint listing everything that can be done with the egg, including how to open it. Says nothing about what the egg will become; how to operate the app is not a spoiler."
+  },
+
+  "eggHoldToOpen": "hold to open",
+  "@eggHoldToOpen": {
+    "description": "Shown under an unopened egg. The only instruction in the app: without it there is no way to discover that a long press opens the egg."
   },
 
   "revealNew": "NEW",
