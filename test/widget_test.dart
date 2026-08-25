@@ -77,7 +77,7 @@ void main() {
     testWidgets('shows the wordmark and the egg', (tester) async {
       await pumpApp(tester, const Locale('en'));
 
-      expect(find.text('ODDLET'), findsOneWidget);
+      expect(find.text('Oddlet-!'), findsOneWidget);
       expect(find.byType(EggView), findsOneWidget);
     });
 
@@ -85,7 +85,7 @@ void main() {
       await pumpApp(tester, const Locale('ko'));
 
       // The wordmark is the brand mark, not copy.
-      expect(find.text('ODDLET'), findsOneWidget);
+      expect(find.text('Oddlet-!'), findsOneWidget);
     });
 
     testWidgets('egg keeps animating without settling', (tester) async {
@@ -162,7 +162,7 @@ void main() {
       for (final locale in AppLocalizations.supportedLocales) {
         final l10n = lookupAppLocalizations(locale);
 
-        expect(l10n.appTitle, 'ODDLET', reason: '$locale renamed the app');
+        expect(l10n.appTitle, 'Oddlet-!', reason: '$locale renamed the app');
         expect(l10n.rarityRare, 'RARE', reason: '$locale translated a tier');
         expect(l10n.revealNew, 'NEW', reason: '$locale translated the badge');
       }

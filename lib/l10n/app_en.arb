@@ -1,9 +1,9 @@
 {
   "@@locale": "en",
 
-  "appTitle": "ODDLET",
+  "appTitle": "Oddlet-!",
   "@appTitle": {
-    "description": "Name of the app as the operating system shows it, for example in the task switcher. NEVER TRANSLATE THIS. The app is called ODDLET in every language, and so is the wordmark drawn on screen."
+    "description": "Name of the app as the operating system shows it, for example in the task switcher. NEVER TRANSLATE THIS. The app is called Oddlet-! in every language, and so is the wordmark drawn on screen. The exclamation mark is part of the name, not punctuation."
   },
 
   "eggLabel": "Egg",
@@ -61,7 +61,7 @@
 
   "rarityCommon": "COMMON",
   "@rarityCommon": {
-    "description": "Rarity tier. The six tier names are treated as brand terms and are left in English in every language, the way the ODDLET wordmark is. Translate only if the whole tier scheme is being localized."
+    "description": "Rarity tier. The six tier names are treated as brand terms and are left in English in every language, the way the Oddlet-! wordmark is. Translate only if the whole tier scheme is being localized."
   },
   "rarityUncommon": "UNCOMMON",
   "@rarityUncommon": {

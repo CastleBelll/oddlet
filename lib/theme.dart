@@ -100,7 +100,7 @@ ThemeData oddletDarkTheme() {
     // multiply — and the tracking and leading below then survive it.
     //
     // Wide tracking is for labels only. Latin words set as specimen labels
-    // (ODDLET, RARE) want the air; Korean sentences do not, and tracking them
+    // (Oddlet-!, RARE) want the air; Korean sentences do not, and tracking them
     // pushes single syllables onto their own line.
     textTheme: Typography.material2021(colorScheme: scheme).englishLike
         .apply(

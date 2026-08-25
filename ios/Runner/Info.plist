@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>ODDLET</string>
+	<string>Oddlet-!</string>
 	<!-- Without this iOS reports only the development language, so a Korean
 	     device would be handed English. -->
 	<key>CFBundleLocalizations</key>

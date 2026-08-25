@@ -42,7 +42,7 @@ class _Entry extends ConsumerWidget {
 ///
 /// Flutter's own resolution falls back to the first supported locale, and the
 /// generated list is alphabetical: without this, someone whose phone is set to
-/// a language ODDLET does not speak would be shown German. English is the
+/// a language Oddlet-! does not speak would be shown German. English is the
 /// language the app is written in, so it is what an unknown reader gets.
 Locale resolveLocale(List<Locale>? deviceLocales, Iterable<Locale> supported) {
   final wanted = deviceLocales ?? const <Locale>[];

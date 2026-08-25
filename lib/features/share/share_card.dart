@@ -114,7 +114,7 @@ class ShareCard extends StatelessWidget {
               const SizedBox(height: 24),
               Text(
                 // The brand mark, not copy.
-                'ODDLET',
+                'Oddlet-!',
                 style: TextStyle(
                   color: scheme.onSurface,
                   fontSize: 44,

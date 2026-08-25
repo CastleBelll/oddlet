@@ -373,7 +373,7 @@ class _Wordmark extends StatelessWidget {
 
     return Text(
       // The brand mark, not copy: it reads the same in every language.
-      'ODDLET',
+      'Oddlet-!',
       style: Theme.of(context).textTheme.labelLarge?.copyWith(
         color: scheme.onSurfaceVariant,
         letterSpacing: 6,
