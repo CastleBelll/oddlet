@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'l10n/app_localizations.dart';
 
+import 'features/account/account_controller.dart';
 import 'features/egg/home_screen.dart';
 import 'features/intro/intro_controller.dart';
 import 'features/intro/intro_screen.dart';
@@ -21,6 +22,10 @@ class _Entry extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Starts signing in without holding anything up. Today's egg is on the
+    // device, so the loop works whether or not this lands.
+    ref.watch(accountProvider);
+
     final seen = ref.watch(introSeenProvider);
 
     // Nothing on screen until the answer is known: a flash of the egg followed
