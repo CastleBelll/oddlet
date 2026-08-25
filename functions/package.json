@@ -1,0 +1,23 @@
+{
+  "name": "oddlet-functions",
+  "description": "Server side of naming a creature: the only thing allowed to write a name.",
+  "private": true,
+  "type": "module",
+  "main": "lib/index.js",
+  "engines": {
+    "node": "22"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "deploy": "npm run build && firebase deploy --only functions --project oddlet-app"
+  },
+  "dependencies": {
+    "firebase-admin": "^13.6.0",
+    "firebase-functions": "^6.6.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
+  }
+}

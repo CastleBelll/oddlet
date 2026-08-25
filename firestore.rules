@@ -26,10 +26,41 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // Named creatures. Everyone who is signed in reads them, because a name
+    // is only worth registering if the next finder sees it. Nobody writes
+    // them: the naming function runs on the Admin SDK, which is not subject to
+    // these rules, so "no writes" here means "the function or nothing".
+    match /species/{speciesId} {
+      allow read: if isSignedIn();
+      allow write: if false;
+    }
+
+    // The uniqueness index. Closed even to reads: it is the list of every
+    // name ever taken, and nothing in the app needs to enumerate it.
+    match /speciesNames/{nameKey} {
+      allow read, write: if false;
+    }
+
+    // The word list. Publishing what the filter looks for would be handing
+    // over the answer key.
+    match /moderation/{document=**} {
+      allow read, write: if false;
+    }
+
     // A user owns exactly their own tree, and nothing else. No listing other
     // people, no reading someone else's collection.
     match /users/{userId} {
-      allow read, write: if isOwner(userId);
+      allow read: if isOwner(userId);
+      allow delete: if false;
+
+      // Everything on this document is the user's own business except the
+      // handle, which strangers see next to a name they did not choose. That
+      // one goes through the same filter a name does, so it is written by the
+      // function and never from here.
+      allow create: if isOwner(userId)
+        && !('handle' in request.resource.data);
+      allow update: if isOwner(userId)
+        && request.resource.data.get('handle', '') == resource.data.get('handle', '');
 
       // Today's egg, uploaded once it hatches.
       match /dailyEggs/{date} {
