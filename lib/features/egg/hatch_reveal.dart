@@ -367,12 +367,19 @@ class _ArrivalState extends State<_Arrival> with SingleTickerProviderStateMixin 
           children: [
             Stack(
               alignment: Alignment.center,
+              // The light reaches past the creature. Positioned rather than
+              // sized, so it paints outside the stack without taking any room:
+              // as a laid-out child it made the column taller than the screen.
+              clipBehavior: Clip.none,
               children: [
-                IgnorePointer(
-                  child: Opacity(
-                    opacity: (flare * 0.85).clamp(0.0, 1.0),
-                    child: SizedBox.square(
-                      dimension: widget.glowRadius * 2,
+                Positioned.fill(
+                  left: -widget.glowRadius,
+                  right: -widget.glowRadius,
+                  top: -widget.glowRadius,
+                  bottom: -widget.glowRadius,
+                  child: IgnorePointer(
+                    child: Opacity(
+                      opacity: (flare * 0.85).clamp(0.0, 1.0),
                       child: const DecoratedBox(
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,

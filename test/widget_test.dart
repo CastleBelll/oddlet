@@ -13,8 +13,36 @@ import 'package:oddlet/features/egg/egg_appearance.dart';
 import 'package:oddlet/features/egg/egg_view.dart';
 import 'package:oddlet/features/egg/home_screen.dart';
 import 'package:oddlet/features/egg/shake_detector.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:oddlet/features/account/account_controller.dart';
+import 'package:oddlet/features/egg/hatch_reveal.dart';
+import 'package:oddlet/features/naming/naming_repository.dart';
+import 'package:oddlet/features/naming/species_name.dart';
+import 'package:oddlet/features/rules/season_01.dart';
 import 'package:oddlet/main.dart';
 import 'package:oddlet/theme.dart';
+
+/// Settled, without a Firebase to settle against.
+class _StubAccount extends AccountController {
+  @override
+  Future<User?> build() async => null;
+}
+
+/// A world where nothing has been named yet, and no network to ask.
+class _NoNames implements NamingRepository {
+  @override
+  Future<SpeciesName?> lookup(int species) async => null;
+
+  @override
+  Future<String?> myHandle(String uid) async => null;
+
+  @override
+  Future<NameRejection?> register({
+    required int species,
+    required String name,
+    String? handle,
+  }) async => NameRejection.unreachable;
+}
 
 /// A sample the detector should read as a shake of [magnitude] m/s^2 along x.
 UserAccelerometerEvent sample(double magnitude, DateTime at) =>
@@ -428,6 +456,43 @@ void main() {
       ]);
 
       expect(shakes.map((shake) => shake.direction), [-1.0, 1.0]);
+    });
+  });
+
+  group('hatch reveal', () {
+    testWidgets('fits a short screen', (tester) async {
+      // The light behind the creature was once a laid-out child, which made
+      // the column taller than the screen and overflowed on a real phone.
+      tester.view.physicalSize = const Size(1080, 1920);
+      tester.view.devicePixelRatio = 3;
+      addTearDown(tester.view.reset);
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            accountProvider.overrideWith(_StubAccount.new),
+            namingRepositoryProvider.overrideWithValue(_NoNames()),
+          ],
+          child: MaterialApp(
+            locale: const Locale('ko'),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            theme: oddletDarkTheme(),
+            home: Scaffold(
+              body: HatchReveal(
+                creature: season01Creatures.first,
+                isNew: true,
+                foundAt: DateTime(2026, 8, 25, 12),
+                onDismiss: () {},
+              ),
+            ),
+          ),
+        ),
+      );
+      // Part way through the arrival, where the light is at its widest.
+      await tester.pump(const Duration(milliseconds: 300));
+
+      expect(tester.takeException(), isNull);
     });
   });
 
