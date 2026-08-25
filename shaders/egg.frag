@@ -33,8 +33,14 @@ const float MAX_DIST = 8.0;
 // The taper makes sdEgg a loose distance bound, so march conservatively.
 const float STEP_SCALE = 0.7;
 
-const float CRACK_SCALE = 9.0;   // how far apart the fracture lines run
-const float CRACK_SPREAD = 2.6;  // distance the cracks travel at uCrack = 1
+// How big a broken piece of shell is. Small values shatter the egg into
+// gravel, which reads as scribble rather than damage; this leaves roughly a
+// dozen pieces over the whole shell.
+const float PLATE_SCALE = 2.4;
+const float CRACK_SPREAD = 2.6;      // distance the cracks travel at uCrack = 1
+const float CRACK_MIN_WIDTH = 0.010; // a hairline, before anything opens
+const float CRACK_MAX_WIDTH = 0.120; // pieces visibly apart
+const float CRACK_RAGGED = 0.055;    // how far an edge wanders off straight
 
 mat3 rotX(float a) {
   float c = cos(a);
@@ -90,6 +96,43 @@ float valueNoise(vec3 p) {
     mix(mix(hash(i + vec3(0.0, 0.0, 1.0)), hash(i + vec3(1.0, 0.0, 1.0)), f.x),
         mix(hash(i + vec3(0.0, 1.0, 1.0)), hash(i + vec3(1.0, 1.0, 1.0)), f.x), f.y),
     f.z);
+}
+
+vec3 hash3(vec3 p) {
+  return vec3(hash(p), hash(p + 19.19), hash(p + 47.71));
+}
+
+/// Distance to the nearest boundary between neighbouring cells.
+///
+/// Zero along a boundary and rising toward the middle of a cell, so thresholding
+/// it draws the seams of a shattered surface. This is what makes the egg break
+/// into pieces: noise-based lines wander and branch everywhere at once, which
+/// looks like something drawn on the shell rather than the shell coming apart.
+float plateSeam(vec3 p) {
+  vec3 cell = floor(p);
+  vec3 local = fract(p);
+
+  float nearest = 8.0;
+  float second = 8.0;
+
+  for (int x = -1; x <= 1; x++) {
+    for (int y = -1; y <= 1; y++) {
+      for (int z = -1; z <= 1; z++) {
+        vec3 offset = vec3(float(x), float(y), float(z));
+        float d = length(offset + hash3(cell + offset) - local);
+        if (d < nearest) {
+          second = nearest;
+          nearest = d;
+        } else if (d < second) {
+          second = d;
+        }
+      }
+    }
+  }
+
+  // The gap between the two nearest cells: it closes to nothing exactly where
+  // they meet.
+  return second - nearest;
 }
 
 void main() {
@@ -173,21 +216,37 @@ void main() {
              + uTint * specular
              + uTint * fresnel * 0.20;
 
-  // Fractures run out from the top of the shell as uCrack rises. Ridged noise
-  // gives thin branching lines; a spreading mask decides how far they reach.
+  // The shell comes apart in pieces, starting at the crown and working down.
   if (uCrack > 0.0) {
-    float ridged = 1.0 - abs(2.0 * valueNoise(p * CRACK_SCALE) - 1.0);
-    float lines = smoothstep(0.90, 1.0, ridged);
+    // Nudged off the lattice before the cells are found, so a seam wanders the
+    // way a break in something brittle does instead of running dead straight.
+    vec3 broken = p * PLATE_SCALE
+                + CRACK_RAGGED * vec3(valueNoise(p * 11.0),
+                                      valueNoise(p * 11.0 + 5.0),
+                                      valueNoise(p * 11.0 + 9.0));
+    float seam = plateSeam(broken);
 
     float reach = uCrack * CRACK_SPREAD;
     float fromCrown = distance(p, vec3(0.0, 1.0, 0.0));
-    float spread = 1.0 - smoothstep(reach - 0.35, reach, fromCrown);
-    float crack = lines * spread;
+    // Sharper than the pieces are wide, so there is a visible front travelling
+    // down the shell rather than the whole egg dimming at once.
+    float spread = 1.0 - smoothstep(reach - 0.18, reach, fromCrown);
 
-    color = mix(color, color * 0.10, crack);
-    // Light only escapes once the gaps are wide; before that a crack is just
-    // a dark line, and a glowing web reads as decoration rather than damage.
-    color += uCrackGlow * crack * pow(uCrack, 3.0) * 0.55;
+    // A hairline at first and an open gap by the end. The width doing the work
+    // is what makes this read as breaking rather than as a pattern that fades
+    // in: the same seams stay put and only get wider.
+    float width = mix(CRACK_MIN_WIDTH, CRACK_MAX_WIDTH, uCrack * uCrack);
+    float gap = (1.0 - smoothstep(0.0, width, seam)) * spread;
+
+    // A wider, softer band of shadow either side. Without it the pieces look
+    // painted on; with it they look like they have thickness and are lifting.
+    float lip = (1.0 - smoothstep(0.0, width * 3.5, seam)) * spread;
+    color *= 1.0 - 0.45 * lip;
+
+    color = mix(color, color * 0.06, gap);
+    // Light only escapes once the gaps are open. Before that a crack is a dark
+    // line; a glowing web reads as decoration rather than damage.
+    color += uCrackGlow * gap * pow(uCrack, 3.0) * 0.75;
   }
 
   fragColor = vec4(color * alpha, alpha); // premultiplied
