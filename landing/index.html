@@ -11,7 +11,7 @@
 <meta name="theme-color" content="#0F0E13">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Sans+KR:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Gothic+A1:wght@400;600;800&display=swap">
 
 <style>
   /* Every colour is a token out of the app's lib/theme.dart. The app is dark
@@ -27,8 +27,14 @@
     --accent-cool: #4DD4FF;
     --hatch: #FFE3A6;
 
-    --display: "Black Han Sans", system-ui, sans-serif;
-    --body: "IBM Plex Sans KR", system-ui, sans-serif;
+    /* Black Han Sans has exactly one cut and it is a very heavy one, so
+       there is no dial to turn: anything set in it is as thick as it gets.
+       It stays on the wordmark, which is a brand mark and matches the app
+       icon. Everything with a sentence in it moves to a family that has
+       weights, so headings can be bold without shouting. */
+    --mark: "Black Han Sans", system-ui, sans-serif;
+    --display: "Gothic A1", system-ui, sans-serif;
+    --body: "Gothic A1", system-ui, sans-serif;
 
     --gutter: clamp(20px, 5vw, 64px);
     --measure: 34ch;
@@ -99,7 +105,7 @@
   .hero > * { position: relative; z-index: 2; }
 
   .wordmark {
-    font-family: var(--display);
+    font-family: var(--mark);
     font-size: clamp(17px, 2vw, 21px);
     letter-spacing: 0.34em;
     text-align: center;
@@ -135,12 +141,13 @@
      where it was — this is about stroke, not scale. */
   .lede {
     font-family: var(--body);
-    font-weight: 500;
+    font-weight: 600;
     font-size: clamp(19px, 3.4vw, 26px);
     line-height: 1.6;
     margin: 0;
     max-width: 30ch;
-    min-height: 1.6em;
+    white-space: pre-line;
+    min-height: 3.2em;
   }
 
   .hint {
@@ -192,6 +199,7 @@
      section, with nothing else near it set that heavy. */
   h2 {
     font-family: var(--display);
+    font-weight: 800;
     max-width: 24ch;
     font-size: clamp(23px, 3.6vw, 32px);
     line-height: 1.4;
@@ -276,7 +284,7 @@
 
   .store {
     font-family: var(--body);
-    font-weight: 500;
+    font-weight: 600;
     font-size: 15px;
     letter-spacing: 0.04em;
     padding: 14px 26px;
@@ -317,7 +325,7 @@
   }
 
   footer .mark {
-    font-family: var(--display);
+    font-family: var(--mark);
     letter-spacing: 0.24em;
     color: var(--parchment);
     margin-right: auto;
@@ -350,7 +358,8 @@
   </div>
 
   <div class="hero-foot">
-    <p class="lede" data-type="하루에 알 하나. 뭐가 들었는지는 아무도 몰라."></p>
+    <p class="lede" data-type="하루에 알 하나.
+뭐가 들었는지는 아무도 몰라."></p>
     <p class="hint">드래그해서 돌려봐 · 꾹 누르면 열려</p>
   </div>
 </header>
