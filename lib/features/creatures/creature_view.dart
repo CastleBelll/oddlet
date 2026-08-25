@@ -125,7 +125,11 @@ class _CreaturePainter extends CustomPainter {
       ..setFloat(27, appearance.markStrength)
       ..setFloat(28, appearance.markColor.r)
       ..setFloat(29, appearance.markColor.g)
-      ..setFloat(30, appearance.markColor.b);
+      ..setFloat(30, appearance.markColor.b)
+      ..setFloat(31, appearance.beakSize)
+      ..setFloat(32, appearance.beakColor.r)
+      ..setFloat(33, appearance.beakColor.g)
+      ..setFloat(34, appearance.beakColor.b);
 
     canvas.drawRect(Offset.zero & size, Paint()..shader = shader);
   }

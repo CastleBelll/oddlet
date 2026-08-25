@@ -36,6 +36,12 @@ uniform float uMarkScale;
 uniform float uMarkStrength;
 uniform vec3 uMarkColor;
 
+// Declared last because uniform order is the index contract with Dart, and
+// these were added last. Inserting one in the middle silently shifts every
+// uniform after it.
+uniform float uBeakSize;   // 0 for a creature with no beak
+uniform vec3 uBeakColor;
+
 out vec4 fragColor;
 
 const float CAMERA_DISTANCE = 4.4;
@@ -85,6 +91,20 @@ float valueNoise(vec3 p) {
     f.z);
 }
 
+// A short blunt beak on the front of the face. Most of what makes any of
+// these read as a chick rather than as a blob with holes in it.
+vec3 beakCentre() {
+  return vec3(0.0, -0.08, BODY_RADIUS * 0.86);
+}
+
+float sdBeak(vec3 p) {
+  vec3 at = p - beakCentre();
+  // Tapers toward the tip: wide where it meets the face, narrow at the end.
+  float taper = 1.0 + 1.3 * max(at.z, 0.0);
+  vec3 q = vec3(at.x * taper, at.y * taper, at.z);
+  return sdEllipsoid(q, vec3(uBeakSize, uBeakSize * 0.75, uBeakSize * 1.6));
+}
+
 // The animal without its surface texture. Eyes are placed against this so a
 // lumpy hide cannot scatter them across the body.
 float sdBody(vec3 p) {
@@ -99,6 +119,10 @@ float sdBody(vec3 p) {
       p - vec3(0.0, uLumpHeight, 0.0),
       vec3(uLumpRadius));
     d = smoothUnion(d, lump, 0.28);
+  }
+
+  if (uBeakSize > 0.0) {
+    d = smoothUnion(d, sdBeak(p), 0.05);
   }
 
   if (uEarLength > 0.0) {
@@ -253,17 +277,34 @@ void main() {
              + uTint * specular
              + uTint * fresnel * (0.22 + uGlow);
 
+  // The beak takes its own colour, or it reads as a lump of the same animal.
+  if (uBeakSize > 0.0) {
+    vec3 atBeak = p - beakCentre();
+    float onBeak = 1.0 - smoothstep(
+      0.0,
+      0.035,
+      sdEllipsoid(atBeak, vec3(uBeakSize * 1.05, uBeakSize * 0.8, uBeakSize * 1.7)));
+    color = mix(color, uBeakColor * (0.45 + 0.75 * diffuse), onBeak);
+  }
+
   float nearestEye = toNearestEye(faceNormal);
   float eye = 1.0 - smoothstep(uEyeSize * 0.75, uEyeSize, nearestEye);
-  // A highlight is most of what makes an eye look awake.
+
+  // Two highlights rather than one. A single dot on a big dark oval reads as
+  // a hole; a pair reads as a wet eye looking at you.
   float glint = 1.0 - smoothstep(
-    uEyeSize * 0.18,
-    uEyeSize * 0.30,
-    distance(n, normalize(vec3(-uEyeSpacing + 0.07, 0.26, 1.0))));
+    uEyeSize * 0.22,
+    uEyeSize * 0.38,
+    distance(faceNormal, normalize(vec3(-uEyeSpacing + 0.09, 0.28, 1.0))));
+  float underGlint = 1.0 - smoothstep(
+    uEyeSize * 0.10,
+    uEyeSize * 0.20,
+    distance(faceNormal, normalize(vec3(uEyeSpacing + 0.02, 0.02, 1.0))));
 
   color = mix(color, vec3(0.10, 0.08, 0.11), mouthMask(faceNormal));
-  color = mix(color, vec3(0.06, 0.05, 0.08), eye);
-  color = mix(color, vec3(1.0), eye * glint * 0.85);
+  color = mix(color, vec3(0.11, 0.09, 0.14), eye);
+  color = mix(color, vec3(1.0), eye * glint * 0.95);
+  color = mix(color, vec3(1.0), eye * underGlint * 0.55);
 
   fragColor = vec4(color * alpha, alpha); // premultiplied
 }

@@ -42,6 +42,8 @@ class CreatureAppearance {
     required this.markScale,
     required this.markStrength,
     required this.markColor,
+    required this.beakSize,
+    required this.beakColor,
   });
 
   /// Brighter and more saturated than an egg. This is the payoff.
@@ -56,8 +58,10 @@ class CreatureAppearance {
 
   static const _minEyeSpacing = 0.24;
   static const _maxEyeSpacing = 0.54;
-  static const _minEyeSize = 0.15;
-  static const _maxEyeSize = 0.32;
+  // Kept modest. Oversized eyes on a small body stop reading as cute and
+  // start reading as empty sockets.
+  static const _minEyeSize = 0.13;
+  static const _maxEyeSize = 0.24;
 
   final Color body;
   final Color belly;
@@ -94,6 +98,10 @@ class CreatureAppearance {
   final double markStrength;
   final Color markColor;
 
+  /// 0 for a creature with no beak.
+  final double beakSize;
+  final Color beakColor;
+
   /// How many oddities this creature may carry, by tier.
   static int oddityBudget(Rarity rarity) => switch (rarity) {
     Rarity.common => 0,
@@ -117,9 +125,10 @@ class CreatureAppearance {
     final lump = lumpRadius == 0 ? 0 : (lumpRadius < 0.41 ? 1 : 2);
     final mouth = mouthWidth == 0 ? 0 : (mouthWidth < 0.18 ? 1 : 2);
     final hide = bumpiness == 0 ? 0 : 1;
+    final beak = beakSize == 0 ? 0 : (beakSize < 0.20 ? 1 : 2);
 
     return 'h$hueBucket/$proportion/ear$ears/lump$lump/'
-        'eye$eyeCount/mouth$mouth/${marking.name}/hide$hide';
+        'eye$eyeCount/mouth$mouth/beak$beak/${marking.name}/hide$hide';
   }
 
   factory CreatureAppearance.of(Creature creature) {
@@ -140,7 +149,12 @@ class CreatureAppearance {
 
     // Ordinary equipment, open to every tier.
     final hasEars = _unit(seed, 10) > 0.30;
-    final hasMouth = _unit(seed, 22) > 0.30;
+
+    // A beak is what makes one of these read as a chick at all, so most have
+    // one. A creature with a beak has no separate mouth: it would sit on the
+    // beak and read as damage.
+    final hasBeak = _unit(seed, 29) > 0.25;
+    final hasMouth = !hasBeak && _unit(seed, 22) > 0.30;
     final markings = _unit(seed, 23) > 0.35
         ? CreatureMarking.values[1 + (_unit(seed, 24) * 3).floor().clamp(0, 2)]
         : CreatureMarking.none;
@@ -187,6 +201,14 @@ class CreatureAppearance {
         (saturation + 0.12).clamp(0.0, 1.0),
         (value - 0.34).clamp(0.0, 1.0),
       ).toColor(),
+      beakSize: hasBeak ? _lerp(0.15, 0.24, _unit(seed, 30)) : 0,
+      // Warm and light against the coat, the way a real beak is.
+      beakColor: HSVColor.fromAHSV(
+        1,
+        _lerp(28, 52, _unit(seed, 31)),
+        _lerp(0.55, 0.85, _unit(seed, 32)),
+        _lerp(0.86, 0.98, _unit(seed, 33)),
+      ).toColor(),
     );
   }
 
@@ -211,7 +233,9 @@ class CreatureAppearance {
       other.marking == marking &&
       other.markScale == markScale &&
       other.markStrength == markStrength &&
-      other.markColor == markColor;
+      other.markColor == markColor &&
+      other.beakSize == beakSize &&
+      other.beakColor == beakColor;
 
   @override
   int get hashCode => Object.hashAll([
@@ -234,6 +258,8 @@ class CreatureAppearance {
     markScale,
     markStrength,
     markColor,
+    beakSize,
+    beakColor,
   ]);
 }
 
