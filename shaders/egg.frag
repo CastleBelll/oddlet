@@ -42,6 +42,14 @@ const float CRACK_MIN_WIDTH = 0.010; // a hairline, before anything opens
 const float CRACK_MAX_WIDTH = 0.120; // pieces visibly apart
 const float CRACK_RAGGED = 0.055;    // how far an edge wanders off straight
 
+// When pieces start coming away, as fractions of the crack. The crown goes
+// first and the base may never go at all, so the creature is uncovered rather
+// than the egg vanishing.
+const float PEEL_FIRST = 0.34;
+const float PEEL_LAST = 1.35;
+// How much a piece's own number moves its turn, so they do not leave in rows.
+const float PEEL_SCATTER = 0.22;
+
 mat3 rotX(float a) {
   float c = cos(a);
   float s = sin(a);
@@ -102,27 +110,36 @@ vec3 hash3(vec3 p) {
   return vec3(hash(p), hash(p + 19.19), hash(p + 47.71));
 }
 
-/// Distance to the nearest boundary between neighbouring cells.
+/// The piece of shell a point belongs to.
 ///
-/// Zero along a boundary and rising toward the middle of a cell, so thresholding
-/// it draws the seams of a shattered surface. This is what makes the egg break
-/// into pieces: noise-based lines wander and branch everywhere at once, which
-/// looks like something drawn on the shell rather than the shell coming apart.
-float plateSeam(vec3 p) {
+/// x: distance to the nearest seam. Zero where two pieces meet and rising
+///    toward the middle of one, so thresholding it draws the break lines.
+/// y: a settled 0..1 number for this piece, so it can be given its own moment
+///    to come away without any of it changing frame to frame.
+/// z: how far up the shell the piece sits, which is what makes the top come
+///    off first.
+///
+/// Cells rather than noise because a break encloses something. Noise lines
+/// wander and fork everywhere at once and never close into a corner, which is
+/// why they read as drawn on the egg rather than as the egg coming apart.
+vec3 plateInfo(vec3 p) {
   vec3 cell = floor(p);
   vec3 local = fract(p);
 
   float nearest = 8.0;
   float second = 8.0;
+  vec3 owner = vec3(0.0);
 
   for (int x = -1; x <= 1; x++) {
     for (int y = -1; y <= 1; y++) {
       for (int z = -1; z <= 1; z++) {
         vec3 offset = vec3(float(x), float(y), float(z));
-        float d = length(offset + hash3(cell + offset) - local);
+        vec3 seed = cell + offset;
+        float d = length(offset + hash3(seed) - local);
         if (d < nearest) {
           second = nearest;
           nearest = d;
+          owner = seed;
         } else if (d < second) {
           second = d;
         }
@@ -130,9 +147,9 @@ float plateSeam(vec3 p) {
     }
   }
 
-  // The gap between the two nearest cells: it closes to nothing exactly where
-  // they meet.
-  return second - nearest;
+  // The gap between the two nearest: it closes to nothing exactly where they
+  // meet.
+  return vec3(second - nearest, hash(owner), owner.y);
 }
 
 void main() {
@@ -216,7 +233,8 @@ void main() {
              + uTint * specular
              + uTint * fresnel * 0.20;
 
-  // The shell comes apart in pieces, starting at the crown and working down.
+  // The shell splits, then comes away in pieces, starting at the crown and
+  // working down. What is underneath is lit, so every opening leaks.
   if (uCrack > 0.0) {
     // Nudged off the lattice before the cells are found, so a seam wanders the
     // way a break in something brittle does instead of running dead straight.
@@ -224,7 +242,8 @@ void main() {
                 + CRACK_RAGGED * vec3(valueNoise(p * 11.0),
                                       valueNoise(p * 11.0 + 5.0),
                                       valueNoise(p * 11.0 + 9.0));
-    float seam = plateSeam(broken);
+    vec3 plate = plateInfo(broken);
+    float seam = plate.x;
 
     float reach = uCrack * CRACK_SPREAD;
     float fromCrown = distance(p, vec3(0.0, 1.0, 0.0));
@@ -238,15 +257,36 @@ void main() {
     float width = mix(CRACK_MIN_WIDTH, CRACK_MAX_WIDTH, uCrack * uCrack);
     float gap = (1.0 - smoothstep(0.0, width, seam)) * spread;
 
-    // A wider, softer band of shadow either side. Without it the pieces look
-    // painted on; with it they look like they have thickness and are lifting.
+    // When this particular piece lets go. Height decides most of it so the
+    // shell opens from the top, and the piece's own number decides the rest so
+    // they do not all leave together like a curtain.
+    float height = clamp(plate.z / (PLATE_SCALE * 1.2), -1.0, 1.0);
+    float turn = mix(PEEL_FIRST, PEEL_LAST, 0.5 - 0.5 * height)
+               + PEEL_SCATTER * plate.y;
+    float torn = smoothstep(turn, turn + 0.10, uCrack);
+
+    // A wider, softer band of shadow either side of a seam. Without it the
+    // pieces look painted on; with it they have thickness and an edge.
     float lip = (1.0 - smoothstep(0.0, width * 3.5, seam)) * spread;
     color *= 1.0 - 0.45 * lip;
 
     color = mix(color, color * 0.06, gap);
-    // Light only escapes once the gaps are open. Before that a crack is a dark
-    // line; a glowing web reads as decoration rather than damage.
-    color += uCrackGlow * gap * pow(uCrack, 3.0) * 0.75;
+
+    // Inside. Brightest in the middle of a hole and falling off toward the
+    // torn edge, which is what makes it read as light coming from within
+    // rather than as the piece being repainted.
+    float depth = smoothstep(0.0, 0.22, seam);
+    vec3 inside = uCrackGlow * (0.55 + 1.15 * depth);
+
+    // The shell around an opening catches that light too. Skipping this is
+    // what makes a hole look like a sticker. Held back hard at the start: a
+    // hairline that already glows is decoration, and the whole point of the
+    // first few seconds is that the egg looks damaged rather than decorated.
+    color += uCrackGlow * gap * pow(uCrack, 2.5) * 0.9;
+    color = mix(color, inside, torn);
+
+    // Whatever is in there is waking up.
+    color += uCrackGlow * torn * pow(uCrack, 2.0) * 0.35;
   }
 
   fragColor = vec4(color * alpha, alpha); // premultiplied
