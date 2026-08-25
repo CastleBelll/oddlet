@@ -47,6 +47,9 @@ dependencies:
   google_sign_in: ^7.2.0
   sign_in_with_apple: ^7.0.1
   cloud_firestore: ^6.9.0
+  # Already here through Flutter; named so a name can be measured in what a
+  # reader calls a character rather than in code units.
+  characters: ^1.4.0
 
 dev_dependencies:
   flutter_test:
