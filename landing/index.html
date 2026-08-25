@@ -1,0 +1,786 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Oddlet-!</title>
+<meta name="description" content="하루에 알 하나. 네가 폰으로 한 일이 그 안에 든 것을 바꾼다. 조건은 알려주지 않는다.">
+<meta property="og:title" content="Oddlet-!">
+<meta property="og:description" content="하루에 알 하나. 뭐가 나올지는 네가 하기 나름이고, 아무도 알려주지 않는다.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#0F0E13">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Sans+KR:wght@400;500&display=swap">
+
+<style>
+  /* Every colour is a token out of the app's lib/theme.dart. The app is dark
+     only by decision, so this page is too: a light version would be a
+     different product wearing the same name. */
+  :root {
+    --ink: #0F0E13;
+    --ink-raised: #1B1922;
+    --ink-lit: #272334;
+    --parchment: #ECE8F0;
+    --parchment-dim: #938DA1;
+    --accent: #B14BFF;
+    --accent-cool: #4DD4FF;
+    --hatch: #FFE3A6;
+
+    --display: "Black Han Sans", system-ui, sans-serif;
+    --body: "IBM Plex Sans KR", system-ui, sans-serif;
+
+    --gutter: clamp(20px, 5vw, 64px);
+    --measure: 34ch;
+  }
+
+  * { box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+  body {
+    margin: 0;
+    background: var(--ink);
+    color: var(--parchment);
+    font-family: var(--body);
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  /* Hero ---------------------------------------------------------------- */
+
+  .hero {
+    position: relative;
+    min-height: 100svh;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    padding: clamp(18px, 4vh, 34px) var(--gutter) clamp(22px, 5vh, 40px);
+  }
+
+  /* The pooled light the app puts its egg in, so the shell reads as an object
+     in a room rather than a cut-out on a page. */
+  .hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+      circle at 50% 42%,
+      var(--ink-lit) 0%,
+      var(--ink) 62%
+    );
+    z-index: 0;
+  }
+
+  .hero > * { position: relative; z-index: 1; }
+
+  .wordmark {
+    font-family: var(--display);
+    font-size: clamp(20px, 2.6vw, 26px);
+    letter-spacing: 0.34em;
+    text-align: center;
+    color: var(--parchment);
+  }
+
+  .stage {
+    display: grid;
+    place-items: center;
+    min-height: 0;
+  }
+
+  /* Sized by script so the drawing buffer matches the pixels on screen; a
+     stretched canvas would give the egg a soft, wrong silhouette. */
+  #egg {
+    display: block;
+    width: min(78vw, 46vh, 460px);
+    height: min(78vw, 46vh, 460px);
+    touch-action: none;
+    cursor: grab;
+  }
+  #egg:active { cursor: grabbing; }
+
+  .hero-foot {
+    display: grid;
+    justify-items: center;
+    gap: 14px;
+    text-align: center;
+  }
+
+  .lede {
+    font-family: var(--display);
+    font-size: clamp(22px, 5.2vw, 38px);
+    line-height: 1.45;
+    margin: 0;
+    max-width: 22ch;
+    white-space: pre-line;
+    min-height: 2.9em;
+  }
+
+  .hint {
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    color: var(--parchment-dim);
+    margin: 0;
+  }
+
+  /* A caret that stops blinking the moment the line is finished, so a page
+     full of them does not flicker at the reader. */
+  .caret::after {
+    content: "";
+    display: inline-block;
+    width: 0.08em;
+    height: 1em;
+    margin-left: 0.06em;
+    translate: 0 0.12em;
+    background: var(--accent);
+    box-shadow: 0 0 12px var(--accent);
+    animation: blink 1s steps(1, end) infinite;
+  }
+  .caret.done::after { display: none; }
+  @keyframes blink { 50% { opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) {
+    .caret::after { animation: none; }
+  }
+
+  /* Sections ------------------------------------------------------------ */
+
+  section {
+    padding: clamp(72px, 14vh, 140px) var(--gutter);
+    max-width: 980px;
+    margin: 0 auto;
+  }
+
+  .eyebrow {
+    font-size: 12px;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--accent-cool);
+    text-shadow: 0 0 18px var(--accent-cool);
+    margin: 0 0 18px;
+  }
+
+  h2 {
+    font-family: var(--display);
+    font-size: clamp(28px, 6vw, 46px);
+    line-height: 1.3;
+    margin: 0 0 28px;
+    text-wrap: balance;
+  }
+
+  .beats {
+    display: grid;
+    gap: 18px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    counter-reset: beat;
+  }
+
+  .beats li {
+    font-family: var(--display);
+    font-size: clamp(19px, 3.6vw, 26px);
+    line-height: 1.55;
+    color: var(--parchment);
+    padding-left: 26px;
+    position: relative;
+    max-width: var(--measure);
+    min-height: 1.55em;
+  }
+
+  /* Numbered because the loop really is a sequence: each beat only makes
+     sense after the one before it. */
+  .beats li::before {
+    content: counter(beat);
+    counter-increment: beat;
+    position: absolute;
+    left: 0;
+    top: 0.36em;
+    font-family: var(--body);
+    font-size: 12px;
+    color: var(--accent);
+    text-shadow: 0 0 14px var(--accent);
+  }
+
+  .aside {
+    margin: 26px 0 0;
+    max-width: var(--measure);
+    color: var(--parchment-dim);
+    font-size: 15px;
+    line-height: 1.8;
+  }
+
+  /* The naming card ----------------------------------------------------- */
+
+  .card {
+    margin-top: 34px;
+    border: 1px solid var(--ink-lit);
+    border-radius: 22px;
+    background: var(--ink-raised);
+    padding: 30px 26px;
+    display: grid;
+    justify-items: center;
+    gap: 8px;
+    max-width: 340px;
+  }
+
+  .card .blob {
+    width: 96px;
+    height: 96px;
+    border-radius: 26px;
+    margin-bottom: 8px;
+    background: radial-gradient(
+      circle at 38% 32%,
+      #ffd7e6 0%,
+      #f39ab6 48%,
+      #c96f92 100%
+    );
+    box-shadow: 0 0 46px rgba(243, 154, 182, 0.28);
+  }
+
+  .card .name {
+    font-family: var(--display);
+    font-size: 30px;
+    color: var(--parchment);
+  }
+
+  .card .tier {
+    font-family: var(--display);
+    font-size: 13px;
+    letter-spacing: 0.22em;
+    color: var(--accent-cool);
+    text-shadow: 0 0 16px var(--accent-cool);
+  }
+
+  .card .by { font-size: 13px; color: var(--parchment-dim); }
+
+  /* Download ------------------------------------------------------------ */
+
+  .stores {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 26px;
+  }
+
+  .store {
+    font-family: var(--display);
+    font-size: 16px;
+    letter-spacing: 0.04em;
+    padding: 14px 26px;
+    border-radius: 999px;
+    border: 1px solid var(--ink-lit);
+    color: var(--parchment-dim);
+    background: transparent;
+    cursor: not-allowed;
+  }
+
+  .soon { margin-top: 16px; font-size: 13px; color: var(--parchment-dim); }
+
+  /* Footer -------------------------------------------------------------- */
+
+  footer {
+    border-top: 1px solid var(--ink-lit);
+    padding: 40px var(--gutter) 60px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 28px;
+    align-items: center;
+    max-width: 980px;
+    margin: 0 auto;
+    font-size: 14px;
+    color: var(--parchment-dim);
+  }
+
+  footer a {
+    color: var(--parchment-dim);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+  }
+  footer a:hover, footer a:focus-visible {
+    color: var(--parchment);
+    border-bottom-color: var(--accent);
+  }
+
+  footer .mark {
+    font-family: var(--display);
+    letter-spacing: 0.24em;
+    color: var(--parchment);
+    margin-right: auto;
+  }
+
+  :focus-visible { outline: 2px solid var(--accent-cool); outline-offset: 4px; }
+
+  .fallback {
+    display: none;
+    font-size: 14px;
+    color: var(--parchment-dim);
+    text-align: center;
+    max-width: 30ch;
+  }
+  .no-webgl #egg { display: none; }
+  .no-webgl .fallback { display: block; }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wordmark">Oddlet-!</div>
+
+  <div class="stage">
+    <canvas id="egg" aria-label="오늘의 알. 드래그하면 돌아가고, 꾹 누르면 열린다."></canvas>
+    <p class="fallback">이 브라우저에서는 알을 그릴 수 없다. 앱에서는 3D로 돌아간다.</p>
+  </div>
+
+  <div class="hero-foot">
+    <p class="lede" data-type="하루에 알 하나.
+뭐가 들었는지는 아무도 몰라."></p>
+    <p class="hint">드래그해서 돌려봐 · 꾹 누르면 열려</p>
+  </div>
+</header>
+
+<main>
+  <section id="what">
+    <p class="eyebrow">이게 뭐야</p>
+    <h2>버튼을 눌러 뽑는 게 아니다.<br>네가 하루를 어떻게 보냈는지가 결과다.</h2>
+    <ol class="beats">
+      <li data-type="아침에 알이 하나 온다. 모두 같은 알이다."></li>
+      <li data-type="만지고, 흔들고, 언제 여는지가 조용히 기록된다."></li>
+      <li data-type="열면 네 알만의 무언가가 나온다."></li>
+      <li data-type="어떻게 나온 건지는 알려주지 않는다. 그게 재미다."></li>
+    </ol>
+    <p class="aside">
+      조건을 화면에 적어두면 그건 체크리스트가 된다. 추측하고, 다음 날
+      다르게 해보고, 친구 것과 맞춰보는 것까지가 이 앱이다.
+    </p>
+  </section>
+
+  <section id="naming">
+    <p class="eyebrow">최초 발견</p>
+    <h2>이름 없는 애를 처음 만나면,<br>이름은 네가 짓는다.</h2>
+    <ol class="beats">
+      <li data-type="아직 아무도 만난 적 없는 종이 나오면 이름을 지을 수 있다."></li>
+      <li data-type="그 이름은 이후 그 애를 만나는 모든 사람에게 보인다."></li>
+      <li data-type="한 번 정해지면 바뀌지 않는다. 최초는 기록이니까."></li>
+      <li data-type="안 지으면 다음 발견자에게 기회가 넘어간다."></li>
+    </ol>
+
+    <div class="card">
+      <div class="blob" aria-hidden="true"></div>
+      <div class="name">종인이</div>
+      <div class="tier">RARE</div>
+      <div class="by">최초 발견 byeolbam</div>
+    </div>
+  </section>
+
+  <section id="get">
+    <p class="eyebrow">받기</p>
+    <h2>아직 문을 열지 않았다.</h2>
+    <div class="stores">
+      <button class="store" type="button" disabled>App Store</button>
+      <button class="store" type="button" disabled>Google Play</button>
+    </div>
+    <p class="soon">준비되면 여기에 링크가 걸린다.</p>
+  </section>
+</main>
+
+<footer>
+  <span class="mark">Oddlet-!</span>
+  <a href="/privacy">개인정보 처리방침</a>
+  <a href="/terms">운영약관</a>
+  <span>&copy; 2026 Oddlet-!</span>
+</footer>
+
+<script type="x-shader/x-fragment" id="egg-fs">#version 300 es
+precision highp float;
+
+uniform vec2 uSize;
+uniform float uYaw;
+uniform float uPitch;
+uniform vec3 uShell;
+uniform vec3 uSpeckle;
+uniform vec3 uTint;
+uniform float uNoiseOffset;
+uniform float uCrack;
+uniform vec3 uCrackGlow;
+
+out vec4 fragColor;
+
+// Ported from shaders/egg.frag in the app, so the egg on this page is that
+// egg rather than a picture of one.
+const float CAMERA_DISTANCE = 4.2;
+const float FOCAL = 1.8;
+const float EGG_RADIUS_XZ = 0.86;
+const float EGG_TAPER = 0.20;
+const int MAX_STEPS = 96;
+const float HIT_EPS = 0.0009;
+const float MAX_DIST = 8.0;
+const float STEP_SCALE = 0.7;
+
+const float PLATE_SCALE = 2.4;
+const float CRACK_SPREAD = 2.6;
+const float CRACK_MIN_WIDTH = 0.010;
+const float CRACK_MAX_WIDTH = 0.120;
+const float CRACK_RAGGED = 0.055;
+
+mat3 rotX(float a) {
+  float c = cos(a), s = sin(a);
+  return mat3(1.0, 0.0, 0.0, 0.0, c, s, 0.0, -s, c);
+}
+mat3 rotY(float a) {
+  float c = cos(a), s = sin(a);
+  return mat3(c, 0.0, -s, 0.0, 1.0, 0.0, s, 0.0, c);
+}
+
+float sdEgg(vec3 p) {
+  float taper = 1.0 + EGG_TAPER * (0.5 * p.y + 0.5);
+  vec3 q = vec3(p.x * taper, p.y, p.z * taper);
+  vec3 radii = vec3(EGG_RADIUS_XZ, 1.0, EGG_RADIUS_XZ);
+  float k1 = length(q / radii);
+  float k2 = max(length(q / (radii * radii)), 1e-6);
+  return k1 * (k1 - 1.0) / k2;
+}
+
+vec3 normalAt(vec3 p) {
+  vec2 e = vec2(0.0015, 0.0);
+  return normalize(vec3(
+    sdEgg(p + e.xyy) - sdEgg(p - e.xyy),
+    sdEgg(p + e.yxy) - sdEgg(p - e.yxy),
+    sdEgg(p + e.yyx) - sdEgg(p - e.yyx)));
+}
+
+// Sin-free: sin() of large arguments loses precision on mobile GPUs, and the
+// error shows up as rings across the shell.
+float hash(vec3 p) {
+  vec3 q = fract(p * 0.3183099 + vec3(0.1, 0.2, 0.3));
+  q *= 17.0;
+  return fract(q.x * q.y * q.z * (q.x + q.y + q.z));
+}
+vec3 hash3(vec3 p) {
+  return vec3(hash(p), hash(p + 19.19), hash(p + 47.71));
+}
+
+float valueNoise(vec3 p) {
+  vec3 i = floor(p), f = fract(p);
+  f = f * f * f * (f * (f * 6.0 - 15.0) + 10.0);
+  return mix(
+    mix(mix(hash(i + vec3(0.0, 0.0, 0.0)), hash(i + vec3(1.0, 0.0, 0.0)), f.x),
+        mix(hash(i + vec3(0.0, 1.0, 0.0)), hash(i + vec3(1.0, 1.0, 0.0)), f.x), f.y),
+    mix(mix(hash(i + vec3(0.0, 0.0, 1.0)), hash(i + vec3(1.0, 0.0, 1.0)), f.x),
+        mix(hash(i + vec3(0.0, 1.0, 1.0)), hash(i + vec3(1.0, 1.0, 1.0)), f.x), f.y),
+    f.z);
+}
+
+// Cells rather than noise, because a break encloses something. Noise lines
+// fork everywhere at once and never close into a corner, which is why they
+// read as drawn on the shell rather than as the shell coming apart.
+float plateSeam(vec3 p) {
+  vec3 cell = floor(p), local = fract(p);
+  float nearest = 8.0, second = 8.0;
+  for (int x = -1; x <= 1; x++) {
+    for (int y = -1; y <= 1; y++) {
+      for (int z = -1; z <= 1; z++) {
+        vec3 offset = vec3(float(x), float(y), float(z));
+        float d = length(offset + hash3(cell + offset) - local);
+        if (d < nearest) { second = nearest; nearest = d; }
+        else if (d < second) { second = d; }
+      }
+    }
+  }
+  return second - nearest;
+}
+
+void main() {
+  vec2 uv = (gl_FragCoord.xy - 0.5 * uSize) / uSize.y;
+
+  mat3 camera = rotY(uYaw) * rotX(uPitch);
+  vec3 ro = camera * vec3(0.0, 0.0, CAMERA_DISTANCE);
+  vec3 rd = camera * normalize(vec3(uv, -FOCAL));
+
+  float t = 0.0, tHit = -1.0, dMin = MAX_DIST, tMin = 0.0;
+  for (int i = 0; i < MAX_STEPS; i++) {
+    vec3 p = ro + rd * t;
+    float d = sdEgg(p);
+    if (d < dMin) { dMin = d; tMin = t; }
+    if (d < HIT_EPS) { tHit = t; break; }
+    t += d * STEP_SCALE;
+    if (t > MAX_DIST) { break; }
+  }
+
+  float alpha = 1.0;
+  if (tHit < 0.0) {
+    float edge = 2.5 / uSize.y;
+    alpha = 1.0 - smoothstep(0.0, edge, dMin);
+    if (alpha <= 0.0) { fragColor = vec4(0.0); return; }
+  }
+
+  vec3 p = ro + rd * (tHit > 0.0 ? tHit : tMin);
+  vec3 n = normalAt(p);
+
+  vec3 patternPoint = p + vec3(uNoiseOffset);
+  float freckles = 0.62 * valueNoise(patternPoint * 5.0) +
+                   0.38 * valueNoise(patternPoint * 10.6 + 7.0);
+  float blotches = 0.62 * valueNoise(patternPoint * 1.75) +
+                   0.38 * valueNoise(patternPoint * 3.7 + 3.0);
+  float pattern = mix(freckles, blotches, 0.55);
+  vec3 shell = mix(uShell, uSpeckle, clamp(pattern * 1.1, 0.0, 1.0));
+
+  vec3 lightDir = normalize(vec3(-0.45, 0.75, 0.55));
+  float diffuse = max(dot(n, lightDir), 0.0);
+  float ambient = 0.34 + 0.18 * max(n.y, 0.0);
+  float fill = max(dot(n, -rd), 0.0) * 0.32;
+  vec3 halfVector = normalize(lightDir - rd);
+  float specular = pow(max(dot(n, halfVector), 0.0), 42.0) * 0.16;
+  float fresnel = pow(1.0 - max(dot(n, -rd), 0.0), 3.0);
+
+  vec3 color = shell * (ambient + 0.85 * diffuse + fill)
+             + uTint * specular
+             + uTint * fresnel * 0.20;
+
+  if (uCrack > 0.0) {
+    vec3 broken = p * PLATE_SCALE
+                + CRACK_RAGGED * vec3(valueNoise(p * 11.0),
+                                      valueNoise(p * 11.0 + 5.0),
+                                      valueNoise(p * 11.0 + 9.0));
+    float seam = plateSeam(broken);
+
+    float reach = uCrack * CRACK_SPREAD;
+    float fromCrown = distance(p, vec3(0.0, 1.0, 0.0));
+    float spread = 1.0 - smoothstep(reach - 0.18, reach, fromCrown);
+
+    float width = mix(CRACK_MIN_WIDTH, CRACK_MAX_WIDTH, uCrack * uCrack);
+    float gap = (1.0 - smoothstep(0.0, width, seam)) * spread;
+    float lip = (1.0 - smoothstep(0.0, width * 3.5, seam)) * spread;
+
+    color *= 1.0 - 0.45 * lip;
+    color = mix(color, color * 0.06, gap);
+    // Light only escapes once the gaps are open. A hairline that already glows
+    // is decoration rather than damage.
+    color += uCrackGlow * gap * pow(uCrack, 2.5) * 1.1;
+  }
+
+  fragColor = vec4(color * alpha, alpha);
+}
+</script>
+
+<script>
+(() => {
+  const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* Typing ---------------------------------------------------------------
+     A line writes itself once it has been scrolled to, so the reader arrives
+     while it is being said rather than finding it already finished. */
+  function typeInto(el) {
+    const text = el.dataset.type ?? "";
+    if (reduced) {
+      el.textContent = text;
+      el.classList.add("done");
+      return;
+    }
+    el.textContent = "";
+    let i = 0;
+    const step = () => {
+      el.textContent = text.slice(0, ++i);
+      if (i < text.length) {
+        // Pauses where someone would take a breath.
+        const ch = text[i - 1];
+        setTimeout(step, ch === "." ? 240 : ch === "\n" ? 200 : 34);
+      } else {
+        el.classList.add("done");
+      }
+    };
+    setTimeout(step, 120);
+  }
+
+  const typed = [...document.querySelectorAll("[data-type]")];
+  typed.forEach((el) => {
+    el.textContent = "";
+    el.classList.add("caret");
+  });
+
+  const seen = new IntersectionObserver((entries) => {
+    entries.forEach((entry, n) => {
+      if (!entry.isIntersecting) { return; }
+      seen.unobserve(entry.target);
+      // Staggered, so a list writes itself line by line instead of at once.
+      setTimeout(() => typeInto(entry.target), n * 220);
+    });
+  }, { threshold: 0.35 });
+
+  typed.forEach((el) => seen.observe(el));
+
+  /* The egg --------------------------------------------------------------- */
+  const canvas = document.getElementById("egg");
+  const gl = canvas.getContext("webgl2", { alpha: true, antialias: false });
+  if (!gl) { document.body.classList.add("no-webgl"); return; }
+
+  const VS = `#version 300 es
+  in vec2 aPos;
+  void main() { gl_Position = vec4(aPos, 0.0, 1.0); }`;
+
+  function compile(type, src) {
+    const shader = gl.createShader(type);
+    gl.shaderSource(shader, src);
+    gl.compileShader(shader);
+    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+      throw new Error(gl.getShaderInfoLog(shader) ?? "shader failed");
+    }
+    return shader;
+  }
+
+  let program;
+  try {
+    program = gl.createProgram();
+    gl.attachShader(program, compile(gl.VERTEX_SHADER, VS));
+    gl.attachShader(
+      program,
+      compile(gl.FRAGMENT_SHADER, document.getElementById("egg-fs").textContent)
+    );
+    gl.linkProgram(program);
+    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+      throw new Error(gl.getProgramInfoLog(program) ?? "link failed");
+    }
+  } catch (error) {
+    // A page that cannot draw the egg still says what the app is.
+    console.error(error);
+    document.body.classList.add("no-webgl");
+    return;
+  }
+
+  gl.useProgram(program);
+  const buffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+  gl.bufferData(
+    gl.ARRAY_BUFFER,
+    new Float32Array([-1, -1, 3, -1, -1, 3]),
+    gl.STATIC_DRAW
+  );
+  const aPos = gl.getAttribLocation(program, "aPos");
+  gl.enableVertexAttribArray(aPos);
+  gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
+  gl.enable(gl.BLEND);
+  gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+
+  const at = (name) => gl.getUniformLocation(program, name);
+  const U = {
+    size: at("uSize"), yaw: at("uYaw"), pitch: at("uPitch"),
+    shell: at("uShell"), speckle: at("uSpeckle"), tint: at("uTint"),
+    noise: at("uNoiseOffset"), crack: at("uCrack"), glow: at("uCrackGlow"),
+  };
+
+  // Raymarching every pixel at a phone's full density is the one thing that
+  // would make this page feel heavy, so the buffer is capped under it.
+  const density = () => Math.min(window.devicePixelRatio || 1, 1.6);
+
+  function resize() {
+    const rect = canvas.getBoundingClientRect();
+    const w = Math.max(1, Math.round(rect.width * density()));
+    const h = Math.max(1, Math.round(rect.height * density()));
+    if (canvas.width !== w || canvas.height !== h) {
+      canvas.width = w;
+      canvas.height = h;
+      gl.viewport(0, 0, w, h);
+    }
+  }
+  addEventListener("resize", resize, { passive: true });
+
+  /* A different egg every time one opens, the way the app hands out a
+     different one each day. */
+  function freshEgg() {
+    const hue = Math.random() * 360;
+    const hsl = (h, s, l) => {
+      const a = s * Math.min(l, 1 - l);
+      const f = (n) => {
+        const k = (n + h / 30) % 12;
+        return l - a * Math.max(-1, Math.min(Math.min(k - 3, 9 - k), 1));
+      };
+      return [f(0), f(8), f(4)];
+    };
+    return {
+      shell: hsl(hue, 0.34, 0.78),
+      speckle: hsl(hue, 0.40, 0.60),
+      tint: hsl(hue, 0.55, 0.86),
+      noise: Math.random() * 40,
+    };
+  }
+
+  let egg = freshEgg();
+  let yaw = 0.5;
+  let pitch = 0.12;
+  let crack = 0;
+  let flash = 0;
+  let holding = false;
+  let dragging = false;
+  let last = null;
+  let moved = 0;
+
+  const HOLD_TO_OPEN = 1.15; // seconds of holding before the shell gives
+  const CLOSE_AFTER = 0.55;  // and how long the flash takes to clear
+
+  canvas.addEventListener("pointerdown", (event) => {
+    canvas.setPointerCapture(event.pointerId);
+    dragging = true;
+    holding = true;
+    moved = 0;
+    last = event;
+  });
+
+  canvas.addEventListener("pointermove", (event) => {
+    if (!dragging) { return; }
+    const dx = event.clientX - last.clientX;
+    const dy = event.clientY - last.clientY;
+    last = event;
+    moved += Math.hypot(dx, dy);
+    // A drag is a drag, not a hold: past a few pixels the egg stops opening.
+    if (moved > 12) { holding = false; }
+    yaw -= dx * 0.012;
+    pitch = Math.max(-0.9, Math.min(0.9, pitch - dy * 0.012));
+  });
+
+  const release = () => { dragging = false; holding = false; };
+  canvas.addEventListener("pointerup", release);
+  canvas.addEventListener("pointercancel", release);
+  canvas.addEventListener("pointerleave", release);
+
+  let previous = performance.now();
+  function frame(now) {
+    const dt = Math.min((now - previous) / 1000, 0.05);
+    previous = now;
+    resize();
+
+    // Turning slowly on its own, so the page is never completely still.
+    if (!dragging) { yaw += 0.16 * dt; }
+
+    if (flash > 0) {
+      flash = Math.max(0, flash - dt / CLOSE_AFTER);
+      crack = flash;
+      if (flash === 0) { egg = freshEgg(); }
+    } else if (holding) {
+      crack = Math.min(1, crack + dt / HOLD_TO_OPEN);
+      if (crack >= 1) { flash = 1; holding = false; }
+    } else {
+      crack = Math.max(0, crack - dt * 1.6);
+    }
+
+    gl.uniform2f(U.size, canvas.width, canvas.height);
+    gl.uniform1f(U.yaw, yaw);
+    gl.uniform1f(U.pitch, pitch);
+    gl.uniform3fv(U.shell, egg.shell);
+    gl.uniform3fv(U.speckle, egg.speckle);
+    gl.uniform3fv(U.tint, egg.tint);
+    gl.uniform1f(U.noise, egg.noise);
+    gl.uniform1f(U.crack, crack);
+    gl.uniform3f(U.glow, 1.0, 0.89, 0.65);
+
+    gl.clearColor(0, 0, 0, 0);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+
+    requestAnimationFrame(frame);
+  }
+
+  resize();
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
