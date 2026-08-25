@@ -86,15 +86,34 @@ float valueNoise(vec3 p) {
     f.z);
 }
 
+// A chick is two masses, not one: a big head sitting on a smaller body. One
+// smooth egg with a beak stuck on it reads as an egg with a beak stuck on it,
+// whatever else is added.
+const float HEAD_RADIUS = 0.54;
+const float HEAD_HEIGHT = 0.34;
+const float BELLY_RADIUS = 0.46;
+const float BELLY_DEPTH = -0.38;
+
+vec3 headRadii() {
+  return vec3(
+    HEAD_RADIUS * uSquash,
+    HEAD_RADIUS / uSquash,
+    HEAD_RADIUS * uSquash);
+}
+
 vec3 bodyRadii() {
   return vec3(
-    BODY_RADIUS * uSquash,
-    BODY_RADIUS / uSquash,
-    BODY_RADIUS * uSquash);
+    BELLY_RADIUS * uSquash,
+    BELLY_RADIUS / uSquash,
+    BELLY_RADIUS * uSquash);
+}
+
+vec3 headCentre() {
+  return vec3(0.0, HEAD_HEIGHT, 0.0);
 }
 
 vec3 beakCentre() {
-  return vec3(0.0, -0.10, bodyRadii().z * 0.88);
+  return headCentre() + vec3(0.0, -0.06, headRadii().z * 0.82);
 }
 
 // A short beak, wide where it meets the face and narrow at the tip.
@@ -108,25 +127,39 @@ float sdBeak(vec3 p) {
 // Two feet under the body. Without them the creature floats.
 float sdFeet(vec3 p) {
   vec3 mirrored = vec3(abs(p.x), p.y, p.z);
-  vec3 at = mirrored - vec3(uFootSize * 1.5, -bodyRadii().y * 0.92, 0.16);
-  return sdEllipsoid(at, vec3(uFootSize, uFootSize * 0.55, uFootSize * 1.35));
+  vec3 at = mirrored -
+    vec3(uFootSize * 1.4, BELLY_DEPTH - bodyRadii().y * 0.82, 0.14);
+  return sdEllipsoid(at, vec3(uFootSize, uFootSize * 0.5, uFootSize * 1.4));
+}
+
+// Stubby wings on the sides of the body. Small, but without them the body is
+// just a lower sphere.
+float sdWings(vec3 p) {
+  vec3 mirrored = vec3(abs(p.x), p.y, p.z);
+  vec3 at = mirrored - vec3(bodyRadii().x * 0.86, BELLY_DEPTH + 0.04, 0.0);
+  return sdEllipsoid(at, vec3(0.13, 0.22, 0.17));
 }
 
 float sdCreature(vec3 p) {
-  float d = sdEllipsoid(p, bodyRadii());
+  float head = sdEllipsoid(p - headCentre(), headRadii());
+  float body = sdEllipsoid(p - vec3(0.0, BELLY_DEPTH, 0.0), bodyRadii());
+
+  // Generously blended, so there is a soft shoulder rather than a neck.
+  float d = smoothUnion(head, body, 0.30);
+  d = smoothUnion(d, sdWings(p), 0.10);
 
   if (uCrestLength > 0.0) {
     // On top of the head and swept back, so it reads as a tuft of down rather
     // than as a pair of horns.
     vec3 mirrored = vec3(abs(p.x), p.y, p.z);
-    vec3 base = vec3(uCrestSpread, bodyRadii().y * 0.72, 0.0);
+    vec3 base = headCentre() + vec3(uCrestSpread, headRadii().y * 0.80, 0.0);
     vec3 tip =
-      base + vec3(uCrestLength * 0.30, uCrestLength, -uCrestLength * 0.45);
-    d = smoothUnion(d, sdCapsule(mirrored, base, tip, uCrestRadius), 0.09);
+      base + vec3(uCrestLength * 0.25, uCrestLength, -uCrestLength * 0.40);
+    d = smoothUnion(d, sdCapsule(mirrored, base, tip, uCrestRadius), 0.08);
   }
 
-  d = smoothUnion(d, sdBeak(p), 0.05);
-  d = smoothUnion(d, sdFeet(p), 0.06);
+  d = smoothUnion(d, sdBeak(p), 0.04);
+  d = smoothUnion(d, sdFeet(p), 0.05);
   return d;
 }
 
@@ -139,7 +172,7 @@ vec3 normalAt(vec3 p) {
 }
 
 vec3 eyeDirection(float side) {
-  return normalize(vec3(side * uEyeSpacing, 0.20, 1.0));
+  return normalize(vec3(side * uEyeSpacing, 0.24, 1.0));
 }
 
 float toNearestEye(vec3 n) {
