@@ -24,9 +24,13 @@ abstract final class OddletColors {
 }
 
 /// The one typeface, declared in pubspec.yaml. Covers Latin and Hangul in the
-/// same hand, so a Korean sentence and an English label look drawn by the same
-/// person rather than pasted together.
-const oddletFontFamily = 'Gaegu';
+/// same cut, so a Korean sentence and an English label belong to each other
+/// rather than looking pasted together.
+///
+/// It has a single weight and no italic. That is the point: a poster face
+/// carries a short line on its own, and asking it for emphasis it does not
+/// have would only get a synthetic bold that smears.
+const oddletFontFamily = 'BlackHanSans';
 
 /// A colour bleeding into the dark around it, the way a lit sign does.
 ///

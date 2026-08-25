@@ -55,7 +55,10 @@ class CollectionScreen extends ConsumerWidget {
                 color: theme.colorScheme.onSurfaceVariant,
               ),
             ),
-            if (ref.watch(accountProvider.notifier).isAnonymous &&
+            // Watches the value, not the notifier: watching the notifier does
+            // not rebuild when sign-in settles, and the banner would go on
+            // asking for an account the user had just connected.
+            if ((ref.watch(accountProvider).value?.isAnonymous ?? true) &&
                 found.isNotEmpty)
               const Padding(
                 padding: EdgeInsets.only(top: 20),

@@ -80,15 +80,14 @@ flutter:
   assets:
     - assets/fonts/OFL.txt
 
-  # Gaegu, by the Gaegu Project Authors, under the SIL Open Font License 1.1
-  # (assets/fonts/OFL.txt). A crayon hand rather than a typeface: this is a toy,
-  # and a toy set in a system font reads like a form.
+  # Black Han Sans, by the Black Han Sans Project Authors, under the SIL Open
+  # Font License 1.1 (assets/fonts/OFL.txt). A poster face, chosen because
+  # every line in this app is short: a name, a rarity, one thing said out loud.
+  # Nothing here is long enough to need a reading face.
   fonts:
-    - family: Gaegu
+    - family: BlackHanSans
       fonts:
-        - asset: assets/fonts/Gaegu-Regular.ttf
-        - asset: assets/fonts/Gaegu-Bold.ttf
-          weight: 700
+        - asset: assets/fonts/BlackHanSans-Regular.ttf
 
   # To add assets to your application, add an assets section, like this:
   # assets:
