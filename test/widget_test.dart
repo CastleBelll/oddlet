@@ -386,7 +386,7 @@ void main() {
   });
 
   group('theme', () {
-    test('sets every sentence in the drawn hand', () {
+    test('sets every line in the one poster face', () {
       final theme = oddletDarkTheme();
 
       // Reads the text theme rather than ThemeData.fontFamily: that is what
