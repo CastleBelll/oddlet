@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -30,7 +32,9 @@ class HatchReveal extends ConsumerStatefulWidget {
     required this.onDismiss,
   });
 
-  static const _riseDuration = Duration(milliseconds: 900);
+  // Long enough for the creature to land before the words start, short enough
+  // that nobody waits for the buttons.
+  static const _riseDuration = Duration(milliseconds: 1200);
 
   final Creature creature;
 
@@ -196,9 +200,10 @@ class _HatchRevealState extends ConsumerState<HatchReveal> {
                       _maxCreatureHeight,
                     );
 
-                return _RisesIntoView(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                return _Arrival(
+                  glowRadius: creatureHeight * 1.15,
+                  creature: Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       if (isNew)
                         Padding(
@@ -218,6 +223,11 @@ class _HatchRevealState extends ConsumerState<HatchReveal> {
                           height: creatureHeight,
                         ),
                       ),
+                    ],
+                  ),
+                  details: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
                       const SizedBox(height: 40),
                       Text(
                         name,
@@ -289,28 +299,52 @@ class _HatchRevealState extends ConsumerState<HatchReveal> {
   }
 }
 
-/// Fades and lifts its child once, on first build.
-class _RisesIntoView extends StatefulWidget {
-  const _RisesIntoView({required this.child});
+/// Brings the creature in, then the words about it.
+///
+/// Staged rather than fading the whole screen up at once: the creature is what
+/// the last three seconds were for, and a name sliding in beside it while it is
+/// still arriving splits the moment in two.
+class _Arrival extends StatefulWidget {
+  const _Arrival({
+    required this.creature,
+    required this.details,
+    required this.glowRadius,
+  });
 
-  final Widget child;
+  final Widget creature;
+  final Widget details;
+
+  /// How far the light it came out of reaches.
+  final double glowRadius;
 
   @override
-  State<_RisesIntoView> createState() => _RisesIntoViewState();
+  State<_Arrival> createState() => _ArrivalState();
 }
 
-class _RisesIntoViewState extends State<_RisesIntoView>
-    with SingleTickerProviderStateMixin {
+class _ArrivalState extends State<_Arrival> with SingleTickerProviderStateMixin {
   late final AnimationController _controller = AnimationController(
     vsync: this,
     duration: HatchReveal._riseDuration,
   )..forward();
 
-  late final Animation<double> _entrance = CurvedAnimation(
+  // Overshoots and settles. A creature that scales straight to its size looks
+  // placed there; one that goes slightly past and comes back has weight.
+  late final Animation<double> _grow = CurvedAnimation(
     parent: _controller,
-    curve: Curves.easeOutCubic,
+    curve: const Interval(0.0, 0.62, curve: Curves.easeOutBack),
   );
 
+  /// The last of the light from inside the egg, arriving with the creature and
+  /// gone a moment later.
+  late final Animation<double> _flare = CurvedAnimation(
+    parent: _controller,
+    curve: const Interval(0.0, 0.5, curve: Curves.easeOut),
+  );
+
+  late final Animation<double> _details = CurvedAnimation(
+    parent: _controller,
+    curve: const Interval(0.42, 1.0, curve: Curves.easeOutCubic),
+  );
 
   @override
   void dispose() {
@@ -321,15 +355,58 @@ class _RisesIntoViewState extends State<_RisesIntoView>
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
-      animation: _entrance,
-      builder: (context, child) => Opacity(
-        opacity: _entrance.value,
-        child: Transform.translate(
-          offset: Offset(0, (1 - _entrance.value) * 28),
-          child: child,
-        ),
-      ),
-      child: widget.child,
+      animation: _controller,
+      builder: (context, _) {
+        final grow = _grow.value;
+        // Up and back down across the interval, so the flare peaks with the
+        // creature rather than lingering behind it.
+        final flare = math.sin(math.pi * _flare.value);
+
+        return Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Stack(
+              alignment: Alignment.center,
+              children: [
+                IgnorePointer(
+                  child: Opacity(
+                    opacity: (flare * 0.85).clamp(0.0, 1.0),
+                    child: SizedBox.square(
+                      dimension: widget.glowRadius * 2,
+                      child: const DecoratedBox(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: RadialGradient(
+                            colors: [
+                              OddletColors.hatchLight,
+                              Color(0x00000000),
+                            ],
+                            stops: [0.0, 1.0],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Opacity(
+                  opacity: grow.clamp(0.0, 1.0),
+                  child: Transform.scale(
+                    scale: 0.72 + 0.28 * grow,
+                    child: widget.creature,
+                  ),
+                ),
+              ],
+            ),
+            Opacity(
+              opacity: _details.value,
+              child: Transform.translate(
+                offset: Offset(0, (1 - _details.value) * 22),
+                child: widget.details,
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

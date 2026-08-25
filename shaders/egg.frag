@@ -27,7 +27,9 @@ const float CAMERA_DISTANCE = 4.2;
 const float FOCAL = 1.8;
 const float EGG_RADIUS_XZ = 0.86; // chubby rather than slender
 const float EGG_TAPER = 0.20;     // how much narrower the top half is
-const int MAX_STEPS = 96;
+// Enough that a grazing ray still resolves the silhouette. Every march breaks
+// out the moment it hits, so the ordinary frame does not pay for this.
+const int MAX_STEPS = 128;
 const float HIT_EPS = 0.0008;
 const float MAX_DIST = 8.0;
 // The taper makes sdEgg a loose distance bound, so march conservatively.
@@ -61,6 +63,15 @@ const float SHARD_SIZE = 0.15;  // half-width where it broke off
 const float SHARD_SPEED = 2.3;  // how hard it is thrown clear
 const float SHARD_FALL = 2.4;   // and how quickly it drops after
 const float SHARD_LIFE = 0.55;  // gone by here, so the reveal is not littered
+
+// The fine stuff a break throws off. Smaller, faster and far more numerous
+// than the pieces, and what makes the shell read as brittle rather than as
+// something coming apart at seams.
+const int DUST_COUNT = 22;
+const float DUST_SIZE = 0.032;
+const float DUST_SPEED = 3.4;
+const float DUST_FALL = 3.6;
+const float DUST_LIFE = 0.38;
 
 mat3 rotX(float a) {
   float c = cos(a);
@@ -253,6 +264,11 @@ vec4 shardLayer(vec2 uv, vec3 ro) {
   // everywhere else.
   mat3 toCamera = rotX(-uPitch) * rotY(-uYaw);
 
+  // One rendered pixel, in the units uv is measured in. Edges are softened by
+  // this rather than by a fixed amount, so they stay a pixel wide whatever
+  // the screen is.
+  float pixel = 1.0 / (uDpr * uSize.y);
+
   for (int i = 0; i < SHARD_COUNT; i++) {
     vec3 h = hash3(vec3(float(i) * 1.7, 5.3, 2.9));
 
@@ -284,7 +300,9 @@ vec4 shardLayer(vec2 uv, vec3 ro) {
     }
 
     vec2 at = view.xy * FOCAL / (-view.z);
-    float scale = SHARD_SIZE * FOCAL / (-view.z);
+    // Pieces are not all the same size; a row of identical chips reads as a
+    // particle system rather than as one thing that broke.
+    float scale = SHARD_SIZE * mix(0.55, 1.35, h.z) * FOCAL / (-view.z);
 
     // Tumbling, which is most of what sells a falling piece.
     float spin = age * (3.0 + 7.0 * h.x) + h.y * 6.2831853;
@@ -296,7 +314,11 @@ vec4 shardLayer(vec2 uv, vec3 ro) {
     // pebbles.
     float chip = max(abs(local.x) * 0.85 + abs(local.y) * 0.65,
                      max(abs(local.x), abs(local.y)) * 0.9);
-    float cover = 1.0 - smoothstep(0.82, 1.0, chip);
+    // Softened by a screen pixel rather than by a fixed amount, so a piece is
+    // as crisp far away as it is close and does not turn to mush on a small
+    // one. The old fixed width blurred a distant chip into a smudge.
+    float soft = clamp(pixel / scale, 0.015, 0.35);
+    float cover = 1.0 - smoothstep(1.0 - soft, 1.0, chip);
     if (cover <= 0.0) {
       continue;
     }
@@ -309,6 +331,51 @@ vec4 shardLayer(vec2 uv, vec3 ro) {
     vec3 tone = mix(uShell * 0.32, uShell * 1.05, face)
               + uCrackGlow * face * 0.22;
 
+    // The broken edge, which is raw shell and catches the light square on.
+    // It is the only thing that says a piece has thickness.
+    tone += uCrackGlow * smoothstep(0.55, 1.0, chip) * 0.45;
+
+    result.rgb = mix(result.rgb, tone, cover);
+    result.a = max(result.a, cover);
+  }
+
+  // Dust, after the pieces so it settles in front of them.
+  for (int i = 0; i < DUST_COUNT; i++) {
+    vec3 h = hash3(vec3(float(i) * 2.9 + 31.0, 1.3, 7.7));
+
+    float phi = h.x * 6.2831853;
+    float up = mix(1.0, -0.35, h.y * h.y);
+    float ring = sqrt(max(0.0, 1.0 - up * up));
+    vec3 outward = vec3(ring * cos(phi), up, ring * sin(phi));
+
+    float turn = mix(PEEL_FIRST - 0.10, PEEL_FIRST + 0.45, 0.5 - 0.5 * up)
+               + 0.10 * h.z;
+    float age = uCrack - turn;
+    if (age <= 0.0 || age > DUST_LIFE) {
+      continue;
+    }
+
+    vec3 pos = outward * vec3(EGG_RADIUS_XZ, 1.0, EGG_RADIUS_XZ)
+             + outward * (age * DUST_SPEED * mix(0.6, 1.6, h.z))
+             + vec3(0.0, -DUST_FALL * age * age, 0.0);
+
+    vec3 view = toCamera * (pos - ro);
+    if (view.z > -0.05) {
+      continue;
+    }
+
+    vec2 at = view.xy * FOCAL / (-view.z);
+    float scale = DUST_SIZE * mix(0.5, 1.4, h.x) * FOCAL / (-view.z);
+    float d = length(uv - at) / scale;
+
+    float cover = (1.0 - smoothstep(1.0 - clamp(pixel / scale, 0.05, 0.9), 1.0, d))
+                * (1.0 - smoothstep(DUST_LIFE * 0.4, DUST_LIFE, age));
+    if (cover <= 0.0) {
+      continue;
+    }
+
+    // Lit almost entirely by what it is flying out of.
+    vec3 tone = mix(uShell * 0.6, uCrackGlow, 0.55);
     result.rgb = mix(result.rgb, tone, cover);
     result.a = max(result.a, cover);
   }
