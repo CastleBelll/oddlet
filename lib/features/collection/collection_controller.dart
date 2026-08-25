@@ -1,11 +1,26 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../account/account_controller.dart';
 import '../egg/daily_egg_controller.dart';
 import 'collection_entry.dart';
 import 'collection_store.dart';
+import 'local_collection_archive.dart';
 
-final collectionStoreProvider = Provider<CollectionStore>(
-  (ref) => CollectionStore(),
+/// Where this account's collection is kept.
+///
+/// Watches the account rather than reading it once: linking keeps the same id
+/// and so the same collection, but signing into an account someone already had
+/// changes the id, and the collection on screen has to change with it.
+final collectionStoreProvider = Provider<CollectionStore>((ref) {
+  final userId = ref.watch(accountProvider).value?.uid;
+  if (userId == null) {
+    return const UnsavedCollectionStore();
+  }
+  return FirestoreCollectionStore(userId);
+});
+
+final collectionArchiveProvider = Provider<LocalCollectionArchive>(
+  (ref) => LocalCollectionArchive(),
 );
 
 final collectionControllerProvider =
@@ -16,8 +31,46 @@ final collectionControllerProvider =
 /// Everything the user has found, keyed by creature id.
 class CollectionController extends AsyncNotifier<Map<String, CollectionEntry>> {
   @override
-  Future<Map<String, CollectionEntry>> build() =>
-      ref.read(collectionStoreProvider).load();
+  Future<Map<String, CollectionEntry>> build() async {
+    // Waiting on the account, not just reading it: the store cannot know where
+    // to look until sign-in has settled.
+    await ref.watch(accountProvider.future);
+    final store = ref.watch(collectionStoreProvider);
+    final found = await store.load();
+
+    if (store is UnsavedCollectionStore) {
+      // Nowhere to move anything to yet. Leave the old records where they are
+      // so the next launch with an account can still collect them.
+      return found;
+    }
+
+    return {..._moveInOldFinds(store, found, await _archived()), ...found};
+  }
+
+  Future<Map<String, CollectionEntry>> _archived() =>
+      ref.read(collectionArchiveProvider).drain();
+
+  /// Carries over anything found back when the collection lived on the phone.
+  ///
+  /// Records already on the account win: they are the ones the rules have been
+  /// keeping count of, and a lower local count would be refused anyway.
+  Map<String, CollectionEntry> _moveInOldFinds(
+    CollectionStore store,
+    Map<String, CollectionEntry> found,
+    Map<String, CollectionEntry> archived,
+  ) {
+    final moved = <String, CollectionEntry>{};
+
+    for (final entry in archived.entries) {
+      if (found.containsKey(entry.key)) {
+        continue;
+      }
+      store.write(entry.value);
+      moved[entry.key] = entry.value;
+    }
+
+    return moved;
+  }
 
   /// Files a find away.
   ///
@@ -35,11 +88,8 @@ class CollectionController extends AsyncNotifier<Map<String, CollectionEntry>> {
         ? CollectionEntry.firstFind(creatureId, at)
         : existing.foundAgain(at);
 
-    final updated = {...found, creatureId: entry};
-    state = AsyncData(updated);
-
-    // Rare enough to be worth writing straight away, unlike a tap.
-    await ref.read(collectionStoreProvider).save(updated);
+    state = AsyncData({...found, creatureId: entry});
+    ref.read(collectionStoreProvider).write(entry);
 
     return existing == null;
   }

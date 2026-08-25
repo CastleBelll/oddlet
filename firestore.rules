@@ -52,8 +52,13 @@ service cloud.firestore {
       // scope while there is nothing to cheat for.
       match /collection/{creatureId} {
         allow read: if isOwner(userId);
+        // Not pinned to 1: a collection built up before it moved onto the
+        // account arrives already counted, and refusing it would throw away
+        // finds that really happened.
         allow create: if isOwner(userId)
-          && request.resource.data.count == 1;
+          && request.resource.data.count is int
+          && request.resource.data.count >= 1
+          && request.resource.data.firstFoundAt is string;
         allow update: if isOwner(userId)
           && request.resource.data.count is int
           && request.resource.data.count > resource.data.count
