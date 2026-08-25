@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>계정 삭제 · Oddlet-!</title>
+<meta name="theme-color" content="#0F0E13">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Gothic+A1:wght@400;800&display=swap">
+<style>
+  :root {
+    --ink: #0F0E13;
+    --ink-raised: #1B1922;
+    --ink-lit: #272334;
+    --parchment: #ECE8F0;
+    --parchment-dim: #938DA1;
+    --accent: #B14BFF;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--ink);
+    color: var(--parchment);
+    font-family: "Gothic A1", system-ui, sans-serif;
+    line-height: 1.85;
+    /* Korean breaks between any two syllables unless told otherwise. */
+    word-break: keep-all;
+  }
+  main { max-width: 720px; margin: 0 auto; padding: 64px 24px 96px; }
+  .mark {
+    font-family: "Black Han Sans", system-ui, sans-serif;
+    letter-spacing: 0.24em;
+    font-size: 18px;
+    display: inline-block;
+    margin-bottom: 34px;
+    color: var(--parchment);
+    text-decoration: none;
+  }
+  h1 { font-weight: 800; font-size: clamp(26px, 5vw, 34px); margin: 0 0 8px; }
+  .updated { color: var(--parchment-dim); font-size: 14px; margin: 0 0 40px; }
+  h2 {
+    font-weight: 800;
+    font-size: 19px;
+    margin: 40px 0 10px;
+    padding-top: 24px;
+    border-top: 1px solid var(--ink-lit);
+  }
+  p, li { font-size: 15px; }
+  ul, ol { padding-left: 20px; }
+  li { margin-bottom: 6px; }
+  a { color: var(--accent); }
+
+  .ask {
+    margin: 28px 0 8px;
+    padding: 24px;
+    border: 1px solid var(--ink-lit);
+    border-radius: 18px;
+    background: var(--ink-raised);
+  }
+  .ask a {
+    font-family: "Black Han Sans", system-ui, sans-serif;
+    font-size: 20px;
+    word-break: break-all;
+  }
+  .ask p {
+    margin: 10px 0 0;
+    color: var(--parchment-dim);
+    font-size: 14px;
+  }
+
+  footer {
+    border-top: 1px solid var(--ink-lit);
+    margin-top: 56px;
+    padding-top: 24px;
+    color: var(--parchment-dim);
+    font-size: 14px;
+  }
+  footer a { color: var(--parchment-dim); }
+</style>
+</head>
+<body>
+<main>
+  <a class="mark" href="/">Oddlet-!</a>
+
+  <h1>계정과 데이터 삭제</h1>
+  <p class="updated">
+    최종 수정 2026년 8월 25일 · 앱 Oddlet-! · 개발자 CastleBell
+  </p>
+
+  <p>
+    계정과 그 계정에 저장된 데이터를 삭제할 수 있습니다. 앱 안에서 직접
+    삭제하거나, 아래 주소로 요청할 수 있습니다.
+  </p>
+
+  <h2>앱에서 삭제하기</h2>
+  <ol>
+    <li>앱을 열고 화면 왼쪽 위 <strong>사람 아이콘</strong>을 누릅니다.</li>
+    <li><strong>계정</strong> 화면에서 <strong>계정 삭제</strong>를 누릅니다.</li>
+    <li>확인 창에서 <strong>지울래</strong>를 누르면 바로 삭제됩니다.</li>
+  </ol>
+  <p>
+    확인 창을 지나면 되돌릴 수 없습니다. 삭제가 끝나면 앱은 로그인 화면으로
+    돌아갑니다.
+  </p>
+
+  <h2>메일로 요청하기</h2>
+
+  <div class="ask">
+    <a href="mailto:sad960614@gmail.com?subject=Oddlet-!%20%EA%B3%84%EC%A0%95%20%EC%82%AD%EC%A0%9C%20%EC%9A%94%EC%B2%AD">sad960614@gmail.com</a>
+    <p>
+      메일에 <strong>앱에서 사용하는 계정의 이메일 주소</strong>를 적어
+      보내주십시오. 그 주소로 확인 메일을 보낸 뒤 삭제합니다.
+    </p>
+  </div>
+
+  <h2>삭제되는 것</h2>
+  <ul>
+    <li>계정 자체 — 로그인 정보와 계정 식별자</li>
+    <li>도감 — 발견한 생물, 처음 발견한 시각, 발견 횟수</li>
+    <li>닉네임</li>
+  </ul>
+
+  <h2>삭제되지 않고 남는 것</h2>
+  <p>
+    <strong>이미 등록한 생물 이름은 남습니다.</strong> 그 이름은 같은 생물을
+    발견한 다른 이용자들이 이미 그 생물을 부르는 이름이고, 지우면 그들에게서도
+    사라지기 때문입니다.
+  </p>
+  <p>
+    다만 그 이름에 붙어 있던
+    <strong>닉네임과 발견자 표시는 함께 지워집니다.</strong> 삭제 후에는 이름만
+    남고, 누가 지었는지는 아무 데도 남지 않습니다.
+  </p>
+
+  <h2>처리 기간</h2>
+  <ul>
+    <li>앱에서 삭제하면 <strong>즉시</strong> 처리됩니다.</li>
+    <li>메일로 요청하면 <strong>영업일 기준 7일 이내</strong>에 처리합니다.</li>
+    <li>
+      처리 후 백업에서 완전히 지워지기까지 최대 <strong>30일</strong>이 걸릴 수
+      있습니다. 그동안 데이터는 접근이 차단된 상태로만 존재합니다.
+    </li>
+  </ul>
+
+  <h2>되돌릴 수 없습니다</h2>
+  <p>
+    삭제된 도감은 복구할 수 없습니다. 같은 계정으로 다시 로그인해도 비어 있는
+    상태로 시작합니다.
+  </p>
+
+  <footer>
+    <a href="/privacy">개인정보 처리방침</a> ·
+    <a href="/terms">운영약관</a>
+  </footer>
+</main>
+</body>
+</html>
