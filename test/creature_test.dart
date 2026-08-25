@@ -30,9 +30,8 @@ void main() {
         expect(appearance.squash, inInclusiveRange(0.7, 1.6));
         expect(appearance.eyeSpacing, inInclusiveRange(0.2, 0.6));
         expect(appearance.eyeSize, inInclusiveRange(0.1, 0.35));
-        expect(appearance.eyeCount, inInclusiveRange(1, 3));
-        expect(appearance.earLength, inInclusiveRange(0.0, 0.9));
-        expect(appearance.bumpiness, inInclusiveRange(0.0, 1.0));
+        expect(appearance.crestLength, inInclusiveRange(0.0, 0.6));
+        expect(appearance.footSize, greaterThan(0));
       }
     });
 
@@ -47,23 +46,26 @@ void main() {
       }
     });
 
-    test('keeps commons plain and lets the rare ones be strange', () {
+    test('never leaves a creature without a face', () {
+      // A missing feature reads as damage rather than as variety, so every
+      // creature carries the same parts and only their degree varies.
       for (final creature in season01Creatures) {
         final appearance = CreatureAppearance.of(creature);
 
-        if (creature.rarity == Rarity.common) {
-          // Ears, a mouth and markings are ordinary; a common may have them.
-          // What it may not have is anything actually strange.
-          expect(appearance.lumpRadius, 0, reason: 'a common has one body');
-          expect(appearance.bumpiness, 0);
-          expect(appearance.eyeCount, 2);
-          expect(appearance.glow, 0);
-        }
-        if (creature.rarity.index < Rarity.epic.index) {
-          expect(appearance.eyeCount, 2, reason: 'odd eyes are for odd tiers');
-        }
+        expect(appearance.beakSize, greaterThan(0), reason: creature.id);
+        expect(appearance.footSize, greaterThan(0), reason: creature.id);
+        expect(appearance.eyeSize, greaterThan(0), reason: creature.id);
+      }
+    });
+
+    test('reserves the glow for the top tiers', () {
+      for (final creature in season01Creatures) {
         if (creature.rarity.index < Rarity.legendary.index) {
-          expect(appearance.glow, 0, reason: 'only the rare ones glow');
+          expect(
+            CreatureAppearance.of(creature).glow,
+            0,
+            reason: '${creature.id} is not rare enough to glow',
+          );
         }
       }
     });

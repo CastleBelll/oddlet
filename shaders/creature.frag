@@ -4,8 +4,14 @@
 
 precision highp float;
 
-// Uniform order is a contract with CreaturePainter in
-// lib/features/creatures/creature_view.dart.
+// Every creature is built from the same parts in the same places: a rounded
+// body, a beak, two eyes, two feet, and an optional crest. Variety comes from
+// their proportions and colours, never from leaving a part out, because a face
+// missing a feature reads as wrong rather than as different.
+//
+// Uniform order is the index contract with CreaturePainter in
+// lib/features/creatures/creature_view.dart. Adding one anywhere but the end
+// silently shifts every uniform after it.
 uniform vec2 uSize;
 uniform float uDpr;
 
@@ -13,48 +19,37 @@ uniform vec3 uBody;
 uniform vec3 uBelly;
 uniform vec3 uTint;
 
-uniform float uSquash;     // above 1 wide and squat, below 1 tall
+uniform float uSquash;      // above 1 wide and squat, below 1 tall
+
 uniform float uEyeSpacing;
 uniform float uEyeSize;
-uniform float uEyeCount;   // 1, 2 or 3
 
-uniform float uEarLength;  // 0 for no ears
-uniform float uEarSpread;
-uniform float uEarRadius;
+uniform float uCrestLength;  // 0 for a creature with no crest
+uniform float uCrestSpread;
+uniform float uCrestRadius;
 
-uniform float uLumpHeight; // a second mass fused to the body
-uniform float uLumpRadius; // 0 for a single mass
+uniform float uBeakSize;
+uniform vec3 uBeakColor;
 
-uniform float uBumpiness;  // 0 smooth, 1 lumpy hide
-uniform float uGlow;       // rim light for the rare ones
-
-uniform float uMouthWidth;  // 0 for a creature with no mouth
-uniform float uMouthHeight;
+uniform float uFootSize;
 
 uniform float uMarkKind;     // 0 none, 1 spots, 2 stripes, 3 eye mask
 uniform float uMarkScale;
 uniform float uMarkStrength;
 uniform vec3 uMarkColor;
 
-// Declared last because uniform order is the index contract with Dart, and
-// these were added last. Inserting one in the middle silently shifts every
-// uniform after it.
-uniform float uBeakSize;   // 0 for a creature with no beak
-uniform vec3 uBeakColor;
+uniform float uGlow;         // rim light for the rare ones
 
 out vec4 fragColor;
 
-const float CAMERA_DISTANCE = 4.4;
+const float CAMERA_DISTANCE = 4.6;
 const float FOCAL = 1.8;
-const float BODY_RADIUS = 0.80;
-const int MAX_STEPS = 128;
+const float BODY_RADIUS = 0.78;
+const int MAX_STEPS = 110;
 const float HIT_EPS = 0.0008;
 const float MAX_DIST = 9.0;
-// Surface displacement breaks the distance bound, so march short steps.
-const float STEP_SCALE = 0.55;
+const float STEP_SCALE = 0.8;
 
-// Smooth union: parts fuse into one animal rather than reading as glued
-// together.
 float smoothUnion(float a, float b, float k) {
   float h = clamp(0.5 + 0.5 * (b - a) / k, 0.0, 1.0);
   return mix(b, a, h) - k * h * (1.0 - h);
@@ -91,127 +86,78 @@ float valueNoise(vec3 p) {
     f.z);
 }
 
-// A short blunt beak on the front of the face. Most of what makes any of
-// these read as a chick rather than as a blob with holes in it.
-vec3 beakCentre() {
-  return vec3(0.0, -0.08, BODY_RADIUS * 0.86);
-}
-
-float sdBeak(vec3 p) {
-  vec3 at = p - beakCentre();
-  // Tapers toward the tip: wide where it meets the face, narrow at the end.
-  float taper = 1.0 + 1.3 * max(at.z, 0.0);
-  vec3 q = vec3(at.x * taper, at.y * taper, at.z);
-  return sdEllipsoid(q, vec3(uBeakSize, uBeakSize * 0.75, uBeakSize * 1.6));
-}
-
-// The animal without its surface texture. Eyes are placed against this so a
-// lumpy hide cannot scatter them across the body.
-float sdBody(vec3 p) {
-  vec3 radii = vec3(
+vec3 bodyRadii() {
+  return vec3(
     BODY_RADIUS * uSquash,
     BODY_RADIUS / uSquash,
     BODY_RADIUS * uSquash);
-  float d = sdEllipsoid(p, radii);
+}
 
-  if (uLumpRadius > 0.0) {
-    float lump = sdEllipsoid(
-      p - vec3(0.0, uLumpHeight, 0.0),
-      vec3(uLumpRadius));
-    d = smoothUnion(d, lump, 0.28);
-  }
+vec3 beakCentre() {
+  return vec3(0.0, -0.10, bodyRadii().z * 0.88);
+}
 
-  if (uBeakSize > 0.0) {
-    d = smoothUnion(d, sdBeak(p), 0.05);
-  }
+// A short beak, wide where it meets the face and narrow at the tip.
+float sdBeak(vec3 p) {
+  vec3 at = p - beakCentre();
+  float taper = 1.0 + 1.4 * max(at.z, 0.0);
+  vec3 q = vec3(at.x * taper, at.y * taper, at.z);
+  return sdEllipsoid(q, vec3(uBeakSize, uBeakSize * 0.72, uBeakSize * 1.5));
+}
 
-  if (uEarLength > 0.0) {
-    // Mirrored across x, so the pair matches without drawing it twice.
-    vec3 mirrored = vec3(abs(p.x), p.y, p.z);
-    vec3 base = vec3(uEarSpread, 0.30, 0.0);
-    vec3 tip = vec3(
-      uEarSpread + uEarLength * 0.45,
-      0.30 + uEarLength,
-      -0.05);
-    d = smoothUnion(d, sdCapsule(mirrored, base, tip, uEarRadius), 0.10);
-  }
-
-  return d;
+// Two feet under the body. Without them the creature floats.
+float sdFeet(vec3 p) {
+  vec3 mirrored = vec3(abs(p.x), p.y, p.z);
+  vec3 at = mirrored - vec3(uFootSize * 1.5, -bodyRadii().y * 0.92, 0.16);
+  return sdEllipsoid(at, vec3(uFootSize, uFootSize * 0.55, uFootSize * 1.35));
 }
 
 float sdCreature(vec3 p) {
-  float d = sdBody(p);
-  if (uBumpiness > 0.0) {
-    // Coarse and shallow: at a fine scale this reads as rendering noise
-    // rather than as a hide.
-    d -= uBumpiness * (valueNoise(p * 3.2) - 0.5) * 0.09;
+  float d = sdEllipsoid(p, bodyRadii());
+
+  if (uCrestLength > 0.0) {
+    // On top of the head and swept back, so it reads as a tuft of down rather
+    // than as a pair of horns.
+    vec3 mirrored = vec3(abs(p.x), p.y, p.z);
+    vec3 base = vec3(uCrestSpread, bodyRadii().y * 0.72, 0.0);
+    vec3 tip =
+      base + vec3(uCrestLength * 0.30, uCrestLength, -uCrestLength * 0.45);
+    d = smoothUnion(d, sdCapsule(mirrored, base, tip, uCrestRadius), 0.09);
   }
+
+  d = smoothUnion(d, sdBeak(p), 0.05);
+  d = smoothUnion(d, sdFeet(p), 0.06);
   return d;
 }
 
-/// Wide sample, so the lumps shade as lumps instead of speckling.
 vec3 normalAt(vec3 p) {
-  vec2 e = vec2(0.007, 0.0);
+  vec2 e = vec2(0.0035, 0.0);
   return normalize(vec3(
     sdCreature(p + e.xyy) - sdCreature(p - e.xyy),
     sdCreature(p + e.yxy) - sdCreature(p - e.yxy),
     sdCreature(p + e.yyx) - sdCreature(p - e.yyx)));
 }
 
-vec3 smoothNormalAt(vec3 p) {
-  vec2 e = vec2(0.004, 0.0);
-  return normalize(vec3(
-    sdBody(p + e.xyy) - sdBody(p - e.xyy),
-    sdBody(p + e.yxy) - sdBody(p - e.yxy),
-    sdBody(p + e.yyx) - sdBody(p - e.yyx)));
-}
-
 vec3 eyeDirection(float side) {
-  return normalize(vec3(side * uEyeSpacing, 0.16, 1.0));
+  return normalize(vec3(side * uEyeSpacing, 0.20, 1.0));
 }
 
-// A mouth, set below the eyes on the front of the face. Drawn as a marking
-// rather than carved out, which keeps the silhouette clean at collection size.
-float mouthMask(vec3 n) {
-  if (uMouthWidth <= 0.0 || n.z < 0.25) {
-    return 0.0;
-  }
-  vec2 offset = vec2(n.x / uMouthWidth, (n.y + 0.30) / uMouthHeight);
-  return 1.0 - smoothstep(0.75, 1.0, length(offset));
-}
-
-// Distance from this point to whichever eye is closest.
 float toNearestEye(vec3 n) {
-  float nearest = uEyeCount < 1.5
-    ? distance(n, normalize(vec3(0.0, 0.12, 1.0)))
-    : min(distance(n, eyeDirection(-1.0)), distance(n, eyeDirection(1.0)));
-
-  if (uEyeCount > 2.5) {
-    nearest = min(nearest, distance(n, normalize(vec3(0.0, 0.62, 1.0))));
-  }
-  return nearest;
+  return min(distance(n, eyeDirection(-1.0)), distance(n, eyeDirection(1.0)));
 }
 
-// Coat markings. Kind is a small vocabulary rather than a free parameter, so
-// every creature reads as belonging to the same world.
+// Coat markings: a short vocabulary, so every creature reads as one family.
 float markingMask(vec3 p, vec3 n) {
   if (uMarkKind < 0.5 || uMarkStrength <= 0.0) {
     return 0.0;
   }
-
-  if (uMarkKind < 1.5) { // spots
+  if (uMarkKind < 1.5) {
     return smoothstep(0.58, 0.72, valueNoise(p * uMarkScale));
   }
-  if (uMarkKind < 2.5) { // stripes around the body
-    float band = sin(p.y * uMarkScale * 2.0);
-    return smoothstep(0.15, 0.55, abs(band));
+  if (uMarkKind < 2.5) {
+    return smoothstep(0.15, 0.55, abs(sin(p.y * uMarkScale * 2.0)));
   }
-
-  // a darker patch across the eyes
-  float toEyes = min(
-    distance(n, eyeDirection(-1.0)),
-    distance(n, eyeDirection(1.0)));
-  return 1.0 - smoothstep(uEyeSize * 1.6, uEyeSize * 3.0, toEyes);
+  return 1.0 - smoothstep(uEyeSize * 1.7, uEyeSize * 3.1, toNearestEye(n));
 }
 
 void main() {
@@ -256,55 +202,45 @@ void main() {
   vec3 p = ro + rd * (tHit > 0.0 ? tHit : tMin);
   vec3 n = normalAt(p);
 
-  // Markings sit on the coat, so they are picked with the undisplaced normal
-  // and shaded along with everything else.
-  vec3 faceNormal = smoothNormalAt(p);
-
   // Pale underside, the way most small animals are counter-shaded.
   vec3 skin = mix(uBody, uBelly, smoothstep(0.1, -0.8, n.y));
-  skin = mix(skin, uMarkColor, markingMask(p, faceNormal) * uMarkStrength);
+  skin = mix(skin, uMarkColor, markingMask(p, n) * uMarkStrength);
 
-  vec3 lightDir = normalize(vec3(-0.4, 0.7, 0.6));
+  vec3 lightDir = normalize(vec3(-0.35, 0.72, 0.6));
   float diffuse = max(dot(n, lightDir), 0.0);
-  float ambient = 0.40 + 0.16 * max(n.y, 0.0);
-  float fill = max(dot(n, -rd), 0.0) * 0.28;
+  float ambient = 0.44 + 0.16 * max(n.y, 0.0);
+  float fill = max(dot(n, -rd), 0.0) * 0.26;
 
   vec3 halfVector = normalize(lightDir - rd);
-  float specular = pow(max(dot(n, halfVector), 0.0), 38.0) * 0.20;
+  float specular = pow(max(dot(n, halfVector), 0.0), 40.0) * 0.18;
   float fresnel = pow(1.0 - max(dot(n, -rd), 0.0), 3.0);
 
-  vec3 color = skin * (ambient + 0.8 * diffuse + fill)
+  vec3 color = skin * (ambient + 0.78 * diffuse + fill)
              + uTint * specular
-             + uTint * fresnel * (0.22 + uGlow);
+             + uTint * fresnel * (0.20 + uGlow);
 
-  // The beak takes its own colour, or it reads as a lump of the same animal.
-  if (uBeakSize > 0.0) {
-    vec3 atBeak = p - beakCentre();
-    float onBeak = 1.0 - smoothstep(
-      0.0,
-      0.035,
-      sdEllipsoid(atBeak, vec3(uBeakSize * 1.05, uBeakSize * 0.8, uBeakSize * 1.7)));
-    color = mix(color, uBeakColor * (0.45 + 0.75 * diffuse), onBeak);
-  }
+  // Beak and feet take their own colour, or they read as lumps of the animal.
+  float onBeak = 1.0 - smoothstep(0.0, 0.03, sdBeak(p));
+  float onFeet = 1.0 - smoothstep(0.0, 0.03, sdFeet(p));
+  color = mix(color, uBeakColor * (0.46 + 0.72 * diffuse), max(onBeak, onFeet));
 
-  float nearestEye = toNearestEye(faceNormal);
-  float eye = 1.0 - smoothstep(uEyeSize * 0.75, uEyeSize, nearestEye);
+  // Eyes last, so nothing draws over them.
+  float eye = 1.0 - smoothstep(uEyeSize * 0.78, uEyeSize, toNearestEye(n));
 
-  // Two highlights rather than one. A single dot on a big dark oval reads as
-  // a hole; a pair reads as a wet eye looking at you.
+  // Two highlights. One dot on a dark oval reads as a socket; a pair reads as
+  // an eye looking back.
   float glint = 1.0 - smoothstep(
     uEyeSize * 0.22,
     uEyeSize * 0.38,
-    distance(faceNormal, normalize(vec3(-uEyeSpacing + 0.09, 0.28, 1.0))));
+    distance(n, normalize(vec3(-uEyeSpacing + 0.09, 0.32, 1.0))));
   float underGlint = 1.0 - smoothstep(
     uEyeSize * 0.10,
     uEyeSize * 0.20,
-    distance(faceNormal, normalize(vec3(uEyeSpacing + 0.02, 0.02, 1.0))));
+    distance(n, normalize(vec3(uEyeSpacing + 0.03, 0.06, 1.0))));
 
-  color = mix(color, vec3(0.10, 0.08, 0.11), mouthMask(faceNormal));
-  color = mix(color, vec3(0.11, 0.09, 0.14), eye);
+  color = mix(color, vec3(0.12, 0.10, 0.15), eye);
   color = mix(color, vec3(1.0), eye * glint * 0.95);
-  color = mix(color, vec3(1.0), eye * underGlint * 0.55);
+  color = mix(color, vec3(1.0), eye * underGlint * 0.5);
 
   fragColor = vec4(color * alpha, alpha); // premultiplied
 }

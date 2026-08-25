@@ -12,14 +12,13 @@ enum CreatureMarking { none, spots, stripes, eyeMask }
 /// given. Everything comes from its id, so a creature looks the same every
 /// time anyone finds it, which is what lets players compare notes.
 ///
-/// Rarity is the budget, but only for what is genuinely strange. Ears, a
-/// mouth and markings are ordinary equipment: a spotted animal with ears is
-/// not odd, it is an animal. What a tier buys is a second fused mass, a lumpy
-/// hide, an eye count other than two, and finally a glow.
+/// Every creature has the same parts: a body, a beak, two eyes, two feet.
+/// None is ever left off. A face missing a feature reads as wrong rather than
+/// as different, which is how an earlier set ended up looking like damaged
+/// animals instead of a family of them.
 ///
-/// Splitting it this way keeps rarity legible at a glance while leaving the
-/// common tier enough room to hold dozens of creatures that still look
-/// different from each other.
+/// Rarity buys degree, not deformity: a bolder crest, a stronger coat, and at
+/// the top a glow. Everything else varies by proportion and colour.
 @immutable
 class CreatureAppearance {
   const CreatureAppearance({
@@ -28,16 +27,11 @@ class CreatureAppearance {
     required this.squash,
     required this.eyeSpacing,
     required this.eyeSize,
-    required this.eyeCount,
-    required this.earLength,
-    required this.earSpread,
-    required this.earRadius,
-    required this.lumpHeight,
-    required this.lumpRadius,
-    required this.bumpiness,
+    required this.crestLength,
+    required this.crestSpread,
+    required this.crestRadius,
+    required this.footSize,
     required this.glow,
-    required this.mouthWidth,
-    required this.mouthHeight,
     required this.marking,
     required this.markScale,
     required this.markStrength,
@@ -70,27 +64,15 @@ class CreatureAppearance {
   final double eyeSpacing;
   final double eyeSize;
 
-  /// 1, 2 or 3. Two is ordinary; anything else is a sign of something odd.
-  final int eyeCount;
+  /// A tuft of down on the head. 0 for a creature without one.
+  final double crestLength;
+  final double crestSpread;
+  final double crestRadius;
 
-  /// 0 for a creature with no ears or horns.
-  final double earLength;
-  final double earSpread;
-  final double earRadius;
-
-  /// A second mass fused onto the body. 0 for a single lump of an animal.
-  final double lumpHeight;
-  final double lumpRadius;
-
-  /// 0 smooth, 1 a lumpy hide.
-  final double bumpiness;
+  final double footSize;
 
   /// Extra rim light, reserved for the rare ones.
   final double glow;
-
-  /// 0 for a creature with no mouth.
-  final double mouthWidth;
-  final double mouthHeight;
 
   /// Which coat pattern this one wears.
   final CreatureMarking marking;
@@ -121,14 +103,13 @@ class CreatureAppearance {
   String get signature {
     final hueBucket = (HSVColor.fromColor(body).hue ~/ 30).clamp(0, 11);
     final proportion = squash < 0.95 ? 'tall' : (squash < 1.12 ? 'round' : 'wide');
-    final ears = earLength == 0 ? 0 : (earLength < 0.55 ? 1 : 2);
-    final lump = lumpRadius == 0 ? 0 : (lumpRadius < 0.41 ? 1 : 2);
-    final mouth = mouthWidth == 0 ? 0 : (mouthWidth < 0.18 ? 1 : 2);
-    final hide = bumpiness == 0 ? 0 : 1;
-    final beak = beakSize == 0 ? 0 : (beakSize < 0.20 ? 1 : 2);
+    final crest = crestLength == 0 ? 0 : (crestLength < 0.28 ? 1 : 2);
+    final beak = beakSize < 0.20 ? 0 : 1;
+    final eyes = eyeSize < 0.18 ? 0 : 1;
+    final glowing = glow == 0 ? 0 : 1;
 
-    return 'h$hueBucket/$proportion/ear$ears/lump$lump/'
-        'eye$eyeCount/mouth$mouth/beak$beak/${marking.name}/hide$hide';
+    return 'h$hueBucket/$proportion/crest$crest/beak$beak/'
+        'eye$eyes/${marking.name}/glow$glowing';
   }
 
   factory CreatureAppearance.of(Creature creature) {
@@ -147,25 +128,13 @@ class CreatureAppearance {
       _unit(seed, 4),
     ).clamp(_minSquash, _maxSquash * stretch);
 
-    // Ordinary equipment, open to every tier.
-    final hasEars = _unit(seed, 10) > 0.30;
+    // The crest is the one part a creature may go without, and the higher
+    // tiers are likelier to wear a bold one.
+    final hasCrest = _unit(seed, 10) > (budget >= 2 ? 0.20 : 0.45);
 
-    // A beak is what makes one of these read as a chick at all, so most have
-    // one. A creature with a beak has no separate mouth: it would sit on the
-    // beak and read as damage.
-    final hasBeak = _unit(seed, 29) > 0.25;
-    final hasMouth = !hasBeak && _unit(seed, 22) > 0.30;
     final markings = _unit(seed, 23) > 0.35
         ? CreatureMarking.values[1 + (_unit(seed, 24) * 3).floor().clamp(0, 2)]
         : CreatureMarking.none;
-
-    // Bought with the oddity budget.
-    final hasLump = budget >= 1 && _unit(seed, 11) > 0.45;
-    final isBumpy = budget >= 2 && _unit(seed, 12) > 0.45;
-
-    // Two eyes is the norm. Only the strange ones look back with more or less.
-    final oddEyes = budget >= 3 && _unit(seed, 13) > 0.5;
-    final eyeCount = oddEyes ? (_unit(seed, 14) > 0.5 ? 3 : 1) : 2;
 
     return CreatureAppearance(
       body: HSVColor.fromAHSV(1, hue, saturation, value).toColor(),
@@ -178,16 +147,13 @@ class CreatureAppearance {
       squash: squash,
       eyeSpacing: _lerp(_minEyeSpacing, _maxEyeSpacing, _unit(seed, 5)),
       eyeSize: _lerp(_minEyeSize, _maxEyeSize, _unit(seed, 6)),
-      eyeCount: eyeCount,
-      earLength: hasEars ? _lerp(0.30, 0.85, _unit(seed, 15)) : 0,
-      earSpread: _lerp(0.22, 0.46, _unit(seed, 16)),
-      earRadius: _lerp(0.09, 0.19, _unit(seed, 17)),
-      lumpHeight: _lerp(0.34, 0.62, _unit(seed, 18)),
-      lumpRadius: hasLump ? _lerp(0.30, 0.52, _unit(seed, 19)) : 0,
-      bumpiness: isBumpy ? _lerp(0.35, 1.0, _unit(seed, 20)) : 0,
+      crestLength: hasCrest
+          ? _lerp(0.18, 0.34 + budget * 0.03, _unit(seed, 15))
+          : 0,
+      crestSpread: _lerp(0.08, 0.22, _unit(seed, 16)),
+      crestRadius: _lerp(0.06, 0.11, _unit(seed, 17)),
+      footSize: _lerp(0.13, 0.19, _unit(seed, 18)),
       glow: budget >= 4 ? _lerp(0.25, 0.55, _unit(seed, 21)) : 0,
-      mouthWidth: hasMouth ? _lerp(0.10, 0.26, _unit(seed, 25)) : 0,
-      mouthHeight: _lerp(0.06, 0.16, _unit(seed, 26)),
       marking: markings,
       markScale: _lerp(4.0, 11.0, _unit(seed, 27)),
       markStrength: markings == CreatureMarking.none
@@ -201,7 +167,8 @@ class CreatureAppearance {
         (saturation + 0.12).clamp(0.0, 1.0),
         (value - 0.34).clamp(0.0, 1.0),
       ).toColor(),
-      beakSize: hasBeak ? _lerp(0.15, 0.24, _unit(seed, 30)) : 0,
+      // Never zero. The beak is what makes one of these read as a chick.
+      beakSize: _lerp(0.16, 0.23, _unit(seed, 30)),
       // Warm and light against the coat, the way a real beak is.
       beakColor: HSVColor.fromAHSV(
         1,
@@ -220,16 +187,11 @@ class CreatureAppearance {
       other.squash == squash &&
       other.eyeSpacing == eyeSpacing &&
       other.eyeSize == eyeSize &&
-      other.eyeCount == eyeCount &&
-      other.earLength == earLength &&
-      other.earSpread == earSpread &&
-      other.earRadius == earRadius &&
-      other.lumpHeight == lumpHeight &&
-      other.lumpRadius == lumpRadius &&
-      other.bumpiness == bumpiness &&
+      other.crestLength == crestLength &&
+      other.crestSpread == crestSpread &&
+      other.crestRadius == crestRadius &&
+      other.footSize == footSize &&
       other.glow == glow &&
-      other.mouthWidth == mouthWidth &&
-      other.mouthHeight == mouthHeight &&
       other.marking == marking &&
       other.markScale == markScale &&
       other.markStrength == markStrength &&
@@ -244,16 +206,11 @@ class CreatureAppearance {
     squash,
     eyeSpacing,
     eyeSize,
-    eyeCount,
-    earLength,
-    earSpread,
-    earRadius,
-    lumpHeight,
-    lumpRadius,
-    bumpiness,
+    crestLength,
+    crestSpread,
+    crestRadius,
+    footSize,
     glow,
-    mouthWidth,
-    mouthHeight,
     marking,
     markScale,
     markStrength,
