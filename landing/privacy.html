@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>개인정보 처리방침 · Oddlet-!</title>
+<meta name="theme-color" content="#0F0E13">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Gothic+A1:wght@400;800&display=swap">
+<style>
+  :root {
+    --ink: #0F0E13;
+    --ink-lit: #272334;
+    --parchment: #ECE8F0;
+    --parchment-dim: #938DA1;
+    --accent: #B14BFF;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--ink);
+    color: var(--parchment);
+    font-family: "Gothic A1", system-ui, sans-serif;
+    line-height: 1.85;
+    /* Korean breaks between any two syllables unless told otherwise. */
+    word-break: keep-all;
+  }
+  main { max-width: 720px; margin: 0 auto; padding: 64px 24px 96px; }
+  .mark {
+    font-family: "Black Han Sans", system-ui, sans-serif;
+    letter-spacing: 0.24em;
+    font-size: 18px;
+    display: inline-block;
+    margin-bottom: 34px;
+    color: var(--parchment);
+    text-decoration: none;
+  }
+  h1 { font-weight: 800; font-size: clamp(26px, 5vw, 34px); margin: 0 0 8px; }
+  .updated { color: var(--parchment-dim); font-size: 14px; margin: 0 0 40px; }
+  h2 {
+    font-weight: 800;
+    font-size: 19px;
+    margin: 40px 0 10px;
+    padding-top: 24px;
+    border-top: 1px solid var(--ink-lit);
+  }
+  p, li { font-size: 15px; }
+  ul { padding-left: 20px; }
+  li { margin-bottom: 6px; }
+  a { color: var(--accent); }
+  footer {
+    border-top: 1px solid var(--ink-lit);
+    margin-top: 56px;
+    padding-top: 24px;
+    color: var(--parchment-dim);
+    font-size: 14px;
+  }
+</style>
+</head>
+<body>
+<main>
+  <a class="mark" href="/">Oddlet-!</a>
+
+  <h1>개인정보 처리방침</h1>
+  <p class="updated">최종 수정 2026년 8월 25일</p>
+
+  <p>
+    Oddlet-!(이하 “앱”)은 서비스 운영에 필요한 최소한의 정보만 다룹니다. 이
+    문서에는 앱이 <strong>실제로 수집하는 것</strong>만 적습니다. 여기 적히지
+    않은 정보는 수집하지 않습니다.
+  </p>
+
+  <h2>1. 수집하는 정보</h2>
+  <ul>
+    <li>
+      <strong>계정 식별자와 이메일 주소</strong> — Google, Apple 또는 이메일로
+      로그인할 때 Firebase Authentication이 발급하는 고유 식별자와, 로그인
+      수단이 제공하는 이메일 주소입니다. 비밀번호는 앱이 보관하지 않습니다.
+    </li>
+    <li>
+      <strong>도감</strong> — 발견한 생물, 처음 발견한 시각, 발견 횟수.
+    </li>
+    <li>
+      <strong>닉네임</strong> — 이용자가 직접 정합니다. 본명을 쓰지 않도록
+      안내하며, 앱이 실명이나 계정 이름을 대신 채우지 않습니다.
+    </li>
+    <li>
+      <strong>이용자가 등록한 생물 이름</strong> — 최초 발견자가 지은 이름과 그
+      닉네임입니다. <strong>이 두 가지는 공개됩니다.</strong> 같은 생물을
+      발견한 다른 이용자에게 보입니다.
+    </li>
+  </ul>
+
+  <h2>2. 기기에만 남고 전송되지 않는 것</h2>
+  <p>
+    오늘의 알을 몇 번 만졌는지, 몇 번 흔들었는지는 <strong>기기 안에만</strong>
+    쌓입니다. 알이 부화하는 순간 그 값들로 결과가 정해지고,
+    <strong>결과만</strong> 계정에 기록됩니다. 만진 횟수와 흔든 횟수 자체는
+    전송되지 않습니다.
+  </p>
+  <p>
+    가속도 센서는 흔드는 동작을 알아채는 데만 쓰이며, 센서 값을 저장하거나
+    전송하지 않습니다. 위치, 연락처, 사진, 통화 기록, 광고 식별자는 수집하지
+    않습니다.
+  </p>
+
+  <h2>3. 수집하지 않는 것</h2>
+  <ul>
+    <li>광고 SDK를 넣지 않았고, 광고를 게재하지 않습니다.</li>
+    <li>분석·추적 SDK를 넣지 않았습니다.</li>
+    <li>제3자에게 개인정보를 판매하거나 제공하지 않습니다.</li>
+  </ul>
+
+  <h2>4. 처리 위탁</h2>
+  <p>
+    앱은 Google LLC의 Firebase(Authentication, Cloud Firestore, Cloud
+    Functions)를 사용하며, 위 정보는 Google의 서버에 저장됩니다. 자세한 내용은
+    <a href="https://firebase.google.com/support/privacy">Firebase 개인정보 보호</a>를
+    참고하십시오.
+  </p>
+
+  <h2>5. 보관 기간</h2>
+  <p>
+    계정이 유지되는 동안 보관하며, 계정을 삭제하면 도감과 닉네임을 함께
+    삭제합니다.
+  </p>
+  <p>
+    다만 <strong>이미 등록된 생물 이름은 삭제해도 남습니다.</strong> 그 이름은
+    다른 이용자들이 이미 그 생물을 부르는 이름이기 때문입니다. 삭제 시 그
+    이름에 붙은 닉네임은 지워지고 발견자 표시가 사라집니다.
+  </p>
+
+  <h2>6. 이용자의 권리</h2>
+  <p>
+    열람, 정정, 삭제, 처리 정지를 요청할 수 있습니다. 아래 주소로 연락하시면
+    확인 후 처리합니다. 앱 안에서 계정을 삭제하는 기능은 준비 중이며, 그전까지는
+    메일로 접수합니다.
+  </p>
+
+  <h2>7. 만 14세 미만</h2>
+  <p>
+    앱은 만 14세 미만 아동을 대상으로 하지 않으며, 해당 연령의 개인정보를 고의로
+    수집하지 않습니다. 수집된 사실이 확인되면 지체 없이 삭제합니다.
+  </p>
+
+  <h2>8. 부적절한 이름 신고</h2>
+  <p>
+    이용자가 등록한 이름이나 닉네임이 부적절한 경우 아래 주소로 신고하십시오.
+    확인 후 해당 이름을 회수하며, 회수된 생물은 이름이 없는 상태로 돌아가 다음
+    발견자에게 기회가 넘어갑니다.
+  </p>
+
+  <h2>9. 변경</h2>
+  <p>이 방침이 바뀌면 이 페이지에 수정일과 함께 게시합니다.</p>
+
+  <footer>
+    문의 · 신고 · 삭제 요청:
+    <a href="mailto:sad960614@gmail.com">sad960614@gmail.com</a>
+  </footer>
+</main>
+</body>
+</html>

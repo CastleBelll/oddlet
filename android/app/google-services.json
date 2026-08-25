@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "626132539773-3lbpimo9to1qbpe0hpnt9hgtkkdu469l.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.castlebell.oddlet",
+            "certificate_hash": "2e4704966885af4b995ea1e54f4abcc9ff7a3575"
+          }
+        },
+        {
           "client_id": "626132539773-prikoer1eri3rhc4n1vkagqug4qe3oft.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {

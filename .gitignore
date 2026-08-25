@@ -53,3 +53,11 @@ lib/l10n/app_localizations*.dart
 # Cloud Functions build output and dependencies.
 functions/node_modules/
 functions/lib/
+
+# Release signing. Neither of these may ever be committed: the keystore is the
+# only thing that can upload an update, and the properties file holds its
+# password in plain text.
+android/key.properties
+android/upload-keystore.jks
+*.jks
+store/app-release.aab
