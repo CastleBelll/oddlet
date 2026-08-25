@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../l10n/app_localizations.dart';
+import '../../ui/oddlet_dialog.dart';
 import 'account_controller.dart';
 
 /// Offers the ways to turn the throwaway account into a real one.
@@ -52,9 +53,12 @@ class _AccountUpgradeSheetState extends ConsumerState<_AccountUpgradeSheet> {
     };
 
     if (message != null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(message)));
+      // Awaited before the sheet closes: the popup belongs to this route, and
+      // popping first would take the message down with it.
+      await showOddletMessage(context, message);
+      if (!mounted) {
+        return;
+      }
     }
     if (outcome != UpgradeOutcome.failed &&
         outcome != UpgradeOutcome.cancelled) {

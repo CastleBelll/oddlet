@@ -56,5 +56,7 @@
   "collectionProgress": "{total}종 중 {found}종 발견",
   "collectionUndiscovered": "아직 발견하지 못함",
   "collectionFoundCount": "{count}번 발견",
-  "homeNextEgg": "다음 알은 내일 도착합니다"
+  "homeNextEgg": "다음 알은 내일 도착합니다",
+
+  "dialogDismiss": "알겠어"
 }

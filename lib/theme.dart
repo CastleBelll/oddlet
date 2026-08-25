@@ -23,6 +23,11 @@ abstract final class OddletColors {
   static const accentCool = Color(0xFF4DD4FF);
 }
 
+/// The one typeface, declared in pubspec.yaml. Covers Latin and Hangul in the
+/// same hand, so a Korean sentence and an English label look drawn by the same
+/// person rather than pasted together.
+const oddletFontFamily = 'Gaegu';
+
 /// A colour bleeding into the dark around it, the way a lit sign does.
 ///
 /// Used on the handful of things worth drawing the eye to. Applying it
@@ -55,6 +60,17 @@ ThemeData oddletDarkTheme() {
   return ThemeData(
     colorScheme: scheme,
     scaffoldBackgroundColor: scheme.surface,
+    // Hand-drawn, and drawn a little badly on purpose. Nothing here is
+    // official; a system font would make the app look like it is reporting
+    // something to the user rather than playing with them.
+    fontFamily: oddletFontFamily,
+    dialogTheme: DialogThemeData(
+      backgroundColor: OddletColors.inkRaised,
+      surfaceTintColor: Colors.transparent,
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 40),
+    ),
     appBarTheme: AppBarTheme(
       backgroundColor: scheme.surface,
       foregroundColor: scheme.onSurface,

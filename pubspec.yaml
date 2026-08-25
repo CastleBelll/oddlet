@@ -77,6 +77,19 @@ flutter:
     - shaders/egg.frag
     - shaders/creature.frag
 
+  assets:
+    - assets/fonts/OFL.txt
+
+  # Gaegu, by the Gaegu Project Authors, under the SIL Open Font License 1.1
+  # (assets/fonts/OFL.txt). A crayon hand rather than a typeface: this is a toy,
+  # and a toy set in a system font reads like a form.
+  fonts:
+    - family: Gaegu
+      fonts:
+        - asset: assets/fonts/Gaegu-Regular.ttf
+        - asset: assets/fonts/Gaegu-Bold.ttf
+          weight: 700
+
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg

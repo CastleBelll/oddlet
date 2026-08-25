@@ -13,6 +13,7 @@ import 'package:oddlet/features/egg/egg_appearance.dart';
 import 'package:oddlet/features/egg/egg_view.dart';
 import 'package:oddlet/features/egg/home_screen.dart';
 import 'package:oddlet/features/egg/shake_detector.dart';
+import 'package:oddlet/theme.dart';
 
 /// A sample the detector should read as a shake of [magnitude] m/s^2 along x.
 UserAccelerometerEvent sample(double magnitude, DateTime at) =>
@@ -381,6 +382,18 @@ void main() {
       ]);
 
       expect(shakes.map((shake) => shake.direction), [-1.0, 1.0]);
+    });
+  });
+
+  group('theme', () {
+    test('sets every sentence in the drawn hand', () {
+      final theme = oddletDarkTheme();
+
+      // Reads the text theme rather than ThemeData.fontFamily: that is what
+      // widgets actually resolve, and a style declared without it would quietly
+      // fall back to the system font.
+      expect(theme.textTheme.bodyMedium?.fontFamily, oddletFontFamily);
+      expect(theme.textTheme.titleLarge?.fontFamily, oddletFontFamily);
     });
   });
 }

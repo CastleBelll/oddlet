@@ -190,5 +190,10 @@
   "homeNextEgg": "come back tomorrow for a new one",
   "@homeNextEgg": {
     "description": "Shown where the egg was, once today's has been opened. Says nothing about what was inside."
+  },
+
+  "dialogDismiss": "got it",
+  "@dialogDismiss": {
+    "description": "The only button on a message popup. Closes it."
   }
 }
