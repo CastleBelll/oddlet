@@ -55,6 +55,13 @@ const float PEEL_SCATTER = 0.22;
 const float CORE_MIN_RADIUS = 0.18;
 const float CORE_MAX_RADIUS = 0.62;
 
+// Broken shell on its way out.
+const int SHARD_COUNT = 16;
+const float SHARD_SIZE = 0.15;  // half-width where it broke off
+const float SHARD_SPEED = 2.3;  // how hard it is thrown clear
+const float SHARD_FALL = 2.4;   // and how quickly it drops after
+const float SHARD_LIFE = 0.55;  // gone by here, so the reveal is not littered
+
 mat3 rotX(float a) {
   float c = cos(a);
   float s = sin(a);
@@ -228,6 +235,101 @@ vec3 insideEgg(vec3 from, vec3 rd) {
   return color;
 }
 
+/// Pieces of shell tumbling away from the egg.
+///
+/// Deliberately not part of the egg's own shape. A dozen moving pieces in the
+/// distance field would cost a cell lookup at every step of every ray, and
+/// this is on screen for about a third of a second: drawing them where they
+/// land is enough, and it is the movement that says the shell broke.
+vec4 shardLayer(vec2 uv, vec3 ro) {
+  vec4 result = vec4(0.0);
+  if (uCrack <= 0.0) {
+    return result;
+  }
+
+  // The camera rotation undone. Built from the angles rather than by
+  // transposing the matrix: spirv-cross turns transpose() into a helper that
+  // SkSL does not have, so the shader compiles for Impeller and is rejected
+  // everywhere else.
+  mat3 toCamera = rotX(-uPitch) * rotY(-uYaw);
+
+  for (int i = 0; i < SHARD_COUNT; i++) {
+    vec3 h = hash3(vec3(float(i) * 1.7, 5.3, 2.9));
+
+    // Where on the shell it broke off, weighted toward the crown, which is
+    // where the shell opens.
+    float phi = h.x * 6.2831853;
+    float up = mix(1.0, -0.2, h.y * h.y);
+    float ring = sqrt(max(0.0, 1.0 - up * up));
+    vec3 outward = vec3(ring * cos(phi), up, ring * sin(phi));
+    vec3 origin = outward * vec3(EGG_RADIUS_XZ, 1.0, EGG_RADIUS_XZ);
+
+    // Higher pieces leave first, in the same order the openings appear.
+    float turn = mix(PEEL_FIRST, PEEL_FIRST + 0.50, 0.5 - 0.5 * up)
+               + 0.12 * h.z;
+    float age = uCrack - turn;
+    if (age <= 0.0) {
+      continue;
+    }
+
+    // Thrown clear, then falling. Both matter: without the throw it drips off
+    // the egg, without the fall it floats.
+    vec3 pos = origin
+             + outward * (age * SHARD_SPEED)
+             + vec3(0.0, -SHARD_FALL * age * age, 0.0);
+
+    vec3 view = toCamera * (pos - ro);
+    if (view.z > -0.05) {
+      continue;
+    }
+
+    vec2 at = view.xy * FOCAL / (-view.z);
+    float scale = SHARD_SIZE * FOCAL / (-view.z);
+
+    // Tumbling, which is most of what sells a falling piece.
+    float spin = age * (3.0 + 7.0 * h.x) + h.y * 6.2831853;
+    float c = cos(spin);
+    float s = sin(spin);
+    vec2 local = (mat2(c, -s, s, c) * (uv - at)) / scale;
+
+    // A chip with corners rather than a disc: shell does not break into
+    // pebbles.
+    float chip = max(abs(local.x) * 0.85 + abs(local.y) * 0.65,
+                     max(abs(local.x), abs(local.y)) * 0.9);
+    float cover = 1.0 - smoothstep(0.82, 1.0, chip);
+    if (cover <= 0.0) {
+      continue;
+    }
+    cover *= 1.0 - smoothstep(SHARD_LIFE * 0.55, SHARD_LIFE, age);
+
+    // One face is the outside of the shell and the other is the inside, still
+    // catching the light it came away from, so a tumbling piece flickers
+    // instead of reading as a flat sticker.
+    float face = 0.5 + 0.5 * cos(spin * 1.7);
+    vec3 tone = mix(uShell * 0.32, uShell * 1.05, face)
+              + uCrackGlow * face * 0.22;
+
+    result.rgb = mix(result.rgb, tone, cover);
+    result.a = max(result.a, cover);
+  }
+
+  return result;
+}
+
+/// Light getting out past the shell.
+///
+/// Once there are openings the egg stops being a lit object and starts being
+/// the source, so the dark around it has to brighten too. Without this the
+/// glow stops dead at the silhouette and the egg reads as a picture of a
+/// glowing egg rather than as something in the room.
+float spill(vec2 uv) {
+  float open = smoothstep(PEEL_FIRST, 1.0, uCrack);
+  return open * exp(-length(uv) * 3.0);
+}
+
+// Defined after main, so main reads as the order things are drawn in.
+vec3 shellAt(vec3 p, vec3 rd, vec3 plate);
+
 void main() {
   vec2 frag = FlutterFragCoord().xy;
   vec2 uv = (frag - 0.5 * uSize) / uSize.y;
@@ -267,28 +369,50 @@ void main() {
   if (tHit < 0.0) {
     float edge = 2.0 / (uDpr * uSize.y);
     alpha = 1.0 - smoothstep(0.0, edge, dMin);
-    if (alpha <= 0.0) {
-      fragColor = vec4(0.0);
-      return;
-    }
   }
 
+  vec3 color = vec3(0.0);
   vec3 p = ro + rd * (tHit > 0.0 ? tHit : tMin);
-  vec3 n = normalAt(p);
 
   // Which piece of shell this is, and whether it is still there.
   vec3 plate = vec3(8.0, 0.0, 0.0);
-  if (uCrack > 0.0) {
+  bool torn = false;
+  if (uCrack > 0.0 && alpha > 0.0) {
     plate = plateInfo(shatterSpace(p));
-
-    // Nothing to shade where a piece has gone: the ray carries on into the egg
-    // and comes back with what is in there. Stepping in past the surface first
-    // so the march does not immediately call itself a hit.
-    if (tHit > 0.0 && tornAt(plate) > 0.5) {
-      fragColor = vec4(insideEgg(p + rd * 0.02, rd), 1.0);
-      return;
-    }
+    torn = tHit > 0.0 && tornAt(plate) > 0.5;
   }
+
+  if (torn) {
+    // Nothing to shade where a piece has gone: the ray carries on into the egg
+    // and comes back with what is in there. Stepped in past the surface first,
+    // so the march does not immediately call itself a hit.
+    color = insideEgg(p + rd * 0.02, rd);
+  } else if (alpha > 0.0) {
+    color = shellAt(p, rd, plate);
+  }
+
+  // Light escaping past the shell, over the egg and the dark around it alike.
+  float glow = spill(uv);
+  color += uCrackGlow * glow * 0.55;
+  alpha = max(alpha, glow * 0.7);
+
+  // Broken shell in front of everything. Drawn last because it is between the
+  // egg and the camera, and it has to survive rays that missed the egg.
+  vec4 debris = shardLayer(uv, ro);
+  color = mix(color, debris.rgb, debris.a);
+  alpha = max(alpha, debris.a);
+
+  if (alpha <= 0.0) {
+    fragColor = vec4(0.0);
+    return;
+  }
+
+  fragColor = vec4(color * alpha, alpha); // premultiplied
+}
+
+/// The shell itself, where it is still attached.
+vec3 shellAt(vec3 p, vec3 rd, vec3 plate) {
+  vec3 n = normalAt(p);
 
   // Shell pattern, also what makes rotation read as rotation on a shape this
   // symmetric. Two octaves: fine freckles blended toward broad blotches.
@@ -365,5 +489,5 @@ void main() {
     color += uCrackGlow * lip * loosening * pow(uCrack, 2.0) * 0.55;
   }
 
-  fragColor = vec4(color * alpha, alpha); // premultiplied
+  return color;
 }
