@@ -5,8 +5,10 @@ import '../../l10n/app_localizations.dart';
 import '../../theme.dart';
 import '../account/account_controller.dart';
 import '../account/account_upgrade_sheet.dart';
+import '../creatures/creature_appearance.dart';
 import '../creatures/creature_labels.dart';
 import '../creatures/creature_view.dart';
+import '../naming/naming_repository.dart';
 import '../rules/creature.dart';
 import '../rules/season_01.dart';
 import 'collection_controller.dart';
@@ -165,14 +167,14 @@ class _RaritySection extends StatelessWidget {
   }
 }
 
-class _Slot extends StatelessWidget {
+class _Slot extends ConsumerWidget {
   const _Slot({required this.creature, required this.entry});
 
   final Creature creature;
   final CollectionEntry? entry;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final entry = this.entry;
@@ -192,7 +194,14 @@ class _Slot extends StatelessWidget {
       );
     }
 
-    final name = creatureName(l10n, creature.id);
+    // What somebody called it beats the name shipped with the app. The shipped
+    // one is a placeholder for a creature nobody has claimed, and a collection
+    // still showing it after the find was named is where the whole feature
+    // stops being visible.
+    final registered = ref
+        .watch(speciesNameProvider(CreatureAppearance.of(creature).species))
+        .value;
+    final name = registered?.name ?? creatureName(l10n, creature.id);
 
     return Semantics(
       label: '$name, ${l10n.collectionFoundCount(entry.count)}',
@@ -208,12 +217,29 @@ class _Slot extends StatelessWidget {
             const SizedBox(height: 6),
             SizedBox(
               width: CollectionScreen._tileSize,
-              child: Text(
-                name,
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.bodySmall,
+              child: Column(
+                children: [
+                  Text(
+                    name,
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.bodySmall,
+                  ),
+                  if (registered != null)
+                    Text(
+                      registered.discovererUid ==
+                              ref.watch(accountProvider).value?.uid
+                          ? l10n.nameDiscoveredByYou
+                          : l10n.nameDiscoveredBy(registered.discovererHandle),
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                ],
               ),
             ),
           ],
