@@ -115,29 +115,26 @@ void main() {
       }
     });
 
-    test('every tier has room for a season without repeating itself', () {
-      // Draws far more creatures than a season holds and counts how many read
-      // as different animals. A change that narrows the generator shows up
-      // here before it shows up as two creatures that look alike.
-      const draws = 200;
-      const needed = 140;
+    test('holds a season, and no more than a season', () {
+      // Bounded on purpose. Open-ended generation would make every find a
+      // first find, so nobody would ever meet a creature someone else named.
+      expect(CreatureAppearance.speciesCount, inInclusiveRange(100, 600));
 
-      for (final rarity in Rarity.values) {
-        final looks = <String>{};
-        for (var i = 0; i < draws; i++) {
-          looks.add(
-            CreatureAppearance.of(
-              Creature(id: 'probe_${rarity.name}_$i', rarity: rarity),
-            ).signature,
-          );
-        }
+      final looks = <String>{};
+      for (var i = 0; i < CreatureAppearance.speciesCount * 3; i++) {
+        looks.add(CreatureAppearance.species(i, Rarity.common).signature);
+      }
 
+      expect(looks, hasLength(CreatureAppearance.speciesCount));
+    });
+
+    test('a species is the same creature for everyone who finds it', () {
+      // Two people who reach species 42 must see the same animal, or a name
+      // one of them registered means nothing to the other.
+      for (final index in [0, 7, 42, 200]) {
         expect(
-          looks.length,
-          greaterThan(needed),
-          reason:
-              '${rarity.name} can only manage ${looks.length} different looks '
-              'in $draws draws, which is too few to fill a season',
+          CreatureAppearance.species(index, Rarity.common),
+          CreatureAppearance.species(index, Rarity.common),
         );
       }
     });

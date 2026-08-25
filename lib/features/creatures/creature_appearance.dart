@@ -38,7 +38,12 @@ class CreatureAppearance {
     required this.markColor,
     required this.beakSize,
     required this.beakColor,
+    required this.species,
   });
+
+  /// Which of the season's species this is. Two creatures sharing it are the
+  /// same creature, which is what a first discovery can be claimed against.
+  final int species;
 
   /// Brighter and more saturated than an egg. This is the payoff.
   static const _minSaturation = 0.38;
@@ -100,41 +105,56 @@ class CreatureAppearance {
   /// different shade, however far apart their exact numbers are. The season
   /// catalogue is tested for duplicates, and [Creature.designSalt] is how one
   /// is nudged apart without renaming it.
-  String get signature {
-    final hueBucket = (HSVColor.fromColor(body).hue ~/ 30).clamp(0, 11);
-    final proportion = squash < 0.95 ? 'tall' : (squash < 1.12 ? 'round' : 'wide');
-    final crest = crestLength == 0 ? 0 : (crestLength < 0.28 ? 1 : 2);
-    final beak = beakSize < 0.20 ? 0 : 1;
-    final eyes = eyeSize < 0.18 ? 0 : 1;
-    final glowing = glow == 0 ? 0 : 1;
+  String get signature => 'species$species';
 
-    return 'h$hueBucket/$proportion/crest$crest/beak$beak/'
-        'eye$eyes/${marking.name}/glow$glowing';
-  }
+  /// How many creatures a season can hold.
+  ///
+  /// Deliberately small. The point of a bounded set is that two people can
+  /// find the same creature: if the space were open, every find would be a
+  /// first find, nobody would ever meet a creature someone else had named,
+  /// and there would be no shared world to talk about.
+  static const speciesCount = _hues * _proportions * _crests * _markingKinds;
 
-  factory CreatureAppearance.of(Creature creature) {
-    final seed = _hashString(creature.id) ^ (creature.designSalt * 0x9E3779B1);
-    final budget = oddityBudget(creature.rarity);
+  static const _hues = 8;
+  static const _proportions = 3;
+  static const _crests = 3;
+  static const _markingKinds = 4;
 
-    final hue = _unit(seed, 1) * 360;
-    final saturation = _lerp(_minSaturation, _maxSaturation, _unit(seed, 2));
-    final value = _lerp(_minValue, _maxValue, _unit(seed, 3));
+  factory CreatureAppearance.of(Creature creature) => CreatureAppearance.species(
+    _hashString(creature.id) ^ (creature.designSalt * 0x9E3779B1),
+    creature.rarity,
+  );
 
-    // Proportions drift further from ordinary as the tier climbs.
-    final stretch = 1 + budget / 12;
-    final squash = _lerp(
-      _minSquash,
-      _maxSquash,
-      _unit(seed, 4),
-    ).clamp(_minSquash, _maxSquash * stretch);
+  /// The look of one species.
+  ///
+  /// Everything is decided by [species] alone, so the same species is the
+  /// same creature down to the pixel for everyone who finds it. That is what
+  /// lets one person name it for everybody else.
+  factory CreatureAppearance.species(int species, Rarity rarity) {
+    final index = species.abs() % speciesCount;
+    final budget = oddityBudget(rarity);
 
-    // The crest is the one part a creature may go without, and the higher
-    // tiers are likelier to wear a bold one.
-    final hasCrest = _unit(seed, 10) > (budget >= 2 ? 0.20 : 0.45);
+    var rest = index;
+    final hueSlot = rest % _hues;
+    rest ~/= _hues;
+    final proportionSlot = rest % _proportions;
+    rest ~/= _proportions;
+    final crestSlot = rest % _crests;
+    rest ~/= _crests;
+    final markingSlot = rest % _markingKinds;
 
-    final markings = _unit(seed, 23) > 0.35
-        ? CreatureMarking.values[1 + (_unit(seed, 24) * 3).floor().clamp(0, 2)]
-        : CreatureMarking.none;
+    final hue = hueSlot * (360 / _hues);
+    final saturation =
+        _lerp(_minSaturation, _maxSaturation, hueSlot / (_hues - 1));
+    final value = _lerp(_minValue, _maxValue, proportionSlot / 2);
+
+    final squash = _lerp(_minSquash, _maxSquash, proportionSlot / 2);
+    final hasCrest = crestSlot > 0;
+    final markings = CreatureMarking.values[markingSlot];
+
+    // Reads from the slots rather than from fresh randomness, so nothing
+    // varies between two sightings of the same species.
+    final seed = index;
 
     return CreatureAppearance(
       body: HSVColor.fromAHSV(1, hue, saturation, value).toColor(),
@@ -147,9 +167,7 @@ class CreatureAppearance {
       squash: squash,
       eyeSpacing: _lerp(_minEyeSpacing, _maxEyeSpacing, _unit(seed, 5)),
       eyeSize: _lerp(_minEyeSize, _maxEyeSize, _unit(seed, 6)),
-      crestLength: hasCrest
-          ? _lerp(0.18, 0.34 + budget * 0.03, _unit(seed, 15))
-          : 0,
+      crestLength: hasCrest ? _lerp(0.20, 0.36, (crestSlot - 1) / 1) : 0,
       crestSpread: _lerp(0.08, 0.22, _unit(seed, 16)),
       crestRadius: _lerp(0.06, 0.11, _unit(seed, 17)),
       footSize: _lerp(0.13, 0.19, _unit(seed, 18)),
@@ -170,6 +188,7 @@ class CreatureAppearance {
       // Never zero. The beak is what makes one of these read as a chick.
       beakSize: _lerp(0.16, 0.23, _unit(seed, 30)),
       // Warm and light against the coat, the way a real beak is.
+      species: index,
       beakColor: HSVColor.fromAHSV(
         1,
         _lerp(28, 52, _unit(seed, 31)),
@@ -197,7 +216,8 @@ class CreatureAppearance {
       other.markStrength == markStrength &&
       other.markColor == markColor &&
       other.beakSize == beakSize &&
-      other.beakColor == beakColor;
+      other.beakColor == beakColor &&
+      other.species == species;
 
   @override
   int get hashCode => Object.hashAll([
@@ -217,6 +237,7 @@ class CreatureAppearance {
     markColor,
     beakSize,
     beakColor,
+    species,
   ]);
 }
 
