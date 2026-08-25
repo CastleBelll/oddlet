@@ -510,4 +510,32 @@ void main() {
       expect(theme.textTheme.titleLarge?.fontFamily, oddletFontFamily);
     });
   });
+
+  group('SpeciesName', () {
+    // What the delete function leaves behind: the name every other finder is
+    // already using, with nobody credited for it. Emptied rather than removed
+    // because a document missing fields is refused outright, and a name that
+    // stops being readable is a name that has effectively been deleted.
+    test('reads a record whose discoverer has deleted their account', () {
+      final name = SpeciesName.fromFirestore(136, const {
+        'name': 'Bam',
+        'nameKey': 'bam',
+        'discovererUid': '',
+        'discovererHandle': '',
+      });
+
+      expect(name.name, 'Bam');
+      expect(name.hasDiscoverer, isFalse);
+    });
+
+    test('reports a discoverer while there is one to credit', () {
+      final name = SpeciesName.fromFirestore(136, const {
+        'name': 'Bam',
+        'discovererUid': 'uid',
+        'discovererHandle': 'someone',
+      });
+
+      expect(name.hasDiscoverer, isTrue);
+    });
+  });
 }

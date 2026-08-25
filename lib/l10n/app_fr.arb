@@ -98,5 +98,15 @@
   "signInErrorWrong": "cette adresse existe déjà et le mot de passe ne l'ouvre pas",
   "handleTitle": "on t'appelle comment ?",
   "handleBody": "il apparaîtra à côté des noms que tu donnes. pas ton vrai nom",
-  "handleContinue": "c'est moi"
+  "handleContinue": "c'est moi",
+
+  "accountTitle": "compte",
+  "accountSignOut": "se déconnecter",
+  "accountDelete": "supprimer le compte",
+  "accountDeleteExplain": "supprimer le compte efface ta collection et ton pseudo. les noms que tu as donnés restent — les autres les appellent déjà comme ça — mais plus rien ne dira qui les a donnés",
+  "accountDeleteTitle": "tout supprimer ?",
+  "accountDeleteBody": "tout ce que tu as trouvé disparaît, et c'est sans retour",
+  "accountDeleteConfirm": "supprimer",
+  "accountDeleteCancel": "laisse tomber",
+  "accountDeleteFailed": "impossible de supprimer pour l'instant. réessaie dans un moment"
 }

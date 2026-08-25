@@ -46,6 +46,18 @@ final namingRepositoryProvider = Provider<NamingRepository>(
   (ref) => NamingRepository(),
 );
 
+/// The nickname this account signs its names with, or null before it has one.
+///
+/// Its own provider rather than a field on the account, so that finishing the
+/// nickname step can invalidate it and the app moves on by itself.
+final handleProvider = FutureProvider<String?>((ref) async {
+  final uid = ref.watch(accountProvider).value?.uid;
+  if (uid == null) {
+    return null;
+  }
+  return ref.watch(namingRepositoryProvider).myHandle(uid);
+});
+
 /// The name of one species, if it has one.
 ///
 /// Watches the account, because whether a name is *yours* depends on who you

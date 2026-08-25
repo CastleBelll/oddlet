@@ -98,5 +98,15 @@
   "signInErrorWrong": "die Adresse gibt es schon und das Passwort passt nicht",
   "handleTitle": "wie sollen wir dich nennen?",
   "handleBody": "steht neben den Namen, die du vergibst. nicht dein echter",
-  "handleContinue": "das bin ich"
+  "handleContinue": "das bin ich",
+
+  "accountTitle": "Konto",
+  "accountSignOut": "abmelden",
+  "accountDelete": "Konto löschen",
+  "accountDeleteExplain": "beim Löschen verschwinden deine Sammlung und dein Spitzname. die Namen, die du vergeben hast, bleiben — die anderen nennen sie längst so — aber niemand steht mehr dahinter",
+  "accountDeleteTitle": "wirklich alles löschen?",
+  "accountDeleteBody": "alles, was du gefunden hast, ist weg, und es kommt nicht zurück",
+  "accountDeleteConfirm": "löschen",
+  "accountDeleteCancel": "doch nicht",
+  "accountDeleteFailed": "geht gerade nicht. versuch es gleich noch mal"
 }

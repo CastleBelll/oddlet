@@ -359,5 +359,50 @@
   "handleContinue": "that is me",
   "@handleContinue": {
     "description": "Button that saves the nickname and enters the app."
+  },
+
+  "accountTitle": "account",
+  "@accountTitle": {
+    "description": "Title of the account screen, and the tooltip of the button that opens it from the home header."
+  },
+
+  "accountSignOut": "sign out",
+  "@accountSignOut": {
+    "description": "Button that signs out. The account and everything on it stays; only this phone stops being signed in."
+  },
+
+  "accountDelete": "delete account",
+  "@accountDelete": {
+    "description": "Button that deletes the account for good. Shown in the error colour, below the explanation."
+  },
+
+  "accountDeleteExplain": "deleting your account removes your collection and your nickname. the names you gave stay — other people already call them that — but nothing says who gave them any more",
+  "@accountDeleteExplain": {
+    "description": "Says what deleting actually does before the button that does it. The registered names surviving is the part people would not guess, so it is stated here rather than only in the confirmation."
+  },
+
+  "accountDeleteTitle": "delete it all?",
+  "@accountDeleteTitle": {
+    "description": "Title of the confirmation asked before deleting an account."
+  },
+
+  "accountDeleteBody": "everything you have found goes, and there is no getting it back",
+  "@accountDeleteBody": {
+    "description": "Body of that confirmation. Says the two things that matter: everything goes, and it does not come back."
+  },
+
+  "accountDeleteConfirm": "delete it",
+  "@accountDeleteConfirm": {
+    "description": "The answer that deletes. Deliberately the plain button, not the filled one."
+  },
+
+  "accountDeleteCancel": "keep it",
+  "@accountDeleteCancel": {
+    "description": "The way out of the confirmation."
+  },
+
+  "accountDeleteFailed": "could not delete that right now. try again in a moment",
+  "@accountDeleteFailed": {
+    "description": "Shown when the delete could not be carried out. Nothing was deleted."
   }
 }

@@ -245,7 +245,7 @@ class _HatchRevealState extends ConsumerState<HatchReveal> {
                               : null,
                         ),
                       ),
-                      if (registered != null) ...[
+                      if (registered != null && registered.hasDiscoverer) ...[
                         const SizedBox(height: 14),
                         Text(
                           mine

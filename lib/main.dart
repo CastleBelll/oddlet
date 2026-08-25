@@ -18,18 +18,6 @@ Future<void> main() async {
   runApp(const ProviderScope(child: OddletApp()));
 }
 
-/// Whether this account has already chosen a nickname.
-///
-/// Its own provider rather than a field on the account, so that finishing the
-/// nickname step can invalidate it and the app moves on by itself.
-final handleProvider = FutureProvider<String?>((ref) async {
-  final uid = ref.watch(accountProvider).value?.uid;
-  if (uid == null) {
-    return null;
-  }
-  return ref.watch(namingRepositoryProvider).myHandle(uid);
-});
-
 /// Everything that has to be true before the egg.
 ///
 /// In order: an account, a nickname, and the opening. The account comes first

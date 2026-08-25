@@ -98,5 +98,15 @@
   "signInErrorWrong": "그 주소는 이미 있고 비밀번호가 안 맞아",
   "handleTitle": "뭐라고 부를까",
   "handleBody": "네가 지은 이름 옆에 남을 이름이야. 본명 말고",
-  "handleContinue": "이걸로 할래"
+  "handleContinue": "이걸로 할래",
+
+  "accountTitle": "계정",
+  "accountSignOut": "로그아웃",
+  "accountDelete": "계정 삭제",
+  "accountDeleteExplain": "계정을 지우면 도감이랑 닉네임이 사라져. 네가 지은 이름은 남아 — 다른 사람들이 이미 그렇게 부르고 있으니까. 대신 누가 지었는지는 지워져",
+  "accountDeleteTitle": "정말 지울까?",
+  "accountDeleteBody": "지금까지 모은 게 전부 사라지고 되돌릴 수 없어",
+  "accountDeleteConfirm": "지울래",
+  "accountDeleteCancel": "그만둘래",
+  "accountDeleteFailed": "지금은 지울 수 없어. 잠깐 뒤에 다시"
 }

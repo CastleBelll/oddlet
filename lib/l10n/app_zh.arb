@@ -98,5 +98,15 @@
   "signInErrorWrong": "这个地址已经存在，密码不对",
   "handleTitle": "怎么称呼你？",
   "handleBody": "会留在你取的名字旁边。别用真名",
-  "handleContinue": "就这个"
+  "handleContinue": "就这个",
+
+  "accountTitle": "账号",
+  "accountSignOut": "退出登录",
+  "accountDelete": "删除账号",
+  "accountDeleteExplain": "删除账号会清掉你的图鉴和昵称。你取的名字会留下——别人已经这么叫了。但不会再显示是谁取的",
+  "accountDeleteTitle": "真的要删?",
+  "accountDeleteBody": "收集到的全都会没,而且找不回来",
+  "accountDeleteConfirm": "删掉",
+  "accountDeleteCancel": "算了",
+  "accountDeleteFailed": "现在删不了,过一会儿再试"
 }

@@ -98,5 +98,15 @@
   "signInErrorWrong": "そのアドレスはもうあって、パスワードが合わない",
   "handleTitle": "なんて呼べばいい？",
   "handleBody": "君がつけた名前の横に残る名前。本名じゃなくていい",
-  "handleContinue": "これでいく"
+  "handleContinue": "これでいく",
+
+  "accountTitle": "アカウント",
+  "accountSignOut": "ログアウト",
+  "accountDelete": "アカウントを削除",
+  "accountDeleteExplain": "アカウントを消すと図鑑とニックネームがなくなる。君がつけた名前は残る——もうみんながそう呼んでるから。でも誰がつけたかは消える",
+  "accountDeleteTitle": "本当に消す?",
+  "accountDeleteBody": "集めたものが全部消えて、もう戻せない",
+  "accountDeleteConfirm": "消す",
+  "accountDeleteCancel": "やめとく",
+  "accountDeleteFailed": "今は消せない。少ししてからまた"
 }

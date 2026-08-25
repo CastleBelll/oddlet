@@ -98,5 +98,15 @@
   "signInErrorWrong": "esse e-mail já existe e a senha não abre",
   "handleTitle": "como te chamamos?",
   "handleBody": "fica ao lado dos nomes que você der. não use o seu de verdade",
-  "handleContinue": "sou eu"
+  "handleContinue": "sou eu",
+
+  "accountTitle": "conta",
+  "accountSignOut": "sair",
+  "accountDelete": "excluir conta",
+  "accountDeleteExplain": "excluir a conta apaga sua coleção e seu apelido. os nomes que você deu ficam — os outros já chamam assim — mas não vai mais dizer quem deu",
+  "accountDeleteTitle": "excluir tudo?",
+  "accountDeleteBody": "tudo o que você encontrou some, e não dá para voltar atrás",
+  "accountDeleteConfirm": "excluir",
+  "accountDeleteCancel": "deixa pra lá",
+  "accountDeleteFailed": "não dá para excluir agora. tente daqui a pouco"
 }

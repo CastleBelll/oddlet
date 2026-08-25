@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -47,6 +48,30 @@ class AccountController extends AsyncNotifier<User?> {
   Future<void> signOut() async {
     await FirebaseAuth.instance.signOut();
     state = const AsyncData(null);
+  }
+
+  /// Deletes the account and everything on it, then puts the user back at the
+  /// sign-in wall. Returns false if nothing was deleted.
+  ///
+  /// The work happens in a function rather than here: rules refuse a delete on
+  /// a collection document or a user document from any client, which is what
+  /// keeps a bug from erasing somebody's finds. Doing it server-side also
+  /// sidesteps `requires-recent-login` — the Admin SDK does not ask an account
+  /// that has been signed in for a fortnight to prove itself first, which would
+  /// mean a second sign-in prompt in the middle of leaving.
+  Future<bool> deleteAccount() async {
+    try {
+      await FirebaseFunctions.instanceFor(region: _functionsRegion)
+          .httpsCallable('deleteAccount')
+          .call<Object?>();
+    } catch (error, stack) {
+      _report(error, stack, 'deleting an account');
+      return false;
+    }
+
+    // The account is gone; the session on this phone is the only thing left.
+    await signOut();
+    return true;
   }
 
   /// Whether this is still the throwaway account.
@@ -185,6 +210,9 @@ class AccountController extends AsyncNotifier<User?> {
     return UpgradeOutcome.failed;
   }
 }
+
+/// Where the account functions live, alongside the naming one.
+const _functionsRegion = 'asia-northeast3';
 
 /// The web client Firebase issues for this project. Google hands back an id
 /// token minted for it, which is what Firebase will accept.

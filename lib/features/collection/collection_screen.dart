@@ -229,7 +229,7 @@ class _Slot extends ConsumerWidget {
                     overflow: TextOverflow.ellipsis,
                     style: theme.textTheme.bodySmall,
                   ),
-                  if (registered != null)
+                  if (registered != null && registered.hasDiscoverer)
                     Text(
                       registered.discovererUid ==
                               ref.watch(accountProvider).value?.uid

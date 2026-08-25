@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../l10n/app_localizations.dart';
+import '../account/account_screen.dart';
 import '../collection/collection_controller.dart';
 import '../collection/collection_screen.dart';
 import '../rules/creature.dart';
@@ -164,6 +165,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     MaterialPageRoute<void>(builder: (_) => const CollectionScreen()),
   );
 
+  void _openAccount() => Navigator.of(context).push(
+    MaterialPageRoute<void>(builder: (_) => const AccountScreen()),
+  );
+
   void _beginHatch() {
     if (_opening) {
       return;
@@ -216,7 +221,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                   padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
                   child: Row(
                     children: [
-                      SizedBox(width: kDebugMode ? 96 : 48),
+                      IconButton(
+                        onPressed: _openAccount,
+                        icon: const Icon(Icons.person_outline_rounded),
+                        tooltip: AppLocalizations.of(context).accountTitle,
+                      ),
+                      // Keeps the wordmark centred against the debug button on
+                      // the other side, which is not there in a release build.
+                      if (kDebugMode) const SizedBox(width: 48),
                       const Expanded(child: Center(child: _Wordmark())),
                       if (kDebugMode)
                         IconButton(

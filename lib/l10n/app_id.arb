@@ -98,5 +98,15 @@
   "signInErrorWrong": "alamat itu sudah ada dan kata sandinya nggak cocok",
   "handleTitle": "mau dipanggil apa?",
   "handleBody": "bakal ada di sebelah nama yang kamu kasih. jangan nama asli",
-  "handleContinue": "ini aku"
+  "handleContinue": "ini aku",
+
+  "accountTitle": "akun",
+  "accountSignOut": "keluar",
+  "accountDelete": "hapus akun",
+  "accountDeleteExplain": "menghapus akun menghilangkan koleksi dan nama panggilanmu. nama yang kamu beri tetap ada — orang lain sudah memanggilnya begitu — tapi tidak ada lagi yang menyebut siapa pemberinya",
+  "accountDeleteTitle": "hapus semuanya?",
+  "accountDeleteBody": "semua yang kamu temukan hilang, dan tidak bisa dikembalikan",
+  "accountDeleteConfirm": "hapus",
+  "accountDeleteCancel": "batal",
+  "accountDeleteFailed": "sekarang tidak bisa dihapus. coba sebentar lagi"
 }

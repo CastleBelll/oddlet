@@ -98,5 +98,15 @@
   "signInErrorWrong": "ese correo ya existe y la contraseña no lo abre",
   "handleTitle": "¿cómo te llamamos?",
   "handleBody": "irá junto a los nombres que pongas. no pongas el tuyo de verdad",
-  "handleContinue": "ese soy yo"
+  "handleContinue": "ese soy yo",
+
+  "accountTitle": "cuenta",
+  "accountSignOut": "cerrar sesión",
+  "accountDelete": "borrar cuenta",
+  "accountDeleteExplain": "borrar la cuenta elimina tu colección y tu apodo. los nombres que pusiste se quedan — los demás ya los llaman así — pero ya no dirá quién los puso",
+  "accountDeleteTitle": "¿borrar todo?",
+  "accountDeleteBody": "todo lo que encontraste desaparece y no hay vuelta atrás",
+  "accountDeleteConfirm": "borrar",
+  "accountDeleteCancel": "mejor no",
+  "accountDeleteFailed": "ahora no se puede borrar. inténtalo en un momento"
 }

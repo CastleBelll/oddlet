@@ -29,6 +29,13 @@ class SpeciesName {
 
   final DateTime? namedAt;
 
+  /// Whether there is still somebody to credit.
+  ///
+  /// False once the discoverer deletes their account: the name they gave stays,
+  /// because everyone else is already using it, but the nickname beside it goes
+  /// with them and nothing is shown in its place.
+  bool get hasDiscoverer => discovererHandle.isNotEmpty;
+
   /// Throws [FormatException] on a record it cannot read, so a half-written
   /// document never turns into a creature called "null".
   factory SpeciesName.fromFirestore(int species, Map<String, Object?> data) {

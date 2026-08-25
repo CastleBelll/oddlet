@@ -1,4 +1,5 @@
 import { initializeApp } from "firebase-admin/app";
+import { getAuth } from "firebase-admin/auth";
 import { FieldValue, getFirestore } from "firebase-admin/firestore";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 
@@ -175,4 +176,49 @@ export const setHandle = onCall({ region: REGION }, async (request) => {
 
   await db.doc(`users/${uid}`).set({ handle }, { merge: true });
   return { handle };
+});
+
+/**
+ * Deletes the account and everything that belongs to it.
+ *
+ * Runs here rather than in the app because the app is not allowed to: rules
+ * forbid deleting a collection document or a user document at all, which is
+ * what stops a fumbled write from erasing somebody's finds. Deletion is
+ * therefore a thing the server does deliberately, or not at all.
+ *
+ * Registered names are the one exception, and they stay. A name is what every
+ * other person who finds that creature calls it; taking it away when its
+ * author leaves would edit their screens, not this one's. What goes is the
+ * attribution — the nickname beside it and the uid behind it — so the name
+ * remains and nobody is credited for it.
+ *
+ * Auth goes last so that a failure part-way through leaves an account that can
+ * sign in and ask again, rather than orphaned rows nobody can reach.
+ */
+export const deleteAccount = onCall({ region: REGION }, async (request) => {
+  const uid = request.auth?.uid;
+  if (!uid) {
+    throw new HttpsError("unauthenticated", "sign in first");
+  }
+
+  const named = await db
+    .collection("species")
+    .where("discovererUid", "==", uid)
+    .get();
+  if (!named.empty) {
+    const batch = db.batch();
+    // Emptied rather than removed: the app reads a species document as a
+    // record and refuses one with fields missing, and a name that stops
+    // being readable is a name that has effectively been deleted.
+    for (const doc of named.docs) {
+      batch.update(doc.ref, { discovererUid: "", discovererHandle: "" });
+    }
+    await batch.commit();
+  }
+
+  // The collection and the daily eggs hang off this document.
+  await db.recursiveDelete(db.doc(`users/${uid}`));
+  await getAuth().deleteUser(uid);
+
+  return { deleted: named.size };
 });
