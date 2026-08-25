@@ -5,7 +5,6 @@ import '../../l10n/app_localizations.dart';
 import '../../theme.dart';
 import '../account/account_controller.dart';
 import '../account/account_upgrade_sheet.dart';
-import '../creatures/creature_appearance.dart';
 import '../creatures/creature_labels.dart';
 import '../creatures/creature_view.dart';
 import '../naming/naming_repository.dart';
@@ -27,15 +26,18 @@ class CollectionScreen extends ConsumerWidget {
     final theme = Theme.of(context);
     final found = ref.watch(collectionControllerProvider).value ?? const {};
 
+    // One slot per species, not per rule: a species is what has a look, a
+    // name and a first discoverer, so it is what a slot can stand for.
+    //
     // An undiscovered secret is not even shown as a slot. Knowing one exists is
     // already a clue, and the secret is the one thing worth keeping quiet.
-    final listed = season01Creatures
-        .where(
-          (creature) =>
-              creature.rarity != Rarity.secret ||
-              found.containsKey(creature.id),
-        )
-        .toList();
+    final listed = {
+      for (final rarity in Rarity.values)
+        rarity: [
+          for (final species in season01SpeciesIn(rarity))
+            if (rarity != Rarity.secret || found.containsKey(species)) species,
+        ],
+    };
 
     return Scaffold(
       appBar: AppBar(
@@ -52,7 +54,7 @@ class CollectionScreen extends ConsumerWidget {
           padding: const EdgeInsets.fromLTRB(20, 8, 20, 40),
           children: [
             Text(
-              l10n.collectionProgress(found.length, listed.length),
+              l10n.collectionProgress(found.length, season01SpeciesCount),
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
               ),
@@ -68,12 +70,10 @@ class CollectionScreen extends ConsumerWidget {
               ),
             const SizedBox(height: 28),
             for (final rarity in Rarity.values)
-              if (listed.any((creature) => creature.rarity == rarity))
+              if (listed[rarity]!.isNotEmpty)
                 _RaritySection(
                   rarity: rarity,
-                  creatures: listed
-                      .where((creature) => creature.rarity == rarity)
-                      .toList(),
+                  species: listed[rarity]!,
                   found: found,
                 ),
           ],
@@ -124,13 +124,13 @@ class _KeepItBanner extends StatelessWidget {
 class _RaritySection extends StatelessWidget {
   const _RaritySection({
     required this.rarity,
-    required this.creatures,
+    required this.species,
     required this.found,
   });
 
   final Rarity rarity;
-  final List<Creature> creatures;
-  final Map<String, CollectionEntry> found;
+  final List<int> species;
+  final Map<int, CollectionEntry> found;
 
   @override
   Widget build(BuildContext context) {
@@ -157,8 +157,8 @@ class _RaritySection extends StatelessWidget {
             spacing: 16,
             runSpacing: 16,
             children: [
-              for (final creature in creatures)
-                _Slot(creature: creature, entry: found[creature.id]),
+              for (final id in species)
+                _Slot(species: id, rarity: rarity, entry: found[id]),
             ],
           ),
         ],
@@ -168,9 +168,14 @@ class _RaritySection extends StatelessWidget {
 }
 
 class _Slot extends ConsumerWidget {
-  const _Slot({required this.creature, required this.entry});
+  const _Slot({
+    required this.species,
+    required this.rarity,
+    required this.entry,
+  });
 
-  final Creature creature;
+  final int species;
+  final Rarity rarity;
   final CollectionEntry? entry;
 
   @override
@@ -194,14 +199,11 @@ class _Slot extends ConsumerWidget {
       );
     }
 
-    // What somebody called it beats the name shipped with the app. The shipped
-    // one is a placeholder for a creature nobody has claimed, and a collection
-    // still showing it after the find was named is where the whole feature
-    // stops being visible.
-    final registered = ref
-        .watch(speciesNameProvider(CreatureAppearance.of(creature).species))
-        .value;
-    final name = registered?.name ?? creatureName(l10n, creature.id);
+    // Nothing has a name until somebody gives it one, so a species nobody has
+    // claimed is shown by its number. A made-up name in the meantime would be
+    // the app taking the one thing the finder gets to do.
+    final registered = ref.watch(speciesNameProvider(species)).value;
+    final name = registered?.name ?? '#$species';
 
     return Semantics(
       label: '$name, ${l10n.collectionFoundCount(entry.count)}',
@@ -210,7 +212,8 @@ class _Slot extends ConsumerWidget {
           children: [
             _SlotFrame(
               child: CreatureView(
-                creature: creature,
+                species: species,
+                rarity: rarity,
                 height: CollectionScreen._tileSize * 0.82,
               ),
             ),

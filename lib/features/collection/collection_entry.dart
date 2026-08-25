@@ -4,13 +4,17 @@ import 'package:flutter/foundation.dart';
 @immutable
 class CollectionEntry {
   const CollectionEntry({
-    required this.creatureId,
+    required this.species,
     required this.firstFoundAt,
     required this.lastFoundAt,
     required this.count,
   });
 
-  final String creatureId;
+  /// Which of the season's species this is.
+  ///
+  /// The species is the identity, not the rule that produced it: it is what
+  /// has a look, what a name is registered against, and what fills a slot.
+  final int species;
 
   /// The find that mattered: the one that filled the empty slot.
   final DateTime firstFoundAt;
@@ -19,23 +23,23 @@ class CollectionEntry {
   /// Including the first. Duplicates are worth showing, not hiding.
   final int count;
 
-  factory CollectionEntry.firstFind(String creatureId, DateTime at) =>
+  factory CollectionEntry.firstFind(int species, DateTime at) =>
       CollectionEntry(
-        creatureId: creatureId,
+        species: species,
         firstFoundAt: at,
         lastFoundAt: at,
         count: 1,
       );
 
   CollectionEntry foundAgain(DateTime at) => CollectionEntry(
-    creatureId: creatureId,
+    species: species,
     firstFoundAt: firstFoundAt,
     lastFoundAt: at,
     count: count + 1,
   );
 
   Map<String, Object?> toJson() => {
-    'creatureId': creatureId,
+    'species': species,
     'firstFoundAt': firstFoundAt.toIso8601String(),
     'lastFoundAt': lastFoundAt.toIso8601String(),
     'count': count,
@@ -44,13 +48,13 @@ class CollectionEntry {
   /// Throws [FormatException] on anything it cannot read, so the caller can
   /// decide what a damaged record means.
   factory CollectionEntry.fromJson(Map<String, Object?> json) {
-    final creatureId = json['creatureId'];
+    final species = json['species'];
     final firstFoundAt = json['firstFoundAt'];
     final lastFoundAt = json['lastFoundAt'];
     final count = json['count'];
 
-    if (creatureId is! String ||
-        creatureId.isEmpty ||
+    if (species is! int ||
+        species < 0 ||
         firstFoundAt is! String ||
         lastFoundAt is! String ||
         count is! int ||
@@ -59,7 +63,7 @@ class CollectionEntry {
     }
 
     return CollectionEntry(
-      creatureId: creatureId,
+      species: species,
       firstFoundAt: DateTime.parse(firstFoundAt),
       lastFoundAt: DateTime.parse(lastFoundAt),
       count: count,
@@ -69,11 +73,11 @@ class CollectionEntry {
   @override
   bool operator ==(Object other) =>
       other is CollectionEntry &&
-      other.creatureId == creatureId &&
+      other.species == species &&
       other.firstFoundAt == firstFoundAt &&
       other.lastFoundAt == lastFoundAt &&
       other.count == count;
 
   @override
-  int get hashCode => Object.hash(creatureId, firstFoundAt, lastFoundAt, count);
+  int get hashCode => Object.hash(species, firstFoundAt, lastFoundAt, count);
 }

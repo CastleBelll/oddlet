@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:oddlet/features/creatures/creature_appearance.dart';
 import 'package:oddlet/features/rules/creature.dart';
 import 'package:oddlet/features/rules/rule_engine.dart';
 import 'package:oddlet/features/rules/season_01.dart';
@@ -132,7 +133,7 @@ void main() {
         ),
       ]);
 
-      expect(engine.select(context()).id, 'fallback');
+      expect(engine.select(context()).species, 0);
     });
 
     test('prefers the higher priority over an easier match', () {
@@ -149,28 +150,34 @@ void main() {
           rarity: Rarity.epic,
           conditions: HatchConditions(minTouches: 100),
           priority: 60,
+          speciesBase: 1,
         ),
       ]);
 
       // Someone at 200 touches satisfies both; the rarer one should win.
-      expect(engine.select(context(touches: 200)).id, 'hard');
+      expect(engine.select(context(touches: 200)).species, 1);
     });
 
     test('draws among equal priorities in proportion to weight', () {
       final engine = RuleEngine([
         const Creature(id: 'often', rarity: Rarity.common, weight: 90),
-        const Creature(id: 'rarely', rarity: Rarity.common, weight: 10),
+        const Creature(
+          id: 'rarely',
+          rarity: Rarity.common,
+          weight: 10,
+          speciesBase: 1,
+        ),
       ], random: Random(7));
 
-      final drawn = <String, int>{};
+      final drawn = <int, int>{};
       for (var i = 0; i < 2000; i++) {
-        final id = engine.select(context()).id;
-        drawn[id] = (drawn[id] ?? 0) + 1;
+        final species = engine.select(context()).species;
+        drawn[species] = (drawn[species] ?? 0) + 1;
       }
 
-      expect(drawn['often'], greaterThan(drawn['rarely']!));
+      expect(drawn[0], greaterThan(drawn[1]!));
       // Roughly 9:1; allow plenty of slack for a finite sample.
-      expect(drawn['rarely']! / 2000, closeTo(0.10, 0.04));
+      expect(drawn[1]! / 2000, closeTo(0.10, 0.04));
     });
 
     test('always returns something, whatever the egg went through', () {
@@ -187,7 +194,7 @@ void main() {
               ),
             );
 
-            expect(result.id, isNotEmpty);
+            expect(result.species, inInclusiveRange(0, 287));
           }
         }
       }
@@ -202,13 +209,21 @@ void main() {
     });
 
     test('gives the shaker something other than a common', () {
-      expect(engine.select(context(shakes: 40)).id, 'dizzy_chick');
+      expect(
+        engine.select(context(shakes: 40)).species,
+        inInclusiveRange(104, 135),
+        reason: 'the shaker lands somewhere in the dizzy family',
+      );
     });
 
     test('gives the small hours their own creature', () {
       final atDawn = context(hatchedAt: DateTime(2026, 8, 24, 3, 30));
 
-      expect(engine.select(atDawn).id, 'ghost_chick');
+      expect(
+        engine.select(atDawn).species,
+        inInclusiveRange(168, 195),
+        reason: 'the small hours land somewhere in the ghost family',
+      );
     });
 
     test('reserves the secret for someone who did all three', () {
@@ -233,6 +248,36 @@ void main() {
           .toSet();
 
       expect(rarities, equals(Rarity.values.toSet()));
+    });
+
+    test('tiles the species space with no gap and no overlap', () {
+      // A name is registered against a species number. If a rule's slice moved
+      // — a reorder, a changed count — a name somebody already registered
+      // would start pointing at a different creature, and there is no way to
+      // put that right afterwards.
+      final owner = <int, String>{};
+
+      for (final rule in season01Creatures) {
+        for (var i = 0; i < rule.variants; i++) {
+          final species = rule.speciesBase + i;
+          expect(
+            owner[species],
+            isNull,
+            reason: '$species is claimed by both ${owner[species]} and '
+                '${rule.id}',
+          );
+          owner[species] = rule.id;
+        }
+      }
+
+      expect(
+        owner.length,
+        CreatureAppearance.speciesCount,
+        reason: 'the season has to fill exactly the space the shader can draw',
+      );
+      for (var species = 0; species < CreatureAppearance.speciesCount; species++) {
+        expect(owner, contains(species), reason: 'nothing owns $species');
+      }
     });
   });
 }

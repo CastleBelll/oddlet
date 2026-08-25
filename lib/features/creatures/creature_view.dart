@@ -10,11 +10,19 @@ import 'creature_appearance.dart';
 class CreatureView extends StatefulWidget {
   const CreatureView({
     super.key,
-    required this.creature,
+    required this.species,
+    required this.rarity,
     required this.height,
   });
 
-  final Creature creature;
+  /// Which of the season's species this is.
+  ///
+  /// The look belongs to the species and not to the rule that produced it: two
+  /// people holding the same species are holding the same creature, which is
+  /// what a name can be registered against.
+  final int species;
+
+  final Rarity rarity;
   final double height;
 
   @override
@@ -71,7 +79,7 @@ class _CreatureViewState extends State<CreatureView> {
       painter: _CreaturePainter(
         shader: shader,
         devicePixelRatio: MediaQuery.devicePixelRatioOf(context),
-        appearance: CreatureAppearance.of(widget.creature),
+        appearance: CreatureAppearance.species(widget.species, widget.rarity),
         tint: Theme.of(context).colorScheme.primary,
       ),
     );

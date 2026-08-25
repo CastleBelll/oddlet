@@ -9,7 +9,6 @@ import '../../ui/oddlet_dialog.dart';
 import '../account/account_controller.dart';
 import '../share/share_card.dart';
 import '../share/share_result.dart';
-import '../creatures/creature_appearance.dart';
 import '../creatures/creature_labels.dart';
 import '../creatures/creature_view.dart';
 import '../naming/name_it_sheet.dart';
@@ -26,7 +25,7 @@ import '../rules/creature.dart';
 class HatchReveal extends ConsumerStatefulWidget {
   const HatchReveal({
     super.key,
-    required this.creature,
+    required this.hatchling,
     required this.isNew,
     required this.foundAt,
     required this.onDismiss,
@@ -36,7 +35,7 @@ class HatchReveal extends ConsumerStatefulWidget {
   // that nobody waits for the buttons.
   static const _riseDuration = Duration(milliseconds: 1200);
 
-  final Creature creature;
+  final Hatchling hatchling;
 
   /// Whether this find filled an empty slot.
   final bool isNew;
@@ -55,14 +54,11 @@ class _HatchRevealState extends ConsumerState<HatchReveal> {
 
   final _cardKey = GlobalKey();
 
-  /// Which of the season's creatures this is. Two people holding the same
-  /// species are holding the same creature, which is what a first discovery
-  /// is claimed against.
-  int get _species => CreatureAppearance.of(widget.creature).species;
+  int get _species => widget.hatchling.species;
 
   void _share() => shareCapturedCard(
     cardKey: _cardKey,
-    creatureId: widget.creature.id,
+    creatureId: '${widget.hatchling.species}',
   );
 
   Future<void> _nameIt() async {
@@ -113,7 +109,6 @@ class _HatchRevealState extends ConsumerState<HatchReveal> {
 
   @override
   Widget build(BuildContext context) {
-    final creature = widget.creature;
     final isNew = widget.isNew;
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
@@ -127,8 +122,10 @@ class _HatchRevealState extends ConsumerState<HatchReveal> {
     final offerNaming = lookup.hasValue && registered == null;
     // A registered name wins over the one shipped with the app: the shipped
     // one is a placeholder for a creature nobody has claimed yet.
-    final name = registered?.name ?? creatureName(l10n, creature.id);
-    final tier = rarityLabel(l10n, creature.rarity);
+    // Nothing has a name until somebody gives it one, so an unnamed species
+    // is shown by its number rather than by a name the app made up.
+    final name = registered?.name ?? '#$_species';
+    final tier = rarityLabel(l10n, widget.hatchling.rarity);
 
     return Stack(
       children: [
@@ -145,7 +142,7 @@ class _HatchRevealState extends ConsumerState<HatchReveal> {
               child: RepaintBoundary(
                 key: _cardKey,
                 child: ShareCard(
-                  creature: creature,
+                  hatchling: widget.hatchling,
                   isNew: isNew,
                   foundAt: widget.foundAt,
                 ),
@@ -181,8 +178,8 @@ class _HatchRevealState extends ConsumerState<HatchReveal> {
     SpeciesName? registered,
     bool offerNaming,
   ) {
-    final creature = widget.creature;
     final isNew = widget.isNew;
+    final rarity = widget.hatchling.rarity;
     final mine =
         registered != null &&
         registered.discovererUid == ref.watch(accountProvider).value?.uid;
@@ -219,7 +216,8 @@ class _HatchRevealState extends ConsumerState<HatchReveal> {
                         ),
                       ExcludeSemantics(
                         child: CreatureView(
-                          creature: creature,
+                          species: widget.hatchling.species,
+                          rarity: rarity,
                           height: creatureHeight,
                         ),
                       ),
@@ -240,10 +238,10 @@ class _HatchRevealState extends ConsumerState<HatchReveal> {
                       Text(
                         tier,
                         style: theme.textTheme.labelLarge?.copyWith(
-                          color: rarityColor(scheme, creature.rarity),
+                          color: rarityColor(scheme, rarity),
                           letterSpacing: 3,
-                          shadows: rarityGlows(creature.rarity)
-                              ? neonGlow(rarityColor(scheme, creature.rarity))
+                          shadows: rarityGlows(rarity)
+                              ? neonGlow(rarityColor(scheme, rarity))
                               : null,
                         ),
                       ),

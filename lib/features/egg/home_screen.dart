@@ -52,7 +52,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   /// ready, and the egg would sit there whole again in between.
   bool _opening = false;
 
-  Creature? _hatched;
+  Hatchling? _hatched;
 
   /// Whether that find filled an empty slot.
   bool _hatchedIsNew = false;
@@ -125,11 +125,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     unawaited(_fileResult(result));
   }
 
-  Future<void> _fileResult(Creature result) async {
+  Future<void> _fileResult(Hatchling result) async {
     final isNew = await ref
         .read(collectionControllerProvider.notifier)
-        .record(result.id);
-    await ref.read(dailyEggControllerProvider.notifier).recordHatch(result.id);
+        .record(result.species);
+    // The daily egg only has to remember that today's is spent and what it
+    // turned into; the species is that answer now.
+    await ref
+        .read(dailyEggControllerProvider.notifier)
+        .recordHatch('${result.species}');
 
     if (!mounted) {
       return;
@@ -272,7 +276,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           if (_opening) _HatchOverlay(progress: _hatch.value),
           if (_hatched case final creature?)
             HatchReveal(
-              creature: creature,
+              hatchling: creature,
               isNew: _hatchedIsNew,
               foundAt: _hatchedAt,
               onDismiss: _dismissReveal,

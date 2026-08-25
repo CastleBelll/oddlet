@@ -21,13 +21,13 @@ class _StubAccount extends AccountController {
 /// A collection that survives a restart without a network, standing in for
 /// what Firestore's own disk cache does on a device.
 class _MemoryCollectionStore implements CollectionStore {
-  final Map<String, CollectionEntry> _entries = {};
+  final Map<int, CollectionEntry> _entries = {};
 
   @override
-  Future<Map<String, CollectionEntry>> load() async => Map.of(_entries);
+  Future<Map<int, CollectionEntry>> load() async => Map.of(_entries);
 
   @override
-  void write(CollectionEntry entry) => _entries[entry.creatureId] = entry;
+  void write(CollectionEntry entry) => _entries[entry.species] = entry;
 }
 
 void main() {
@@ -58,7 +58,7 @@ void main() {
 
   group('CollectionEntry', () {
     test('remembers the find that filled the slot', () {
-      final entry = CollectionEntry.firstFind('ghost_chick', noon);
+      final entry = CollectionEntry.firstFind(193, noon);
       final again = entry.foundAgain(DateTime(2026, 9, 1, 9));
 
       expect(again.firstFoundAt, noon, reason: 'the first find never moves');
@@ -68,7 +68,7 @@ void main() {
 
     test('survives a round trip through storage', () {
       final entry = CollectionEntry.firstFind(
-        'ghost_chick',
+        193,
         noon,
       ).foundAgain(noon);
 
@@ -77,12 +77,12 @@ void main() {
 
     test('refuses a record it cannot read', () {
       expect(
-        () => CollectionEntry.fromJson({'creatureId': 'ghost_chick'}),
+        () => CollectionEntry.fromJson({'creatureId': 193}),
         throwsFormatException,
       );
       expect(
         () => CollectionEntry.fromJson({
-          'creatureId': 'ghost_chick',
+          'creatureId': 193,
           'firstFoundAt': noon.toIso8601String(),
           'lastFoundAt': noon.toIso8601String(),
           'count': 0,
@@ -106,8 +106,8 @@ void main() {
       await container.read(collectionControllerProvider.future);
       final controller = container.read(collectionControllerProvider.notifier);
 
-      expect(await controller.record('ghost_chick'), isTrue);
-      expect(await controller.record('ghost_chick'), isFalse);
+      expect(await controller.record(193), isTrue);
+      expect(await controller.record(193), isFalse);
     });
 
     test('counts duplicates instead of discarding them', () async {
@@ -115,12 +115,12 @@ void main() {
       await container.read(collectionControllerProvider.future);
       final controller = container.read(collectionControllerProvider.notifier);
 
-      await controller.record('ghost_chick');
-      await controller.record('ghost_chick');
+      await controller.record(193);
+      await controller.record(193);
 
       final entry = container
           .read(collectionControllerProvider)
-          .requireValue['ghost_chick']!;
+          .requireValue[193]!;
       expect(entry.count, 2);
     });
 
@@ -132,10 +132,10 @@ void main() {
       // must not wipe the find.
       await container
           .read(collectionControllerProvider.notifier)
-          .record('ghost_chick');
+          .record(193);
 
       final found = await container.read(collectionControllerProvider.future);
-      expect(found.keys, ['ghost_chick']);
+      expect(found.keys, [193]);
     });
 
     test('keeps the collection across a restart', () async {
@@ -143,21 +143,21 @@ void main() {
       await first.read(collectionControllerProvider.future);
       await first
           .read(collectionControllerProvider.notifier)
-          .record('ghost_chick');
+          .record(193);
 
       final second = containerAt(DateTime(2026, 9, 1));
       final found = await second.read(collectionControllerProvider.future);
 
-      expect(found.keys, ['ghost_chick']);
+      expect(found.keys, [193]);
     });
 
     test('moves an on-device collection onto the account', () async {
-      final old = CollectionEntry.firstFind('ghost_chick', noon)
+      final old = CollectionEntry.firstFind(193, noon)
           .foundAgain(noon);
       SharedPreferences.setMockInitialValues({
         'oddlet.collection': jsonEncode({
-          'ghost_chick': old.toJson(),
-          'broken': {'creatureId': 'broken'},
+          '193': old.toJson(),
+          'nope': {'creatureId': 'nope'},
         }),
       });
 
@@ -165,15 +165,15 @@ void main() {
         noon,
       ).read(collectionControllerProvider.future);
 
-      expect(found.keys, ['ghost_chick'], reason: 'a damaged record is left');
-      expect(found['ghost_chick']!.count, 2, reason: 'the history comes too');
+      expect(found.keys, [193], reason: 'a damaged record is left');
+      expect(found[193]!.count, 2, reason: 'the history comes too');
       expect(await store.load(), found, reason: 'and it lands on the account');
     });
 
     test('moves an on-device collection exactly once', () async {
       SharedPreferences.setMockInitialValues({
         'oddlet.collection': jsonEncode({
-          'ghost_chick': CollectionEntry.firstFind('ghost_chick', noon).toJson(),
+          '193': CollectionEntry.firstFind(193, noon).toJson(),
         }),
       });
       await containerAt(noon).read(collectionControllerProvider.future);
@@ -186,13 +186,13 @@ void main() {
 
     test('leaves the account copy alone when both have a creature', () async {
       final onAccount = CollectionEntry.firstFind(
-        'ghost_chick',
+        193,
         DateTime(2026, 1, 1),
       ).foundAgain(noon);
       store.write(onAccount);
       SharedPreferences.setMockInitialValues({
         'oddlet.collection': jsonEncode({
-          'ghost_chick': CollectionEntry.firstFind('ghost_chick', noon).toJson(),
+          '193': CollectionEntry.firstFind(193, noon).toJson(),
         }),
       });
 
@@ -200,16 +200,16 @@ void main() {
         noon,
       ).read(collectionControllerProvider.future);
 
-      expect(found['ghost_chick'], onAccount, reason: 'the counted one wins');
+      expect(found[193], onAccount, reason: 'the counted one wins');
     });
   });
 
   group('a spent egg', () {
     test('remembers what it became', () {
-      final egg = DailyEgg.startOf(noon).hatchedInto('ghost_chick', noon);
+      final egg = DailyEgg.startOf(noon).hatchedInto('193', noon);
 
       expect(egg.isHatched, isTrue);
-      expect(egg.resultCreatureId, 'ghost_chick');
+      expect(egg.resultCreatureId, '193');
       expect(DailyEgg.fromJson(egg.toJson()), egg);
     });
 
@@ -219,7 +219,7 @@ void main() {
       final controller = container.read(dailyEggControllerProvider.notifier);
 
       controller.recordTouch();
-      await controller.recordHatch('ghost_chick');
+      await controller.recordHatch('193');
       controller.recordTouch();
       controller.recordShake();
 
@@ -233,7 +233,7 @@ void main() {
       await first.read(dailyEggControllerProvider.future);
       await first
           .read(dailyEggControllerProvider.notifier)
-          .recordHatch('ghost_chick');
+          .recordHatch('193');
 
       final second = containerAt(DateTime(2026, 8, 24, 22));
       final egg = await second.read(dailyEggControllerProvider.future);
@@ -247,7 +247,7 @@ void main() {
       final controller = container.read(dailyEggControllerProvider.notifier);
 
       controller.recordTouch();
-      await controller.recordHatch('ghost_chick');
+      await controller.recordHatch('193');
       await controller.resetToday();
 
       final egg = container.read(dailyEggControllerProvider).requireValue;
@@ -261,7 +261,7 @@ void main() {
       await today.read(dailyEggControllerProvider.future);
       await today
           .read(dailyEggControllerProvider.notifier)
-          .recordHatch('ghost_chick');
+          .recordHatch('193');
 
       final tomorrow = containerAt(DateTime(2026, 8, 25, 9));
       final egg = await tomorrow.read(dailyEggControllerProvider.future);

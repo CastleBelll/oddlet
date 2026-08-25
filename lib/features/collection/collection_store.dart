@@ -10,7 +10,7 @@ import 'collection_entry.dart';
 /// An interface only because a test needs a collection without a network; the
 /// app has one implementation.
 abstract class CollectionStore {
-  Future<Map<String, CollectionEntry>> load();
+  Future<Map<int, CollectionEntry>> load();
 
   /// Files one find away.
   ///
@@ -42,16 +42,17 @@ class FirestoreCollectionStore implements CollectionStore {
       .collection('collection');
 
   @override
-  Future<Map<String, CollectionEntry>> load() async {
+  Future<Map<int, CollectionEntry>> load() async {
     try {
       // Falls back to the disk cache when the server cannot be reached, which
       // is what makes the collection readable on a plane.
       final snapshot = await _collection.get();
-      final entries = <String, CollectionEntry>{};
+      final entries = <int, CollectionEntry>{};
 
       for (final document in snapshot.docs) {
         try {
-          entries[document.id] = CollectionEntry.fromJson(document.data());
+          final species = int.parse(document.id);
+          entries[species] = CollectionEntry.fromJson(document.data());
         } catch (error, stack) {
           // One unreadable record must not cost the user the rest.
           _report(error, stack, 'reading collection entry ${document.id}');
@@ -69,7 +70,7 @@ class FirestoreCollectionStore implements CollectionStore {
   void write(CollectionEntry entry) {
     unawaited(
       _collection
-          .doc(entry.creatureId)
+          .doc('${entry.species}')
           .set(entry.toJson())
           .catchError(
             (Object error, StackTrace stack) =>
@@ -88,7 +89,7 @@ class UnsavedCollectionStore implements CollectionStore {
   const UnsavedCollectionStore();
 
   @override
-  Future<Map<String, CollectionEntry>> load() async => const {};
+  Future<Map<int, CollectionEntry>> load() async => const {};
 
   @override
   void write(CollectionEntry entry) {}

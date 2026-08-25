@@ -18,7 +18,7 @@ import 'package:oddlet/features/account/account_controller.dart';
 import 'package:oddlet/features/egg/hatch_reveal.dart';
 import 'package:oddlet/features/naming/naming_repository.dart';
 import 'package:oddlet/features/naming/species_name.dart';
-import 'package:oddlet/features/rules/season_01.dart';
+import 'package:oddlet/features/rules/creature.dart';
 import 'package:oddlet/main.dart';
 import 'package:oddlet/theme.dart';
 
@@ -480,7 +480,10 @@ void main() {
             theme: oddletDarkTheme(),
             home: Scaffold(
               body: HatchReveal(
-                creature: season01Creatures.first,
+                hatchling: const Hatchling(
+                  species: 0,
+                  rarity: Rarity.common,
+                ),
                 isNew: true,
                 foundAt: DateTime(2026, 8, 25, 12),
                 onDismiss: () {},

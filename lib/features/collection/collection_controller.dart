@@ -24,14 +24,14 @@ final collectionArchiveProvider = Provider<LocalCollectionArchive>(
 );
 
 final collectionControllerProvider =
-    AsyncNotifierProvider<CollectionController, Map<String, CollectionEntry>>(
+    AsyncNotifierProvider<CollectionController, Map<int, CollectionEntry>>(
       CollectionController.new,
     );
 
 /// Everything the user has found, keyed by creature id.
-class CollectionController extends AsyncNotifier<Map<String, CollectionEntry>> {
+class CollectionController extends AsyncNotifier<Map<int, CollectionEntry>> {
   @override
-  Future<Map<String, CollectionEntry>> build() async {
+  Future<Map<int, CollectionEntry>> build() async {
     // Waiting on the account, not just reading it: the store cannot know where
     // to look until sign-in has settled.
     await ref.watch(accountProvider.future);
@@ -47,19 +47,19 @@ class CollectionController extends AsyncNotifier<Map<String, CollectionEntry>> {
     return {..._moveInOldFinds(store, found, await _archived()), ...found};
   }
 
-  Future<Map<String, CollectionEntry>> _archived() =>
+  Future<Map<int, CollectionEntry>> _archived() =>
       ref.read(collectionArchiveProvider).drain();
 
   /// Carries over anything found back when the collection lived on the phone.
   ///
   /// Records already on the account win: they are the ones the rules have been
   /// keeping count of, and a lower local count would be refused anyway.
-  Map<String, CollectionEntry> _moveInOldFinds(
+  Map<int, CollectionEntry> _moveInOldFinds(
     CollectionStore store,
-    Map<String, CollectionEntry> found,
-    Map<String, CollectionEntry> archived,
+    Map<int, CollectionEntry> found,
+    Map<int, CollectionEntry> archived,
   ) {
-    final moved = <String, CollectionEntry>{};
+    final moved = <int, CollectionEntry>{};
 
     for (final entry in archived.entries) {
       if (found.containsKey(entry.key)) {
@@ -76,19 +76,19 @@ class CollectionController extends AsyncNotifier<Map<String, CollectionEntry>> {
   ///
   /// Returns whether this filled an empty slot, which is the part of a hatch
   /// the user really cares about.
-  Future<bool> record(String creatureId) async {
+  Future<bool> record(int species) async {
     // Wait for the stored collection before adding to it. A hatch can land
     // while the load is still in flight, and a load that finishes afterwards
     // would otherwise overwrite the find.
     final found = await future;
     final at = ref.read(clockProvider)();
-    final existing = found[creatureId];
+    final existing = found[species];
 
     final entry = existing == null
-        ? CollectionEntry.firstFind(creatureId, at)
+        ? CollectionEntry.firstFind(species, at)
         : existing.foundAgain(at);
 
-    state = AsyncData({...found, creatureId: entry});
+    state = AsyncData({...found, species: entry});
     ref.read(collectionStoreProvider).write(entry);
 
     return existing == null;

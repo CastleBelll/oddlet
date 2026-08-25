@@ -20,21 +20,22 @@ class LocalCollectionArchive {
   ///
   /// Returns empty when there is nothing left to move, which is the normal
   /// case after the first run.
-  Future<Map<String, CollectionEntry>> drain() async {
+  Future<Map<int, CollectionEntry>> drain() async {
     final preferences = await SharedPreferences.getInstance();
     final stored = preferences.getString(_key);
     if (stored == null) {
       return const {};
     }
 
-    final entries = <String, CollectionEntry>{};
+    final entries = <int, CollectionEntry>{};
     try {
       final decoded = jsonDecode(stored) as Map<String, Object?>;
       for (final record in decoded.entries) {
         try {
-          entries[record.key] = CollectionEntry.fromJson(
+          final entry = CollectionEntry.fromJson(
             record.value! as Map<String, Object?>,
           );
+          entries[entry.species] = entry;
         } catch (error, stack) {
           _report(error, stack, 'moving collection entry ${record.key}');
         }

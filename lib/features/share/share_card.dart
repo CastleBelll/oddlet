@@ -15,7 +15,7 @@ import '../rules/creature.dart';
 class ShareCard extends StatelessWidget {
   const ShareCard({
     super.key,
-    required this.creature,
+    required this.hatchling,
     required this.isNew,
     required this.foundAt,
   });
@@ -28,7 +28,7 @@ class ShareCard extends StatelessWidget {
   static const storeLink =
       'play.google.com/store/apps/details?id=com.castlebell.oddlet';
 
-  final Creature creature;
+  final Hatchling hatchling;
   final bool isNew;
   final DateTime foundAt;
 
@@ -38,7 +38,7 @@ class ShareCard extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final locale = Localizations.localeOf(context).toString();
 
-    final accent = rarityColor(scheme, creature.rarity);
+    final accent = rarityColor(scheme, hatchling.rarity);
 
     return SizedBox(
       width: size.width,
@@ -52,7 +52,7 @@ class ShareCard extends StatelessWidget {
             center: const Alignment(0, -0.35),
             radius: 0.9,
             colors: [
-              Color.lerp(scheme.surface, accent, _accentLift(creature.rarity))!,
+              Color.lerp(scheme.surface, accent, _accentLift(hatchling.rarity))!,
               scheme.surface,
             ],
           ),
@@ -77,21 +77,25 @@ class ShareCard extends StatelessWidget {
                     ),
                   ),
                 ),
-              CreatureView(creature: creature, height: 620),
+              CreatureView(
+                species: hatchling.species,
+                rarity: hatchling.rarity,
+                height: 620,
+              ),
               const SizedBox(height: 96),
               Text(
-                creatureName(l10n, creature.id),
+                '#${hatchling.species}',
                 textAlign: TextAlign.center,
                 style: TextStyle(color: scheme.onSurface, fontSize: 92),
               ),
               const SizedBox(height: 32),
               Text(
-                rarityLabel(l10n, creature.rarity),
+                rarityLabel(l10n, hatchling.rarity),
                 style: TextStyle(
                   color: accent,
                   fontSize: 48,
                   letterSpacing: 12,
-                  shadows: rarityGlows(creature.rarity)
+                  shadows: rarityGlows(hatchling.rarity)
                       ? neonGlow(accent, blur: 40)
                       : null,
                 ),

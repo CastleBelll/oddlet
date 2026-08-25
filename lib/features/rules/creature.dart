@@ -60,6 +60,27 @@ class HatchWindow {
   }
 }
 
+/// What came out of an egg.
+///
+/// The species is the identity: it is what has a look, what a name is
+/// registered against, and what fills a slot in the collection. The rule that
+/// produced it is not kept, because two rules meeting in the same species
+/// would be the same creature and the user has no way of telling them apart.
+@immutable
+class Hatchling {
+  const Hatchling({required this.species, required this.rarity});
+
+  final int species;
+  final Rarity rarity;
+
+  @override
+  bool operator ==(Object other) =>
+      other is Hatchling && other.species == species && other.rarity == rarity;
+
+  @override
+  int get hashCode => Object.hash(species, rarity);
+}
+
 /// What must be true for a creature to be a candidate.
 ///
 /// Every field is optional and every one present must hold. No conditions at
@@ -111,9 +132,31 @@ class Creature {
     this.priority = 0,
     this.weight = 100,
     this.designSalt = 0,
-  }) : assert(weight > 0, 'a creature with no weight can never be drawn');
+    this.variants = 1,
+    this.speciesBase = 0,
+  }) : assert(weight > 0, 'a creature with no weight can never be drawn'),
+       assert(
+         variants > 0,
+         'a rule that produces nothing cannot be an outcome',
+       );
 
   final String id;
+
+  /// How many species this rule can produce.
+  ///
+  /// A rule is not a creature. It settles the tier and the family; which of
+  /// that family turns up is settled by what the user actually did. Without
+  /// this the season holds as many species as it has rules, and the naming in
+  /// §5.2 of the plan runs out in a week.
+  final int variants;
+
+  /// The first species number this rule owns.
+  ///
+  /// Written out in the season rather than counted from the order of the list,
+  /// so that reordering the rules cannot silently point a name somebody has already
+  /// registered at a different creature. A test checks the bases and variants
+  /// tile the space with no gap and no overlap.
+  final int speciesBase;
   final Rarity rarity;
   final HatchConditions conditions;
 
