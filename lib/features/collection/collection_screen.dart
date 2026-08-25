@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../../theme.dart';
+import '../account/account_controller.dart';
+import '../account/account_upgrade_sheet.dart';
 import '../creatures/creature_labels.dart';
 import '../creatures/creature_view.dart';
 import '../rules/creature.dart';
@@ -53,6 +55,12 @@ class CollectionScreen extends ConsumerWidget {
                 color: theme.colorScheme.onSurfaceVariant,
               ),
             ),
+            if (ref.watch(accountProvider.notifier).isAnonymous &&
+                found.isNotEmpty)
+              const Padding(
+                padding: EdgeInsets.only(top: 20),
+                child: _KeepItBanner(),
+              ),
             const SizedBox(height: 28),
             for (final rarity in Rarity.values)
               if (listed.any((creature) => creature.rarity == rarity))
@@ -63,6 +71,44 @@ class CollectionScreen extends ConsumerWidget {
                       .toList(),
                   found: found,
                 ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Offered only once there is something to lose. Asking someone to sign in
+/// over an empty collection is asking for nothing in return.
+class _KeepItBanner extends StatelessWidget {
+  const _KeepItBanner();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                l10n.accountLocalOnly,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () => showAccountUpgradeSheet(context),
+              child: Text(l10n.accountConnect),
+            ),
           ],
         ),
       ),

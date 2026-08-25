@@ -121,6 +121,35 @@
     "description": "Creature name for the secret creature. See creaturePlainChick."
   },
 
+  "accountLocalOnly": "this collection only exists on this phone",
+  "@accountLocalOnly": {
+    "description": "Shown above the collection while the user is still on an anonymous account, explaining what they stand to lose."
+  },
+  "accountConnect": "keep it",
+  "@accountConnect": {
+    "description": "Button that starts linking a real account to the anonymous one."
+  },
+  "accountSheetTitle": "keep your collection",
+  "@accountSheetTitle": {
+    "description": "Heading of the sheet offering ways to sign in."
+  },
+  "accountSheetBody": "connect an account and it follows you to a new phone",
+  "@accountSheetBody": {
+    "description": "Explains why signing in is worth it. Says nothing about features it unlocks; the reason is not losing what you have."
+  },
+  "accountWithGoogle": "continue with Google",
+  "@accountWithGoogle": { "description": "Sign-in button." },
+  "accountWithApple": "continue with Apple",
+  "@accountWithApple": { "description": "Sign-in button, iOS only." },
+  "accountLinked": "done. it is yours now",
+  "@accountLinked": { "description": "Shown after an account is linked successfully." },
+  "accountSwitched": "signed in to an account you already had. what you found before signing in is not on it",
+  "@accountSwitched": {
+    "description": "Shown when the chosen account already existed, so linking was impossible and the user was signed into it instead. Must be honest that the anonymous collection did not come along."
+  },
+  "accountFailed": "could not connect that account",
+  "@accountFailed": { "description": "Shown when signing in failed for a reason other than the user cancelling." },
+
   "collectionTitle": "COLLECTION",
   "@collectionTitle": {
     "description": "Heading of the screen listing every creature found so far."

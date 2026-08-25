@@ -40,6 +40,16 @@
   "creatureDawnRunner": "새벽 질주자",
   "creatureTheQuietOne": "조용한 것",
 
+  "accountLocalOnly": "이 도감은 이 폰에만 있어",
+  "accountConnect": "지키기",
+  "accountSheetTitle": "도감 지키기",
+  "accountSheetBody": "계정을 연결하면 폰을 바꿔도 따라와",
+  "accountWithGoogle": "Google로 계속",
+  "accountWithApple": "Apple로 계속",
+  "accountLinked": "됐어. 이제 네 거야",
+  "accountSwitched": "원래 있던 계정으로 로그인했어. 로그인 전에 모은 건 이 계정에 없어",
+  "accountFailed": "계정을 연결하지 못했어",
+
   "collectionTitle": "도감",
   "collectionOpen": "도감 열기",
   "collectionClose": "도감 닫기",
