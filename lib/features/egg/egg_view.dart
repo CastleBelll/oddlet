@@ -9,6 +9,7 @@ import '../../l10n/app_localizations.dart';
 import '../../theme.dart';
 
 import 'egg_appearance.dart';
+import 'hatch_debris.dart';
 import 'hatch_sequence.dart';
 import 'shake_detector.dart';
 
@@ -261,6 +262,9 @@ class _EggViewState extends State<EggView> with SingleTickerProviderStateMixin {
   Widget build(BuildContext context) {
     final shader = _shader;
     final size = Size(widget.height * EggView._aspectRatio, widget.height);
+    // The debris layer paints past this box, so it needs somewhere to paint
+    // to: the whole screen, centred on the egg.
+    final screen = MediaQuery.sizeOf(context);
     final l10n = AppLocalizations.of(context);
 
     // The egg keeps its label while the shader loads; a screen reader user
@@ -298,8 +302,16 @@ class _EggViewState extends State<EggView> with SingleTickerProviderStateMixin {
         onPanUpdate: isHatching ? null : _onPanUpdate,
         onPanEnd: isHatching ? null : _onPanEnd,
         onLongPress: isHatching ? null : widget.onHatchRequested,
+        // The broken pieces are drawn over the whole screen rather than inside
+        // this box, which is barely bigger than the egg: a piece thrown clear
+        // used to be cut off at its edge. Outside the transforms below as
+        // well, so the debris does not rock with the shell or fade with it.
+        child: Stack(
+          clipBehavior: Clip.none,
+          alignment: Alignment.center,
+          children: [
         // The shell sits on its base, so it squashes and rocks about the bottom.
-        child: Transform.rotate(
+        Transform.rotate(
           alignment: Alignment.bottomCenter,
           angle: _pokeRock * poke * _pokeDirection + jitter,
           child: Transform(
@@ -329,6 +341,23 @@ class _EggViewState extends State<EggView> with SingleTickerProviderStateMixin {
               ),
             ),
           ),
+        ),
+            if (isHatching)
+              Positioned.fill(
+                child: OverflowBox(
+                  maxWidth: screen.width,
+                  maxHeight: screen.height,
+                  child: HatchDebris(
+                    crack: crackProgressAt(hatch),
+                    yaw: _yaw,
+                    pitch: _pitch,
+                    shell: widget.appearance.shell,
+                    glow: OddletColors.hatchLight,
+                    eggHeight: size.height,
+                  ),
+                ),
+              ),
+          ],
         ),
       ),
     );

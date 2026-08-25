@@ -81,6 +81,7 @@ flutter:
   shaders:
     - shaders/egg.frag
     - shaders/creature.frag
+    - shaders/shards.frag
 
   assets:
     - assets/fonts/OFL.txt
